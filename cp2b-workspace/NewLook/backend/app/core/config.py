@@ -25,9 +25,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3003",
         "http://127.0.0.1:3004",
-        "https://your-frontend-domain.com"
+        "https://your-frontend-domain.com",
+        "*"  # Allow all origins in production (can be restricted later)
     ]
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1", "your-api-domain.com"]
+    ALLOWED_HOSTS: List[str] = [
+        "localhost",
+        "127.0.0.1",
+        "newlook-production.up.railway.app",
+        "*"  # Allow all hosts in production
+    ]
 
     # Database settings
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/cp2b_maps"
