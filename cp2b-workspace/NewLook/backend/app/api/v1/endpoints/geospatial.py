@@ -166,30 +166,30 @@ async def get_municipalities_geojson(
                 WHERE 1=1
         """
 
-        params = []
+            params = []
 
-        if min_biogas is not None:
-            query += " AND total_biogas_m3_year >= %s"
-            params.append(min_biogas)
+            if min_biogas is not None:
+                query += " AND total_biogas_m3_year >= %s"
+                params.append(min_biogas)
 
-        if region:
-            # SECURITY: Validate region against whitelist
-            if region not in VALID_REGIONS:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid region. Must be one of: {', '.join(sorted(VALID_REGIONS))}"
-                )
-            query += " AND administrative_region = %s"
-            params.append(region)
+            if region:
+                # SECURITY: Validate region against whitelist
+                if region not in VALID_REGIONS:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid region. Must be one of: {', '.join(sorted(VALID_REGIONS))}"
+                    )
+                query += " AND administrative_region = %s"
+                params.append(region)
 
-        query += " ORDER BY total_biogas_m3_year DESC"
+            query += " ORDER BY total_biogas_m3_year DESC"
 
-        # SECURITY: Use parameterized query for LIMIT instead of f-string
-        if limit:
-            query += " LIMIT %s"
-            params.append(limit)
+            # SECURITY: Use parameterized query for LIMIT instead of f-string
+            if limit:
+                query += " LIMIT %s"
+                params.append(limit)
 
-        query += " ) as features"
+            query += " ) as features"
 
             cursor.execute(query, params)
             result = cursor.fetchone()
