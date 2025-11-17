@@ -194,10 +194,10 @@ async def get_municipalities_geojson(
             cursor.execute(query, params)
             result = cursor.fetchone()
 
-            if not result or not result[0]:
+            if not result or not result.get('geojson'):
                 return GeoJSONFeatureCollection(type="FeatureCollection", features=[])
 
-            return result[0]
+            return result['geojson']
 
         except psycopg2.Error as e:
             logger.error(f"Database error in get_municipalities_geojson: {e}")
@@ -263,7 +263,7 @@ async def get_municipality_centroids(
             cursor.execute(query, params)
             result = cursor.fetchone()
 
-            return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
+            return result['geojson'] if result and result.get('geojson') else {"type": "FeatureCollection", "features": []}
 
         except psycopg2.Error as e:
             logger.error(f"Database error in get_municipality_centroids: {e}")
@@ -318,11 +318,11 @@ async def list_municipalities(
 
             return [
                 MunicipalityBasic(
-                    id=row[0],
-                    municipality_name=row[1],
-                    total_biogas_m3_year=row[2],
-                    energy_potential_mwh_year=row[3],
-                    ranking=row[4]
+                    id=row['id'],
+                    municipality_name=row['municipality_name'],
+                    total_biogas_m3_year=row['total_biogas_m3_year'],
+                    energy_potential_mwh_year=row['energy_potential_mwh_year'],
+                    ranking=row['ranking']
                 )
                 for row in rows
             ]
@@ -368,22 +368,22 @@ async def get_municipality(municipality_id: int):
                 raise HTTPException(status_code=404, detail="Municipality not found")
 
             return MunicipalityDetail(
-                id=row[0],
-                municipality_name=row[1],
-                ibge_code=row[2],
-                total_biogas_m3_year=row[3],
-                total_biogas_m3_day=row[4],
-                urban_biogas_m3_year=row[5],
-                agricultural_biogas_m3_year=row[6],
-                livestock_biogas_m3_year=row[7],
-                energy_potential_kwh_day=row[8],
-                energy_potential_mwh_year=row[9],
-                co2_reduction_tons_year=row[10],
-                population=row[11],
-                urban_population=row[12],
-                rural_population=row[13],
-                centroid=row[14],
-                administrative_region=row[15]
+                id=row['id'],
+                municipality_name=row['municipality_name'],
+                ibge_code=row['ibge_code'],
+                total_biogas_m3_year=row['total_biogas_m3_year'],
+                total_biogas_m3_day=row['total_biogas_m3_day'],
+                urban_biogas_m3_year=row['urban_biogas_m3_year'],
+                agricultural_biogas_m3_year=row['agricultural_biogas_m3_year'],
+                livestock_biogas_m3_year=row['livestock_biogas_m3_year'],
+                energy_potential_kwh_day=row['energy_potential_kwh_day'],
+                energy_potential_mwh_year=row['energy_potential_mwh_year'],
+                co2_reduction_tons_year=row['co2_reduction_tons_year'],
+                population=row['population'],
+                urban_population=row['urban_population'],
+                rural_population=row['rural_population'],
+                centroid=row['centroid'],
+                administrative_region=row['administrative_region']
             )
 
         except HTTPException:
@@ -430,9 +430,9 @@ async def proximity_analysis(query: ProximityQuery):
                 },
                 "results": [
                     {
-                        "municipality_id": row[0],
-                        "municipality_name": row[1],
-                        "distance_km": float(row[2])
+                        "municipality_id": row['municipality_id'],
+                        "municipality_name": row['municipality_name'],
+                        "distance_km": float(row['distance_km'])
                     }
                     for row in rows
                 ],
@@ -493,10 +493,10 @@ async def get_rankings(
                 "criteria": criteria,
                 "rankings": [
                     {
-                        "rank": row[3],
-                        "municipality": row[0],
-                        "biogas_m3_year": float(row[1]),
-                        "energy_mwh_year": float(row[2])
+                        "rank": row['ranking'],
+                        "municipality": row['municipality_name'],
+                        "biogas_m3_year": float(row['biogas_potential']),
+                        "energy_mwh_year": float(row['energy_potential_mwh_year'])
                     }
                     for row in rows
                 ]
@@ -537,12 +537,12 @@ async def get_summary_statistics():
             row = cursor.fetchone()
 
             return {
-                "total_municipalities": row[0],
-                "total_biogas_m3_year": float(row[1] or 0),
-                "average_biogas_m3_year": float(row[2] or 0),
-                "total_energy_mwh_year": float(row[3] or 0),
-                "total_co2_reduction_tons_year": float(row[4] or 0),
-                "total_population": row[5] or 0
+                "total_municipalities": row['total_municipalities'],
+                "total_biogas_m3_year": float(row['total_biogas_potential'] or 0),
+                "average_biogas_m3_year": float(row['avg_biogas_potential'] or 0),
+                "total_energy_mwh_year": float(row['total_energy_potential'] or 0),
+                "total_co2_reduction_tons_year": float(row['total_co2_reduction'] or 0),
+                "total_population": row['total_population'] or 0
             }
 
         except psycopg2.Error as e:
@@ -572,7 +572,7 @@ async def get_biogas_plants():
                 SELECT jsonb_build_object(
                     'type', 'FeatureCollection',
                     'features', jsonb_agg(feature)
-                )
+                ) as geojson
                 FROM (
                     SELECT jsonb_build_object(
                         'type', 'Feature',
@@ -592,7 +592,7 @@ async def get_biogas_plants():
             cursor.execute(query)
             result = cursor.fetchone()
 
-            return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
+            return result['geojson'] if result and result.get('geojson') else {"type": "FeatureCollection", "features": []}
 
         except psycopg2.Error as e:
             logger.error(f"Database error in get_biogas_plants: {e}")
