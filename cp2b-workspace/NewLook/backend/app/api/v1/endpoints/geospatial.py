@@ -522,27 +522,70 @@ async def get_summary_statistics():
         cursor = conn.cursor()
 
         try:
-            query = """
+            # Get overall statistics
+            query_stats = """
                 SELECT
                     COUNT(*) as total_municipalities,
                     SUM(total_biogas_m3_year) as total_biogas_potential,
                     AVG(total_biogas_m3_year) as avg_biogas_potential,
                     SUM(energy_potential_mwh_year) as total_energy_potential,
                     SUM(co2_reduction_tons_year) as total_co2_reduction,
-                    SUM(population) as total_population
+                    SUM(population) as total_population,
+                    SUM(agricultural_biogas_m3_year) as total_agricultural,
+                    SUM(livestock_biogas_m3_year) as total_livestock,
+                    SUM(urban_biogas_m3_year) as total_urban
                 FROM municipalities
             """
 
-            cursor.execute(query)
+            cursor.execute(query_stats)
             row = cursor.fetchone()
+
+            total_biogas = float(row['total_biogas_potential'] or 0)
+            total_agricultural = float(row['total_agricultural'] or 0)
+            total_livestock = float(row['total_livestock'] or 0)
+            total_urban = float(row['total_urban'] or 0)
+
+            # Get top 5 municipalities
+            query_top = """
+                SELECT municipality_name, total_biogas_m3_year
+                FROM municipalities
+                WHERE total_biogas_m3_year > 0
+                ORDER BY total_biogas_m3_year DESC
+                LIMIT 5
+            """
+            cursor.execute(query_top)
+            top_municipalities = cursor.fetchall()
 
             return {
                 "total_municipalities": row['total_municipalities'],
-                "total_biogas_m3_year": float(row['total_biogas_potential'] or 0),
+                "total_biogas_m3_year": total_biogas,
                 "average_biogas_m3_year": float(row['avg_biogas_potential'] or 0),
                 "total_energy_mwh_year": float(row['total_energy_potential'] or 0),
                 "total_co2_reduction_tons_year": float(row['total_co2_reduction'] or 0),
-                "total_population": row['total_population'] or 0
+                "total_population": row['total_population'] or 0,
+                "top_municipality": {
+                    "name": top_municipalities[0]['municipality_name'] if top_municipalities else "N/A",
+                    "biogas_m3_year": float(top_municipalities[0]['total_biogas_m3_year']) if top_municipalities else 0
+                },
+                "top_5_municipalities": [
+                    {
+                        "name": m['municipality_name'],
+                        "biogas_m3_year": float(m['total_biogas_m3_year'])
+                    }
+                    for m in top_municipalities
+                ],
+                "categories": {},  # Can be expanded later
+                "sector_breakdown": {
+                    "agricultural": total_agricultural,
+                    "livestock": total_livestock,
+                    "urban": total_urban
+                },
+                "sector_percentages": {
+                    "agricultural": round((total_agricultural / total_biogas * 100) if total_biogas > 0 else 0, 2),
+                    "livestock": round((total_livestock / total_biogas * 100) if total_biogas > 0 else 0, 2),
+                    "urban": round((total_urban / total_biogas * 100) if total_biogas > 0 else 0, 2)
+                },
+                "note": f"Dados de {row['total_municipalities']} municípios do estado de São Paulo"
             }
 
         except psycopg2.Error as e:
