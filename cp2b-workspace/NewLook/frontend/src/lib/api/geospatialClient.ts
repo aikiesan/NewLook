@@ -25,7 +25,7 @@ class GeospatialClient {
   }
 
   /**
-   * Generic fetch wrapper with error handling
+   * Generic fetch wrapper with error handling and client-side fallback
    */
   private async fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${API_PREFIX}${endpoint}`;
@@ -49,11 +49,29 @@ class GeospatialClient {
       return await response.json();
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Failed to fetch ${endpoint}:`, error.message);
-        throw error;
+        console.warn(`API fetch failed for ${endpoint}:`, error.message);
+        console.info('🔄 Using client-side mock data as fallback');
+        // Use client-side mock data as fallback
+        return this.getClientSideMockData<T>(endpoint);
       }
       throw new Error('Unknown error occurred');
     }
+  }
+
+  /**
+   * Get client-side mock data when backend is unavailable
+   */
+  private getClientSideMockData<T>(endpoint: string): T {
+    const { mockMunicipalitiesGeoJSON, mockSummaryStatistics } = require('@/lib/mockData');
+
+    if (endpoint.includes('/geojson')) {
+      return mockMunicipalitiesGeoJSON as T;
+    } else if (endpoint.includes('/summary')) {
+      return mockSummaryStatistics as T;
+    }
+
+    // Default fallback
+    throw new Error('No mock data available for this endpoint');
   }
 
   /**
