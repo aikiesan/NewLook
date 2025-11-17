@@ -12,8 +12,10 @@ import type {
 
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-// Use real geospatial endpoints in production, mock in development
-const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api/v1/geospatial' : '/api/v1/mock';
+// TEMPORARY: Use mock endpoints until Railway backend is accessible
+// TODO: Change back to '/api/v1/geospatial' after Railway deployment
+const API_PREFIX = '/api/v1/mock';  // Temporarily using mock data
+// const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api/v1/geospatial' : '/api/v1/mock';
 
 class GeospatialClient {
   private baseUrl: string;
