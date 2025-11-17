@@ -30,11 +30,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Trusted host middleware
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=settings.ALLOWED_HOSTS,
-)
+# Trusted host middleware - Temporarily disabled for Railway deployment
+# TODO: Re-enable after verifying ALLOWED_HOSTS configuration in production
+# app.add_middleware(
+#     TrustedHostMiddleware,
+#     allowed_hosts=settings.ALLOWED_HOSTS,
+# )
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
