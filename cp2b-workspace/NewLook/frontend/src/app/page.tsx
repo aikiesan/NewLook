@@ -1,11 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { Leaf, BarChart3, Map, Users, ArrowRight, Play } from 'lucide-react'
+import { Leaf, BarChart3, Map, Users, ArrowRight, Play, LogOut } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
 export default function HomePage() {
   const [isPlaying, setIsPlaying] = useState(false)
+  const { user, logout, isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -25,18 +37,33 @@ export default function HomePage() {
               <Link href="/" className="hover:text-cp2b-accent transition-colors">
                 Início
               </Link>
-              <Link href="/dashboard" className="hover:text-cp2b-accent transition-colors">
-                Dashboard
-              </Link>
+              {isAuthenticated && (
+                <Link href="/dashboard" className="hover:text-cp2b-accent transition-colors">
+                  Dashboard
+                </Link>
+              )}
               <Link href="/analysis" className="hover:text-cp2b-accent transition-colors">
                 Análises
               </Link>
               <Link href="/about" className="hover:text-cp2b-accent transition-colors">
                 Sobre
               </Link>
-              <button className="btn-secondary">
-                Acessar Plataforma
-              </button>
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm">{user?.full_name}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" className="btn-secondary">
+                  Acessar Plataforma
+                </Link>
+              )}
             </nav>
           </div>
         </div>
@@ -178,9 +205,20 @@ export default function HomePage() {
               Explore o potencial de biogás em São Paulo com nossa plataforma moderna e intuitiva
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard" className="btn-secondary">
-                Acessar Dashboard
-              </Link>
+              {isAuthenticated ? (
+                <Link href="/dashboard" className="btn-secondary">
+                  Acessar Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link href="/register" className="btn-secondary">
+                    Criar Conta
+                  </Link>
+                  <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    Fazer Login
+                  </Link>
+                </>
+              )}
               <Link href="/about" className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                 Saiba Mais
               </Link>
