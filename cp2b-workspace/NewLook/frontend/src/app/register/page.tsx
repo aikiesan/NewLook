@@ -7,7 +7,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegisterPage() {
@@ -93,8 +94,8 @@ export default function RegisterPage() {
             className="inline-flex items-center space-x-2 text-white hover:text-cp2b-accent transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cp2b-primary rounded-lg"
             aria-label="Voltar para página inicial"
           >
-            <Leaf className="h-10 w-10" aria-hidden="true" />
-            <span className="text-2xl font-bold">CP2B Maps V3</span>
+            <Image src="/images/logotipo-full-black.png" alt="CP2B Maps Logo" width={200} height={55} className="brightness-0 invert" priority />
+            
           </Link>
           <h1 className="mt-6 text-3xl font-extrabold text-white">
             Criar nova conta
