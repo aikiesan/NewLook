@@ -14,8 +14,25 @@ from typing import Optional, Dict, Any
 import sys
 
 # Configuration
-V2_DATABASE_PATH = Path(__file__).parent.parent.parent.parent.parent / "v2-data" / "data" / "database" / "cp2b_maps.db"
-V2_REFERENCES_PATH = Path(__file__).parent.parent.parent.parent.parent / "v2-data" / "data" / "panorama_scientific_papers.json"
+# Look for v2-data directory (could be in different locations)
+_script_dir = Path(__file__).parent
+_v2_data_candidates = [
+    Path("/home/user/NewLook/v2-data"),  # Absolute path
+    _script_dir.parent.parent.parent.parent.parent / "v2-data",  # 5 levels up
+    _script_dir.parent.parent.parent.parent.parent.parent / "v2-data",  # 6 levels up
+]
+
+V2_DATA_DIR = None
+for candidate in _v2_data_candidates:
+    if candidate.exists() and (candidate / "data" / "database" / "cp2b_maps.db").exists():
+        V2_DATA_DIR = candidate
+        break
+
+if V2_DATA_DIR is None:
+    V2_DATA_DIR = Path("/home/user/NewLook/v2-data")  # Default fallback
+
+V2_DATABASE_PATH = V2_DATA_DIR / "data" / "database" / "cp2b_maps.db"
+V2_REFERENCES_PATH = V2_DATA_DIR / "data" / "panorama_scientific_papers.json"
 
 class DataMigrator:
     """Migrate CP2B Maps V2 data to PostgreSQL"""
