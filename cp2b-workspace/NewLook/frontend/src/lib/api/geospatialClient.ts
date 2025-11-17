@@ -10,12 +10,13 @@ import type {
   RankingsResponse
 } from '@/types/geospatial';
 
+// FORCE MOCK DATA: Set to true to use client-side mock data (bypasses Railway)
+// Set to false when Railway backend is ready and properly configured
+const USE_MOCK_DATA = true;
+
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-// TEMPORARY: Use mock endpoints until Railway backend is accessible
-// TODO: Change back to '/api/v1/geospatial' after Railway deployment
-const API_PREFIX = '/api/v1/mock';  // Temporarily using mock data
-// const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api/v1/geospatial' : '/api/v1/mock';
+const API_PREFIX = USE_MOCK_DATA ? '' : '/api/v1/geospatial';
 
 class GeospatialClient {
   private baseUrl: string;
@@ -28,6 +29,13 @@ class GeospatialClient {
    * Generic fetch wrapper with error handling and client-side fallback
    */
   private async fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    // If USE_MOCK_DATA is true, return mock data immediately without network call
+    if (USE_MOCK_DATA) {
+      console.info('📦 Using client-side mock data (Railway backend bypassed)');
+      return this.getClientSideMockData<T>(endpoint);
+    }
+
+    // Otherwise, try to fetch from backend API
     const url = `${this.baseUrl}${API_PREFIX}${endpoint}`;
 
     try {
