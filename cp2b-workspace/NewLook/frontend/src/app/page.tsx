@@ -228,7 +228,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-gray-900">Plataforma Colaborativa</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Sistema de autenticação com três níveis de acesso (Visitante, Autenticado, Admin).
-                  Assistente AI "Bagacinho" integrado para consultas sobre biogás e análise de
+                  Assistente AI &quot;Bagacinho&quot; integrado para consultas sobre biogás e análise de
                   58 referências científicas via RAG.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
