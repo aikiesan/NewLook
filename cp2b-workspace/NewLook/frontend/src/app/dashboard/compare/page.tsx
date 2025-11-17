@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -20,7 +20,7 @@ interface MunicipalityData {
   administrative_region: string | null;
 }
 
-export default function ComparePage() {
+function ComparePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [municipalities, setMunicipalities] = useState<MunicipalityData[]>([]);
@@ -272,6 +272,24 @@ export default function ComparePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Export default wrapper with Suspense
+export default function ComparePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando comparação...</p>
+          </div>
+        </div>
+      }
+    >
+      <ComparePageContent />
+    </Suspense>
   );
 }
 
