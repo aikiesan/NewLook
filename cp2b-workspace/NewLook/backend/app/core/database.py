@@ -23,15 +23,13 @@ def get_db_connection():
         psycopg2 connection object
     """
     try:
-        # For Supabase, use connection pooler port 6543 for better IPv4 compatibility
-        port = 6543 if "supabase.co" in settings.POSTGRES_HOST else settings.POSTGRES_PORT
-
+        # Use port from settings - Supabase pooler configuration handles this
         conn = psycopg2.connect(
             dbname=settings.POSTGRES_DB,
             user=settings.POSTGRES_USER,
             password=settings.POSTGRES_PASSWORD,
             host=settings.POSTGRES_HOST,
-            port=port,
+            port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,  # Return rows as dictionaries
             connect_timeout=10,
             options='-c statement_timeout=30000'
@@ -59,21 +57,18 @@ def get_db():
     """
     conn = None
     try:
-        # For Supabase, use connection pooler port 6543 for better IPv4 compatibility
-        # in serverless/Railway environments
-        port = 6543 if "supabase.co" in settings.POSTGRES_HOST else settings.POSTGRES_PORT
-
+        # Connect using environment-configured settings (supports both direct and pooler connections)
         conn = psycopg2.connect(
             dbname=settings.POSTGRES_DB,
             user=settings.POSTGRES_USER,
             password=settings.POSTGRES_PASSWORD,
             host=settings.POSTGRES_HOST,
-            port=port,
+            port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,
             connect_timeout=10,
             options='-c statement_timeout=30000'  # 30 second query timeout
         )
-        logger.debug(f"Database connection opened (port {port})")
+        logger.debug(f"Database connection opened to {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}")
         yield conn
     except psycopg2.Error as e:
         logger.error(f"Database error: {e}")
