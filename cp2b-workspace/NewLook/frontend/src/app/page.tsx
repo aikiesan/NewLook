@@ -5,6 +5,7 @@ import { Leaf, BarChart3, Map, Users, ArrowRight, Play, LogOut } from 'lucide-re
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import { logger } from '@/lib/logger'
 
 export default function HomePage() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -15,7 +16,7 @@ export default function HomePage() {
     try {
       await logout()
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 
