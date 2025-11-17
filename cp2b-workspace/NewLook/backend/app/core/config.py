@@ -31,7 +31,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3003",
         "http://127.0.0.1:3004",
     ]
-    PRODUCTION_ORIGINS: str = ""  # Comma-separated in production env
+    PRODUCTION_ORIGINS: str = "https://new-look-nu.vercel.app"  # Comma-separated in production env
     ALLOWED_HOSTS: List[str] = [
         "localhost",
         "127.0.0.1",
