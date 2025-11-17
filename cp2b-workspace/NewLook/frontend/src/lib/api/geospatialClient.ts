@@ -10,9 +10,10 @@ import type {
   RankingsResponse
 } from '@/types/geospatial';
 
-// API base URL - using mock endpoints for development
+// API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-const API_PREFIX = '/api/v1/mock';  // Change to '/api/v1/geospatial' for production
+// Use real geospatial endpoints in production, mock in development
+const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api/v1/geospatial' : '/api/v1/mock';
 
 class GeospatialClient {
   private baseUrl: string;
