@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:3003",
+        "http://localhost:3004",
         "http://127.0.0.1:3000",
+        "http://127.0.0.1:3003",
+        "http://127.0.0.1:3004",
         "https://your-frontend-domain.com"
     ]
     ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1", "your-api-domain.com"]
