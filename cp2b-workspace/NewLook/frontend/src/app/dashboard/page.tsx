@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Leaf, LogOut } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import StatsPanel from '@/components/dashboard/StatsPanel'
+import { logger } from '@/lib/logger'
 
 // Dynamically import Map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
@@ -41,7 +42,7 @@ export default function DashboardPage() {
       await logout()
       router.push('/')
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 

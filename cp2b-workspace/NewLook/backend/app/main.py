@@ -5,11 +5,14 @@ FastAPI application for geospatial biogas potential analysis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 from pathlib import Path
 import os
+from datetime import datetime, timezone
 
 from app.core.config import settings
+from app.core.database import test_db_connection
 from app.api.v1.api import api_router
 
 # Create FastAPI app
@@ -21,13 +24,14 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
+# CORS middleware - NO WILDCARDS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.get_all_origins(),  # Includes both default and production origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicit methods only
+    allow_headers=["Content-Type", "Authorization", "Accept"],  # Explicit headers only
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 # Trusted host middleware - DISABLED for Railway deployment
@@ -53,10 +57,64 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
+    """
+    Comprehensive health check endpoint with database verification.
+    Returns current timestamp and database connectivity status.
+    """
+    health_status = {
         "status": "healthy",
-        "timestamp": "2025-11-16"
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": settings.VERSION,
+        "environment": settings.APP_ENV
+    }
+
+    # Check database connectivity
+    try:
+        db_healthy = test_db_connection()
+        health_status["database"] = "connected" if db_healthy else "error"
+
+        if not db_healthy:
+            health_status["status"] = "degraded"
+            return JSONResponse(
+                status_code=200,  # Still return 200 for degraded state
+                content=health_status
+            )
+
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["database"] = "disconnected"
+        health_status["error"] = str(e)
+        return JSONResponse(
+            status_code=503,  # Service unavailable
+            content=health_status
+        )
+
+    return health_status
+
+
+@app.get("/health/ready")
+async def readiness_check():
+    """Kubernetes-style readiness probe - checks if app can serve traffic"""
+    try:
+        if test_db_connection():
+            return {"ready": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+        return JSONResponse(
+            status_code=503,
+            content={"ready": False, "reason": "database_unavailable"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={"ready": False, "reason": str(e)}
+        )
+
+
+@app.get("/health/live")
+async def liveness_check():
+    """Kubernetes-style liveness probe - checks if app process is alive"""
+    return {
+        "alive": True,
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 if __name__ == "__main__":

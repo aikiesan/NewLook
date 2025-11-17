@@ -9,6 +9,7 @@ import type {
   MunicipalityFeature,
   RankingsResponse
 } from '@/types/geospatial';
+import { logger } from '@/lib/logger';
 
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -47,7 +48,7 @@ class GeospatialClient {
       return await response.json();
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Failed to fetch ${endpoint}:`, error.message);
+        logger.error(`Failed to fetch ${endpoint}:`, error.message);
         throw error;
       }
       throw new Error('Unknown error occurred');

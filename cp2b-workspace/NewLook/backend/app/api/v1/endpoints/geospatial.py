@@ -7,12 +7,38 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 import json
+import logging
+import psycopg2
 
-from app.core.database import get_db_connection
+from app.core.database import get_db
 from app.middleware.auth import get_current_user, optional_auth
 from app.models.auth import UserProfile
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# ============================================================================
+# SECURITY: Input Validation Constants
+# ============================================================================
+
+# Valid administrative regions for São Paulo state
+VALID_REGIONS = {
+    "Central", "Bauru", "Araçatuba", "Ribeirão Preto",
+    "Campinas", "São José dos Campos", "Sorocaba",
+    "Santos", "São Paulo", "Presidente Prudente",
+    "Marília", "Registro", "Franca", "São José do Rio Preto"
+}
+
+# Whitelist for sort columns (prevents SQL injection)
+ALLOWED_SORT_COLUMNS = {
+    "biogas": "total_biogas_m3_year",
+    "name": "municipality_name",
+    "population": "population",
+    "area": "area_km2"
+}
+
+# Whitelist for sort order (prevents SQL injection)
+ALLOWED_ORDERS = {"asc": "ASC", "desc": "DESC"}
 
 # ============================================================================
 # PYDANTIC MODELS
@@ -105,12 +131,12 @@ async def get_municipalities_geojson(
     Returns polygon geometries with biogas potential data as properties.
     Suitable for rendering choropleth maps.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        # Build query
-        query = """
+        try:
+            # Build query
+            query = """
             SELECT jsonb_build_object(
                 'type', 'FeatureCollection',
                 'features', jsonb_agg(feature)
@@ -147,29 +173,37 @@ async def get_municipalities_geojson(
             params.append(min_biogas)
 
         if region:
+            # SECURITY: Validate region against whitelist
+            if region not in VALID_REGIONS:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid region. Must be one of: {', '.join(sorted(VALID_REGIONS))}"
+                )
             query += " AND administrative_region = %s"
             params.append(region)
 
         query += " ORDER BY total_biogas_m3_year DESC"
 
+        # SECURITY: Use parameterized query for LIMIT instead of f-string
         if limit:
-            query += f" LIMIT {limit}"
+            query += " LIMIT %s"
+            params.append(limit)
 
         query += " ) as features"
 
-        cursor.execute(query, params)
-        result = cursor.fetchone()
+            cursor.execute(query, params)
+            result = cursor.fetchone()
 
-        if not result or not result[0]:
-            return GeoJSONFeatureCollection(type="FeatureCollection", features=[])
+            if not result or not result[0]:
+                return GeoJSONFeatureCollection(type="FeatureCollection", features=[])
 
-        return result[0]
+            return result[0]
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_municipalities_geojson: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 @router.get(
@@ -187,53 +221,55 @@ async def get_municipality_centroids(
 
     Faster alternative to full polygons for initial map rendering.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        query = """
-            SELECT jsonb_build_object(
-                'type', 'FeatureCollection',
-                'features', jsonb_agg(feature)
-            ) as geojson
-            FROM (
+        try:
+            query = """
                 SELECT jsonb_build_object(
-                    'type', 'Feature',
-                    'id', id,
-                    'geometry', ST_AsGeoJSON(centroid)::jsonb,
-                    'properties', jsonb_build_object(
+                    'type', 'FeatureCollection',
+                    'features', jsonb_agg(feature)
+                ) as geojson
+                FROM (
+                    SELECT jsonb_build_object(
+                        'type', 'Feature',
                         'id', id,
-                        'name', municipality_name,
-                        'biogas', ROUND(total_biogas_m3_year::numeric, 2)
-                    )
-                ) as feature
-                FROM municipalities
-                WHERE centroid IS NOT NULL
-        """
+                        'geometry', ST_AsGeoJSON(centroid)::jsonb,
+                        'properties', jsonb_build_object(
+                            'id', id,
+                            'name', municipality_name,
+                            'biogas', ROUND(total_biogas_m3_year::numeric, 2)
+                        )
+                    ) as feature
+                    FROM municipalities
+                    WHERE centroid IS NOT NULL
+            """
 
-        params = []
+            params = []
 
-        if min_biogas is not None:
-            query += " AND total_biogas_m3_year >= %s"
-            params.append(min_biogas)
+            if min_biogas is not None:
+                query += " AND total_biogas_m3_year >= %s"
+                params.append(min_biogas)
 
-        query += " ORDER BY total_biogas_m3_year DESC"
+            query += " ORDER BY total_biogas_m3_year DESC"
 
-        if limit:
-            query += f" LIMIT {limit}"
+            # SECURITY: Use parameterized query for LIMIT
+            if limit:
+                query += " LIMIT %s"
+                params.append(limit)
 
-        query += " ) as features"
+            query += " ) as features"
 
-        cursor.execute(query, params)
-        result = cursor.fetchone()
+            cursor.execute(query, params)
+            result = cursor.fetchone()
 
-        return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
+            return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_municipality_centroids: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 # ============================================================================
@@ -255,48 +291,47 @@ async def list_municipalities(
     """
     List municipalities with pagination
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        sort_column = {
-            "biogas": "total_biogas_m3_year",
-            "name": "municipality_name",
-            "population": "population"
-        }.get(sort_by, "total_biogas_m3_year")
+        try:
+            # SECURITY: Validate sort parameters against whitelist
+            sort_column = ALLOWED_SORT_COLUMNS.get(sort_by, "total_biogas_m3_year")
+            order_sql = ALLOWED_ORDERS.get(order.lower(), "DESC")
 
-        query = f"""
-            SELECT
-                id,
-                municipality_name,
-                total_biogas_m3_year,
-                energy_potential_mwh_year,
-                ROW_NUMBER() OVER (ORDER BY total_biogas_m3_year DESC) as ranking
-            FROM municipalities
-            WHERE total_biogas_m3_year > 0
-            ORDER BY {sort_column} {order.upper()}
-            LIMIT %s OFFSET %s
-        """
+            # SECURITY: Use validated values in SQL (safe since from whitelist)
+            query = f"""
+                SELECT
+                    id,
+                    municipality_name,
+                    total_biogas_m3_year,
+                    energy_potential_mwh_year,
+                    ROW_NUMBER() OVER (ORDER BY total_biogas_m3_year DESC) as ranking
+                FROM municipalities
+                WHERE total_biogas_m3_year > 0
+                ORDER BY {sort_column} {order_sql}
+                LIMIT %s OFFSET %s
+            """
 
-        cursor.execute(query, (limit, offset))
-        rows = cursor.fetchall()
+            cursor.execute(query, (limit, offset))
+            rows = cursor.fetchall()
 
-        return [
-            MunicipalityBasic(
-                id=row[0],
-                municipality_name=row[1],
-                total_biogas_m3_year=row[2],
-                energy_potential_mwh_year=row[3],
-                ranking=row[4]
-            )
-            for row in rows
-        ]
+            return [
+                MunicipalityBasic(
+                    id=row[0],
+                    municipality_name=row[1],
+                    total_biogas_m3_year=row[2],
+                    energy_potential_mwh_year=row[3],
+                    ranking=row[4]
+                )
+                for row in rows
+            ]
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in list_municipalities: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 @router.get(
@@ -309,55 +344,55 @@ async def get_municipality(municipality_id: int):
     """
     Get detailed information for a single municipality
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        query = """
-            SELECT
-                id, municipality_name, ibge_code,
-                total_biogas_m3_year, total_biogas_m3_day,
-                urban_biogas_m3_year, agricultural_biogas_m3_year, livestock_biogas_m3_year,
-                energy_potential_kwh_day, energy_potential_mwh_year, co2_reduction_tons_year,
-                population, urban_population, rural_population,
-                ST_AsGeoJSON(centroid)::json as centroid,
-                administrative_region
-            FROM municipalities
-            WHERE id = %s
-        """
+        try:
+            query = """
+                SELECT
+                    id, municipality_name, ibge_code,
+                    total_biogas_m3_year, total_biogas_m3_day,
+                    urban_biogas_m3_year, agricultural_biogas_m3_year, livestock_biogas_m3_year,
+                    energy_potential_kwh_day, energy_potential_mwh_year, co2_reduction_tons_year,
+                    population, urban_population, rural_population,
+                    ST_AsGeoJSON(centroid)::json as centroid,
+                    administrative_region
+                FROM municipalities
+                WHERE id = %s
+            """
 
-        cursor.execute(query, (municipality_id,))
-        row = cursor.fetchone()
+            cursor.execute(query, (municipality_id,))
+            row = cursor.fetchone()
 
-        if not row:
-            raise HTTPException(status_code=404, detail="Municipality not found")
+            if not row:
+                raise HTTPException(status_code=404, detail="Municipality not found")
 
-        return MunicipalityDetail(
-            id=row[0],
-            municipality_name=row[1],
-            ibge_code=row[2],
-            total_biogas_m3_year=row[3],
-            total_biogas_m3_day=row[4],
-            urban_biogas_m3_year=row[5],
-            agricultural_biogas_m3_year=row[6],
-            livestock_biogas_m3_year=row[7],
-            energy_potential_kwh_day=row[8],
-            energy_potential_mwh_year=row[9],
-            co2_reduction_tons_year=row[10],
-            population=row[11],
-            urban_population=row[12],
-            rural_population=row[13],
-            centroid=row[14],
-            administrative_region=row[15]
-        )
+            return MunicipalityDetail(
+                id=row[0],
+                municipality_name=row[1],
+                ibge_code=row[2],
+                total_biogas_m3_year=row[3],
+                total_biogas_m3_day=row[4],
+                urban_biogas_m3_year=row[5],
+                agricultural_biogas_m3_year=row[6],
+                livestock_biogas_m3_year=row[7],
+                energy_potential_kwh_day=row[8],
+                energy_potential_mwh_year=row[9],
+                co2_reduction_tons_year=row[10],
+                population=row[11],
+                urban_population=row[12],
+                rural_population=row[13],
+                centroid=row[14],
+                administrative_region=row[15]
+            )
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except HTTPException:
+            raise
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_municipality: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 # ============================================================================
@@ -375,40 +410,40 @@ async def proximity_analysis(query: ProximityQuery):
 
     Returns municipalities sorted by distance.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        # Use the helper function we created in schema
-        sql = """
-            SELECT * FROM municipalities_within_radius(%s, %s, %s)
-        """
+        try:
+            # Use the helper function we created in schema
+            sql = """
+                SELECT * FROM municipalities_within_radius(%s, %s, %s)
+            """
 
-        cursor.execute(sql, (query.latitude, query.longitude, query.radius_km))
-        rows = cursor.fetchall()
+            cursor.execute(sql, (query.latitude, query.longitude, query.radius_km))
+            rows = cursor.fetchall()
 
-        return {
-            "query": {
-                "latitude": query.latitude,
-                "longitude": query.longitude,
-                "radius_km": query.radius_km
-            },
-            "results": [
-                {
-                    "municipality_id": row[0],
-                    "municipality_name": row[1],
-                    "distance_km": float(row[2])
-                }
-                for row in rows
-            ],
-            "total_found": len(rows)
-        }
+            return {
+                "query": {
+                    "latitude": query.latitude,
+                    "longitude": query.longitude,
+                    "radius_km": query.radius_km
+                },
+                "results": [
+                    {
+                        "municipality_id": row[0],
+                        "municipality_name": row[1],
+                        "distance_km": float(row[2])
+                    }
+                    for row in rows
+                ],
+                "total_found": len(rows)
+            }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in proximity_analysis: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 @router.get(
@@ -423,52 +458,55 @@ async def get_rankings(
     """
     Get top municipalities ranked by biogas potential
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        column_map = {
-            "total": "total_biogas_m3_year",
-            "urban": "urban_biogas_m3_year",
-            "agricultural": "agricultural_biogas_m3_year",
-            "livestock": "livestock_biogas_m3_year"
-        }
+        try:
+            # SECURITY: Validate criteria against whitelist
+            column_map = {
+                "total": "total_biogas_m3_year",
+                "urban": "urban_biogas_m3_year",
+                "agricultural": "agricultural_biogas_m3_year",
+                "livestock": "livestock_biogas_m3_year"
+            }
 
-        column = column_map.get(criteria, "total_biogas_m3_year")
+            # Get validated column (safe since from whitelist)
+            column = column_map.get(criteria, "total_biogas_m3_year")
 
-        query = f"""
-            SELECT
-                municipality_name,
-                {column} as biogas_potential,
-                energy_potential_mwh_year,
-                ROW_NUMBER() OVER (ORDER BY {column} DESC) as ranking
-            FROM municipalities
-            WHERE {column} > 0
-            ORDER BY {column} DESC
-            LIMIT %s
-        """
+            # SECURITY: Use validated column name in SQL (safe since from whitelist)
+            query = f"""
+                SELECT
+                    municipality_name,
+                    {column} as biogas_potential,
+                    energy_potential_mwh_year,
+                    ROW_NUMBER() OVER (ORDER BY {column} DESC) as ranking
+                FROM municipalities
+                WHERE {column} > 0
+                ORDER BY {column} DESC
+                LIMIT %s
+            """
 
-        cursor.execute(query, (limit,))
-        rows = cursor.fetchall()
+            cursor.execute(query, (limit,))
+            rows = cursor.fetchall()
 
-        return {
-            "criteria": criteria,
-            "rankings": [
-                {
-                    "rank": row[3],
-                    "municipality": row[0],
-                    "biogas_m3_year": float(row[1]),
-                    "energy_mwh_year": float(row[2])
-                }
-                for row in rows
-            ]
-        }
+            return {
+                "criteria": criteria,
+                "rankings": [
+                    {
+                        "rank": row[3],
+                        "municipality": row[0],
+                        "biogas_m3_year": float(row[1]),
+                        "energy_mwh_year": float(row[2])
+                    }
+                    for row in rows
+                ]
+            }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_rankings: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 @router.get(
@@ -480,38 +518,38 @@ async def get_summary_statistics():
     """
     Get overall statistics for the platform
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        query = """
-            SELECT
-                COUNT(*) as total_municipalities,
-                SUM(total_biogas_m3_year) as total_biogas_potential,
-                AVG(total_biogas_m3_year) as avg_biogas_potential,
-                SUM(energy_potential_mwh_year) as total_energy_potential,
-                SUM(co2_reduction_tons_year) as total_co2_reduction,
-                SUM(population) as total_population
-            FROM municipalities
-        """
+        try:
+            query = """
+                SELECT
+                    COUNT(*) as total_municipalities,
+                    SUM(total_biogas_m3_year) as total_biogas_potential,
+                    AVG(total_biogas_m3_year) as avg_biogas_potential,
+                    SUM(energy_potential_mwh_year) as total_energy_potential,
+                    SUM(co2_reduction_tons_year) as total_co2_reduction,
+                    SUM(population) as total_population
+                FROM municipalities
+            """
 
-        cursor.execute(query)
-        row = cursor.fetchone()
+            cursor.execute(query)
+            row = cursor.fetchone()
 
-        return {
-            "total_municipalities": row[0],
-            "total_biogas_m3_year": float(row[1] or 0),
-            "average_biogas_m3_year": float(row[2] or 0),
-            "total_energy_mwh_year": float(row[3] or 0),
-            "total_co2_reduction_tons_year": float(row[4] or 0),
-            "total_population": row[5] or 0
-        }
+            return {
+                "total_municipalities": row[0],
+                "total_biogas_m3_year": float(row[1] or 0),
+                "average_biogas_m3_year": float(row[2] or 0),
+                "total_energy_mwh_year": float(row[3] or 0),
+                "total_co2_reduction_tons_year": float(row[4] or 0),
+                "total_population": row[5] or 0
+            }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_summary_statistics: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
 
 
 # ============================================================================
@@ -526,38 +564,38 @@ async def get_summary_statistics():
 )
 async def get_biogas_plants():
     """Get existing biogas plants"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    with get_db() as conn:
+        cursor = conn.cursor()
 
-    try:
-        query = """
-            SELECT jsonb_build_object(
-                'type', 'FeatureCollection',
-                'features', jsonb_agg(feature)
-            )
-            FROM (
+        try:
+            query = """
                 SELECT jsonb_build_object(
-                    'type', 'Feature',
-                    'geometry', ST_AsGeoJSON(location)::jsonb,
-                    'properties', jsonb_build_object(
-                        'name', plant_name,
-                        'type', plant_type,
-                        'status', status,
-                        'capacity', installed_capacity_m3_day
-                    )
-                ) as feature
-                FROM biogas_plants
-                WHERE location IS NOT NULL
-            ) as features
-        """
+                    'type', 'FeatureCollection',
+                    'features', jsonb_agg(feature)
+                )
+                FROM (
+                    SELECT jsonb_build_object(
+                        'type', 'Feature',
+                        'geometry', ST_AsGeoJSON(location)::jsonb,
+                        'properties', jsonb_build_object(
+                            'name', plant_name,
+                            'type', plant_type,
+                            'status', status,
+                            'capacity', installed_capacity_m3_day
+                        )
+                    ) as feature
+                    FROM biogas_plants
+                    WHERE location IS NOT NULL
+                ) as features
+            """
 
-        cursor.execute(query)
-        result = cursor.fetchone()
+            cursor.execute(query)
+            result = cursor.fetchone()
 
-        return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
+            return result[0] if result and result[0] else {"type": "FeatureCollection", "features": []}
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        except psycopg2.Error as e:
+            logger.error(f"Database error in get_biogas_plants: {e}")
+            raise HTTPException(status_code=500, detail="Database query failed")
+        finally:
+            cursor.close()
