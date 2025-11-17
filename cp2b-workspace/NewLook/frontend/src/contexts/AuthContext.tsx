@@ -60,31 +60,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch user profile from database
   const fetchUserProfile = async (userId: string, accessToken: string) => {
     try {
-      const { data, error } = await supabase
+      // Get auth user data first
+      const {
+        data: { user: authUser }
+      } = await supabase.auth.getUser(accessToken)
+
+      if (!authUser) {
+        setUser(null)
+        return
+      }
+
+      // Try to fetch from user_profiles table (if it exists)
+      const { data: profileData, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle() // Use maybeSingle to avoid error if no rows
 
-      if (error) throw error
-
-      if (data) {
-        const {
-          data: { user: authUser }
-        } = await supabase.auth.getUser(accessToken)
-
+      // If profile exists in database, use it
+      if (profileData && !error) {
         setUser({
-          id: data.id,
-          email: authUser?.email || '',
-          full_name: data.full_name,
-          role: data.role,
-          created_at: data.created_at,
-          updated_at: data.updated_at
+          id: profileData.id,
+          email: authUser.email || '',
+          full_name: profileData.full_name,
+          role: profileData.role,
+          created_at: profileData.created_at,
+          updated_at: profileData.updated_at
+        })
+      } else {
+        // Fallback: Use auth user data directly (for when user_profiles doesn't exist)
+        console.log('Using auth user data (user_profiles table not found or empty)')
+        setUser({
+          id: authUser.id,
+          email: authUser.email || '',
+          full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+          role: 'autenticado', // Default role
+          created_at: authUser.created_at || new Date().toISOString(),
+          updated_at: authUser.updated_at || new Date().toISOString()
         })
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
-      setUser(null)
+      // Even if profile fetch fails, still set basic user from auth
+      const {
+        data: { user: authUser }
+      } = await supabase.auth.getUser(accessToken)
+
+      if (authUser) {
+        setUser({
+          id: authUser.id,
+          email: authUser.email || '',
+          full_name: authUser.user_metadata?.full_name || 'User',
+          role: 'autenticado',
+          created_at: authUser.created_at || new Date().toISOString(),
+          updated_at: authUser.updated_at || new Date().toISOString()
+        })
+      } else {
+        setUser(null)
+      }
     }
   }
 
@@ -161,18 +194,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setLoading(true)
 
+      // Try to update in user_profiles table
       const { error } = await supabase
         .from('user_profiles')
         .update({ full_name })
         .eq('id', user.id)
 
-      if (error) throw error
-
-      setUser({
-        ...user,
-        full_name,
-        updated_at: new Date().toISOString()
-      })
+      // If table doesn't exist, just update local state
+      if (error && error.code === '42P01') {
+        // Table doesn't exist, update local state only
+        console.log('user_profiles table not found, updating local state only')
+        setUser({
+          ...user,
+          full_name,
+          updated_at: new Date().toISOString()
+        })
+      } else if (error) {
+        throw error
+      } else {
+        setUser({
+          ...user,
+          full_name,
+          updated_at: new Date().toISOString()
+        })
+      }
     } catch (error: any) {
       console.error('Update profile error:', error)
       throw new Error(error.message || 'Profile update failed')
