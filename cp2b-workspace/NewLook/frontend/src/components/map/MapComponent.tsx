@@ -5,18 +5,24 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import dynamic from 'next/dynamic';
 import { useGeospatialData } from '@/hooks/useGeospatialData';
+import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
+import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
-// Dynamically import MunicipalityLayer to avoid SSR issues
+// Dynamically import layers to avoid SSR issues
 const MunicipalityLayer = dynamic(() => import('./MunicipalityLayer'), {
+  ssr: false,
+});
+
+const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), {
   ssr: false,
 });
 
@@ -24,13 +30,84 @@ const MunicipalityLayer = dynamic(() => import('./MunicipalityLayer'), {
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
 const DEFAULT_ZOOM = 8;
 
-export default function MapComponent() {
+interface MapComponentProps {
+  visibleLayers?: string[];
+  activeFilters?: FilterCriteria;
+}
+
+export default function MapComponent({
+  visibleLayers = ['municipalities'],
+  activeFilters
+}: MapComponentProps = {}) {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Apply filters to municipality data
+  const filteredData = useMemo(() => {
+    if (!data || !activeFilters) return data;
+
+    const filtered: MunicipalityFeature[] = data.features.filter((feature) => {
+      const props = feature.properties;
+
+      // Search query filter
+      if (activeFilters.searchQuery) {
+        const query = activeFilters.searchQuery.toLowerCase();
+        const nameMatch = props.name.toLowerCase().includes(query);
+        const ibgeMatch = String(props.ibge_code).includes(query);
+        if (!nameMatch && !ibgeMatch) return false;
+      }
+
+      // Biogas range filter
+      if (activeFilters.minBiogas && props.total_biogas_m3_year < activeFilters.minBiogas) {
+        return false;
+      }
+      if (activeFilters.maxBiogas && props.total_biogas_m3_year > activeFilters.maxBiogas) {
+        return false;
+      }
+
+      // Residue type filter
+      if (activeFilters.residueTypes.length > 0) {
+        const hasRequiredType = activeFilters.residueTypes.some(type => {
+          if (type === 'agricultural') {
+            return props.agricultural_biogas_m3_year > 0;
+          }
+          if (type === 'livestock') {
+            return props.livestock_biogas_m3_year > 0;
+          }
+          if (type === 'urban') {
+            return props.urban_biogas_m3_year > 0;
+          }
+          return false;
+        });
+        if (!hasRequiredType) return false;
+      }
+
+      // Region filter
+      if (activeFilters.regions.length > 0) {
+        const inRegion = activeFilters.regions.includes(props.intermediate_region);
+        if (!inRegion) return false;
+      }
+
+      // Population filter
+      if (activeFilters.minPopulation && props.population < activeFilters.minPopulation) {
+        return false;
+      }
+      if (activeFilters.maxPopulation && props.population > activeFilters.maxPopulation) {
+        return false;
+      }
+
+      return true;
+    });
+
+    return {
+      ...data,
+      features: filtered,
+    } as MunicipalityCollection;
+  }, [data, activeFilters]);
 
   // Don't render map on server
   if (!isMounted) {
@@ -72,6 +149,12 @@ export default function MapComponent() {
     );
   }
 
+  // Use filtered data if available
+  const displayData = filteredData || data;
+  const totalMunicipalities = data.features.length;
+  const displayedMunicipalities = displayData.features.length;
+  const isFiltered = totalMunicipalities !== displayedMunicipalities;
+
   return (
     <div className="relative w-full h-[600px] lg:h-[calc(100vh-220px)] rounded-lg overflow-hidden shadow-lg">
       <MapContainer
@@ -88,20 +171,47 @@ export default function MapComponent() {
           maxZoom={19}
         />
 
-        {/* Municipality Layer */}
-        {data && <MunicipalityLayer data={data} />}
+        {/* Municipality Layer - Conditional rendering based on layer visibility */}
+        {visibleLayers.includes('municipalities') && displayData && (
+          <MunicipalityLayer data={displayData} />
+        )}
 
-        {/* Legend */}
-        <MapLegend />
+        {/* Infrastructure Layers */}
+        {visibleLayers.includes('biogas-plants') && (
+          <InfrastructureLayer layerType="biogas-plants" />
+        )}
+
+        {visibleLayers.includes('railways') && (
+          <InfrastructureLayer layerType="railways" />
+        )}
+
+        {visibleLayers.includes('pipelines') && (
+          <InfrastructureLayer layerType="pipelines" />
+        )}
+
+        {visibleLayers.includes('substations') && (
+          <InfrastructureLayer layerType="substations" />
+        )}
+
+        {/* Legend - Only show if municipalities layer is visible */}
+        {visibleLayers.includes('municipalities') && <MapLegend />}
       </MapContainer>
 
-      {/* Data Source Note */}
+      {/* Data Source Note with Filter Status */}
       <div className="absolute top-4 left-4 z-[1000] bg-white px-3 py-2 rounded-lg shadow-md">
         <p className="text-xs text-gray-600">
-          <span className="font-semibold">{data.features.length}</span> municípios
+          <span className="font-semibold">{displayedMunicipalities}</span>
+          {isFiltered && (
+            <span className="text-orange-600"> de {totalMunicipalities}</span>
+          )} municípios
           {data.metadata?.note && (
             <span className="block text-gray-500 mt-1">
               {data.metadata.note}
+            </span>
+          )}
+          {isFiltered && (
+            <span className="block text-orange-600 mt-1 font-medium">
+              Filtros ativos
             </span>
           )}
         </p>
