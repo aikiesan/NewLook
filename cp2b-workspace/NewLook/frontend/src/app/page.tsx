@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Leaf, BarChart3, Map, Users, ArrowRight, Play, LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { BarChart3, Map, Users, ArrowRight, Play, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -34,8 +35,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <Leaf className="h-8 w-8 text-white" />
-              <h1 className="text-2xl font-bold text-white">CP2B Maps V3</h1>
+              <Image
+                src="/images/logotipo-full-black.png"
+                alt="CP2B Maps Logo"
+                width={160}
+                height={45}
+                className="brightness-0 invert"
+                priority
+              />
               <span className="bg-white/20 text-white px-2 py-1 rounded-md text-sm">
                 Beta
               </span>
@@ -329,11 +336,13 @@ export default function HomePage() {
             {/* Brand Column */}
             <div className="lg:col-span-2 space-y-4">
               <div className="flex items-center space-x-3">
-                <Leaf className="h-8 w-8 text-cp2b-accent" />
-                <div>
-                  <span className="text-xl font-bold">CP2B Maps V3</span>
-                  <div className="text-xs text-gray-400">Biogas Potential Analysis</div>
-                </div>
+                <Image
+                  src="/images/logotipo-full-black.png"
+                  alt="CP2B Maps Logo"
+                  width={140}
+                  height={40}
+                  className="brightness-200"
+                />
               </div>
               <p className="text-gray-400 max-w-md leading-relaxed">
                 Plataforma moderna para análise multicritério (MCDA) de potencial de biogás
