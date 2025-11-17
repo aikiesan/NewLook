@@ -4,7 +4,9 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://newlook-production.up.railway.app"
+    "NEXT_PUBLIC_API_URL": "https://newlook-production.up.railway.app",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://xbvhxrbdxtvmkcqefxdp.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhidmh4cmJkeHR2bWtjcWVmeGRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE4Njg0ODAsImV4cCI6MjA0NzQ0NDQ4MH0.placeholder"
   }
 }
 

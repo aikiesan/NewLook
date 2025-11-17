@@ -25,9 +25,18 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3003",
         "http://127.0.0.1:3004",
+        "https://new-look-nu.vercel.app",
+        "https://newlook-production.up.railway.app",
         "https://your-frontend-domain.com"
     ]
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1", "your-api-domain.com"]
+    ALLOWED_HOSTS: List[str] = [
+        "localhost",
+        "127.0.0.1",
+        "newlook-production.up.railway.app",
+        "new-look-nu.vercel.app",
+        "your-api-domain.com",
+        "*"  # Allow all hosts in production (Railway requirement)
+    ]
 
     # Database settings
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/cp2b_maps"
