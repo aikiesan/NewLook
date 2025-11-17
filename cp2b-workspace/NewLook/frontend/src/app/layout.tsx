@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ComparisonProvider } from '@/contexts/ComparisonContext'
+import ComparisonBar from '@/components/comparison/ComparisonBar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,9 +22,12 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
-            {children}
-          </div>
+          <ComparisonProvider>
+            <div className="min-h-screen bg-gray-50">
+              {children}
+            </div>
+            <ComparisonBar />
+          </ComparisonProvider>
         </AuthProvider>
       </body>
     </html>
