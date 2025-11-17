@@ -23,6 +23,7 @@ def get_db_connection():
         psycopg2 connection object
     """
     try:
+        # Use port from settings - Supabase pooler configuration handles this
         conn = psycopg2.connect(
             dbname=settings.POSTGRES_DB,
             user=settings.POSTGRES_USER,
@@ -30,7 +31,8 @@ def get_db_connection():
             host=settings.POSTGRES_HOST,
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,  # Return rows as dictionaries
-            connect_timeout=10
+            connect_timeout=10,
+            options='-c statement_timeout=30000'
         )
         return conn
     except psycopg2.Error as e:
@@ -55,6 +57,7 @@ def get_db():
     """
     conn = None
     try:
+        # Connect using environment-configured settings (supports both direct and pooler connections)
         conn = psycopg2.connect(
             dbname=settings.POSTGRES_DB,
             user=settings.POSTGRES_USER,
@@ -62,9 +65,10 @@ def get_db():
             host=settings.POSTGRES_HOST,
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,
-            connect_timeout=10
+            connect_timeout=10,
+            options='-c statement_timeout=30000'  # 30 second query timeout
         )
-        logger.debug("Database connection opened")
+        logger.debug(f"Database connection opened to {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}")
         yield conn
     except psycopg2.Error as e:
         logger.error(f"Database error: {e}")
