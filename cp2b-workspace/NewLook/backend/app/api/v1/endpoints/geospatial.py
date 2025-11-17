@@ -7,12 +7,37 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 import json
+import logging
 
 from app.core.database import get_db_connection
 from app.middleware.auth import get_current_user, optional_auth
 from app.models.auth import UserProfile
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# ============================================================================
+# SECURITY: Input Validation Constants
+# ============================================================================
+
+# Valid administrative regions for São Paulo state
+VALID_REGIONS = {
+    "Central", "Bauru", "Araçatuba", "Ribeirão Preto",
+    "Campinas", "São José dos Campos", "Sorocaba",
+    "Santos", "São Paulo", "Presidente Prudente",
+    "Marília", "Registro", "Franca", "São José do Rio Preto"
+}
+
+# Whitelist for sort columns (prevents SQL injection)
+ALLOWED_SORT_COLUMNS = {
+    "biogas": "total_biogas_m3_year",
+    "name": "municipality_name",
+    "population": "population",
+    "area": "area_km2"
+}
+
+# Whitelist for sort order (prevents SQL injection)
+ALLOWED_ORDERS = {"asc": "ASC", "desc": "DESC"}
 
 # ============================================================================
 # PYDANTIC MODELS
@@ -147,13 +172,21 @@ async def get_municipalities_geojson(
             params.append(min_biogas)
 
         if region:
+            # SECURITY: Validate region against whitelist
+            if region not in VALID_REGIONS:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid region. Must be one of: {', '.join(sorted(VALID_REGIONS))}"
+                )
             query += " AND administrative_region = %s"
             params.append(region)
 
         query += " ORDER BY total_biogas_m3_year DESC"
 
+        # SECURITY: Use parameterized query for LIMIT instead of f-string
         if limit:
-            query += f" LIMIT {limit}"
+            query += " LIMIT %s"
+            params.append(limit)
 
         query += " ) as features"
 
@@ -219,8 +252,10 @@ async def get_municipality_centroids(
 
         query += " ORDER BY total_biogas_m3_year DESC"
 
+        # SECURITY: Use parameterized query for LIMIT
         if limit:
-            query += f" LIMIT {limit}"
+            query += " LIMIT %s"
+            params.append(limit)
 
         query += " ) as features"
 
@@ -259,12 +294,11 @@ async def list_municipalities(
     cursor = conn.cursor()
 
     try:
-        sort_column = {
-            "biogas": "total_biogas_m3_year",
-            "name": "municipality_name",
-            "population": "population"
-        }.get(sort_by, "total_biogas_m3_year")
+        # SECURITY: Validate sort parameters against whitelist
+        sort_column = ALLOWED_SORT_COLUMNS.get(sort_by, "total_biogas_m3_year")
+        order_sql = ALLOWED_ORDERS.get(order.lower(), "DESC")
 
+        # SECURITY: Use validated values in SQL (safe since from whitelist)
         query = f"""
             SELECT
                 id,
@@ -274,7 +308,7 @@ async def list_municipalities(
                 ROW_NUMBER() OVER (ORDER BY total_biogas_m3_year DESC) as ranking
             FROM municipalities
             WHERE total_biogas_m3_year > 0
-            ORDER BY {sort_column} {order.upper()}
+            ORDER BY {sort_column} {order_sql}
             LIMIT %s OFFSET %s
         """
 
@@ -427,6 +461,7 @@ async def get_rankings(
     cursor = conn.cursor()
 
     try:
+        # SECURITY: Validate criteria against whitelist
         column_map = {
             "total": "total_biogas_m3_year",
             "urban": "urban_biogas_m3_year",
@@ -434,8 +469,10 @@ async def get_rankings(
             "livestock": "livestock_biogas_m3_year"
         }
 
+        # Get validated column (safe since from whitelist)
         column = column_map.get(criteria, "total_biogas_m3_year")
 
+        # SECURITY: Use validated column name in SQL (safe since from whitelist)
         query = f"""
             SELECT
                 municipality_name,
