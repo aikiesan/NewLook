@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // Disabled React Strict Mode due to known incompatibility with Leaflet
+  // React Strict Mode causes double-mounting in development which triggers
+  // "Map container is already initialized" error from Leaflet
+  // This only affects development; production builds work fine
+  reactStrictMode: false,
   images: {
     domains: ['localhost', 'your-api-domain.com'],
   },
