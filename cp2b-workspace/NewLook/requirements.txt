@@ -1,0 +1,44 @@
+# Core
+streamlit==1.31.0
+python-dotenv==1.0.0
+
+# Autenticação
+supabase==2.3.0
+pydantic==2.5.0
+
+# Dados e Análise
+pandas==2.1.4
+numpy==1.24.3
+openpyxl==3.1.2
+xlrd==2.0.1
+
+# Geoespacial
+geopandas==0.14.1
+shapely==2.0.2
+fiona==1.9.5
+rasterio==1.3.9
+folium==0.15.1
+pyproj==3.6.1
+
+# Visualização
+plotly==5.18.0
+matplotlib==3.8.2
+
+# IA e RAG
+google-generativeai==0.3.2
+sentence-transformers==2.2.2
+
+# Banco de Dados
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Utilitários
+jenkspy==0.3.2
+pillow==10.1.0
+psutil==5.9.6
+requests==2.31.0
+
+# Desenvolvimento
+black==23.12.1
+pylint==3.0.3
+pytest==7.4.3
