@@ -15,8 +15,12 @@ import MapLegend from './MapLegend';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
-// Dynamically import MunicipalityLayer to avoid SSR issues
+// Dynamically import MunicipalityLayer and MapSearchBox to avoid SSR issues
 const MunicipalityLayer = dynamic(() => import('./MunicipalityLayer'), {
+  ssr: false,
+});
+
+const MapSearchBox = dynamic(() => import('./MapSearchBox'), {
   ssr: false,
 });
 
@@ -90,6 +94,9 @@ export default function MapComponent() {
 
         {/* Municipality Layer */}
         {data && <MunicipalityLayer data={data} />}
+
+        {/* Search Box */}
+        {data && <MapSearchBox data={data} />}
 
         {/* Legend */}
         <MapLegend />

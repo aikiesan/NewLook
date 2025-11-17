@@ -69,7 +69,6 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         type: 'Point',
         coordinates: [-47.0653, -22.9099], // Campinas
       },
-      },
       properties: createMockMunicipality({
         id: 'mock-1',
         name: 'Campinas',
@@ -284,6 +283,10 @@ export const mockSummaryStatistics: SummaryStatistics = {
   total_biogas_m3_year: 387500000,
   average_biogas_m3_year: 38750000,
   total_population: 4717662,
+  top_municipality: {
+    name: 'Campinas',
+    biogas_m3_year: 89500000,
+  },
   top_5_municipalities: [
     { name: 'Campinas', biogas_m3_year: 89500000 },
     { name: 'Ribeirão Preto', biogas_m3_year: 67800000 },
@@ -291,6 +294,18 @@ export const mockSummaryStatistics: SummaryStatistics = {
     { name: 'Sorocaba', biogas_m3_year: 45600000 },
     { name: 'Bauru', biogas_m3_year: 38900000 },
   ],
+  categories: {
+    'ALTO': 2,
+    'high': 2,
+    'medium': 2,
+    'low': 2,
+    'very_low': 2,
+  },
+  sector_breakdown: {
+    agricultural: 96100000,
+    livestock: 169700000,
+    urban: 121700000,
+  },
   sector_percentages: {
     agricultural: 24.8,
     livestock: 43.8,
