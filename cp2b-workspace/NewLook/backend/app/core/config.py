@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/cp2b_maps"
     DATABASE_URL_SYNC: str = "postgresql://user:password@localhost:5432/cp2b_maps"
 
+    # PostgreSQL connection details (parsed from DATABASE_URL or set individually)
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: int = 5432
+    POSTGRES_DB: str = "postgres"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = ""
+
     # Supabase settings
     SUPABASE_URL: Optional[str] = None
     SUPABASE_ANON_KEY: Optional[str] = None
