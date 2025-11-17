@@ -31,9 +31,12 @@ const DEFAULT_ZOOM = 8;
 export default function MapComponent() {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
 
   useEffect(() => {
     setIsMounted(true);
+    // Force new map instance on mount to avoid "already initialized" error
+    setMapKey(prev => prev + 1);
   }, []);
 
   // Don't render map on server
@@ -79,6 +82,7 @@ export default function MapComponent() {
   return (
     <div className="relative w-full h-[600px] lg:h-[calc(100vh-220px)] rounded-lg overflow-hidden shadow-lg">
       <MapContainer
+        key={`cp2b-map-${mapKey}`}
         center={SAO_PAULO_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
