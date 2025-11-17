@@ -12,7 +12,10 @@ import type {
 import { logger } from '@/lib/logger';
 
 // API base URL - automatically detects production vs development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://newlook-production.up.railway.app'
+    : 'http://localhost:8000');
 // Use real geospatial endpoints in production, mock in development
 const API_PREFIX = process.env.NODE_ENV === 'production' ? '/api/v1/geospatial' : '/api/v1/mock';
 
