@@ -3,16 +3,64 @@
  * Used as fallback when backend is unavailable
  */
 
-import type { MunicipalityCollection, SummaryStatistics } from '@/types/geospatial';
+import type { MunicipalityCollection, SummaryStatistics, MunicipalityProperties } from '@/types/geospatial';
+
+// Helper to create complete municipality properties with all required fields
+function createMockMunicipality(partial: Partial<MunicipalityProperties>): MunicipalityProperties {
+  return {
+    // Basic info
+    id: partial.id || 'mock',
+    name: partial.name || 'Unknown',
+    ibge_code: partial.ibge_code || '0000000',
+    area_km2: partial.area_km2 || 0,
+    population: partial.population || 0,
+    population_density: partial.population_density || (partial.population || 0) / (partial.area_km2 || 1),
+    immediate_region: partial.immediate_region || 'Unknown',
+    intermediate_region: partial.intermediate_region || 'Unknown',
+    immediate_region_code: partial.immediate_region_code || '00000',
+    intermediate_region_code: partial.intermediate_region_code || '00000',
+
+    // Total biogas
+    total_biogas_m3_year: partial.total_biogas_m3_year || 0,
+    agricultural_biogas_m3_year: partial.agricultural_biogas_m3_year || 0,
+    livestock_biogas_m3_year: partial.livestock_biogas_m3_year || 0,
+    urban_biogas_m3_year: partial.urban_biogas_m3_year || 0,
+
+    // Agricultural sector breakdown
+    sugarcane_biogas_m3_year: partial.sugarcane_biogas_m3_year || 0,
+    soybean_biogas_m3_year: partial.soybean_biogas_m3_year || 0,
+    corn_biogas_m3_year: partial.corn_biogas_m3_year || 0,
+    coffee_biogas_m3_year: partial.coffee_biogas_m3_year || 0,
+    citrus_biogas_m3_year: partial.citrus_biogas_m3_year || 0,
+
+    // Livestock sector breakdown
+    cattle_biogas_m3_year: partial.cattle_biogas_m3_year || 0,
+    swine_biogas_m3_year: partial.swine_biogas_m3_year || 0,
+    poultry_biogas_m3_year: partial.poultry_biogas_m3_year || 0,
+    aquaculture_biogas_m3_year: partial.aquaculture_biogas_m3_year || 0,
+    forestry_biogas_m3_year: partial.forestry_biogas_m3_year || 0,
+
+    // Urban sector
+    rsu_biogas_m3_year: partial.rsu_biogas_m3_year || 0,
+    rpo_biogas_m3_year: partial.rpo_biogas_m3_year || 0,
+
+    // Residues
+    sugarcane_residues_tons_year: partial.sugarcane_residues_tons_year || 0,
+    soybean_residues_tons_year: partial.soybean_residues_tons_year || 0,
+    corn_residues_tons_year: partial.corn_residues_tons_year || 0,
+
+    // Classification
+    potential_category: partial.potential_category || 'SEM DADOS',
+  };
+}
 
 // Sample mock data for São Paulo municipalities
 export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
   type: 'FeatureCollection',
   metadata: {
     total_municipalities: 10,
-    note: 'Mock data - 10 sample municipalities',
-    data_source: 'CP2B Maps V2 - Sample Data',
-    generated_at: new Date().toISOString(),
+    source: 'CP2B Maps V2 - Sample Data',
+    note: 'Mock data - 10 sample municipalities for development',
   },
   features: [
     {
@@ -20,8 +68,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.0653, -22.9099], // Campinas
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-1',
         name: 'Campinas',
         ibge_code: '3509502',
@@ -29,20 +76,22 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         area_km2: 795.7,
         immediate_region: 'Campinas',
         intermediate_region: 'Campinas',
+        immediate_region_code: '35059',
+        intermediate_region_code: '3505',
         total_biogas_m3_year: 89500000,
         agricultural_biogas_m3_year: 25000000,
         livestock_biogas_m3_year: 35000000,
         urban_biogas_m3_year: 29500000,
-        potential_category: 'very_high',
-      },
+        potential_category: 'ALTO',
+      }),
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-48.6492, -21.7802], // Ribeirão Preto
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-2',
         name: 'Ribeirão Preto',
         ibge_code: '3543402',
@@ -55,15 +104,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 28000000,
         urban_biogas_m3_year: 21800000,
         potential_category: 'high',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-48.8765, -22.0145], // Pirassununga
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-3',
         name: 'Pirassununga',
         ibge_code: '3538709',
@@ -76,15 +124,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 42000000,
         urban_biogas_m3_year: 2400000,
         potential_category: 'high',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-47.4531, -23.5089], // Sorocaba
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-4',
         name: 'Sorocaba',
         ibge_code: '3552205',
@@ -97,15 +144,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 15000000,
         urban_biogas_m3_year: 18600000,
         potential_category: 'medium',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-49.0647, -22.3303], // Bauru
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-5',
         name: 'Bauru',
         ibge_code: '3506003',
@@ -118,15 +164,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 16000000,
         urban_biogas_m3_year: 12900000,
         potential_category: 'medium',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-47.8828, -21.1797], // Franca
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-6',
         name: 'Franca',
         ibge_code: '3516200',
@@ -139,15 +184,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 12000000,
         urban_biogas_m3_year: 8200000,
         potential_category: 'medium',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-48.5234, -27.5969], // Lages (Santa Catarina - sample)
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-7',
         name: 'Araraquara',
         ibge_code: '3503208',
@@ -160,15 +204,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 10000000,
         urban_biogas_m3_year: 7500000,
         potential_category: 'low',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-47.8206, -22.4144], // Limeira
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-8',
         name: 'Limeira',
         ibge_code: '3526902',
@@ -181,15 +224,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 7000000,
         urban_biogas_m3_year: 6900000,
         potential_category: 'low',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-47.3304, -22.7353], // Americana
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-9',
         name: 'Americana',
         ibge_code: '3501608',
@@ -202,15 +244,14 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 4000000,
         urban_biogas_m3_year: 6400000,
         potential_category: 'very_low',
-      },
+      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-47.0557, -22.7359], // Sumaré
-      },
-      properties: {
+      properties: createMockMunicipality({
         id: 'mock-10',
         name: 'Sumaré',
         ibge_code: '3552403',
@@ -223,7 +264,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         livestock_biogas_m3_year: 3000000,
         urban_biogas_m3_year: 4400000,
         potential_category: 'very_low',
-      },
+      }),
     },
   ],
 };
