@@ -120,7 +120,7 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
       </div>
 
       {/* Demographics */}
-      <div className="pt-3 border-t border-gray-200 space-y-2">
+      <div className="pt-3 border-t border-gray-200 space-y-2 mb-4">
         <div className="flex justify-between text-xs">
           <span className="text-gray-600">População:</span>
           <span className="font-medium text-gray-900">
@@ -140,6 +140,18 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
           </span>
         </div>
       </div>
+
+      {/* View Details Button */}
+      <a
+        href={`/dashboard/municipality/${properties.id}`}
+        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-sm font-medium rounded transition-colors"
+        onClick={(e) => {
+          e.preventDefault();
+          window.location.href = `/dashboard/municipality/${properties.id}`;
+        }}
+      >
+        Ver Detalhes Completos →
+      </a>
     </div>
   );
 }

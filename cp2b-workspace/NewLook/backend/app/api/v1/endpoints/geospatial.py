@@ -72,12 +72,33 @@ class MunicipalityDetail(BaseModel):
     municipality_name: str
     ibge_code: Optional[str]
 
-    # Biogas potential
+    # Geographic data
+    area_km2: Optional[float]
+    population_density: Optional[float]
+
+    # Biogas potential - Main sectors
     total_biogas_m3_year: float
     total_biogas_m3_day: float
     urban_biogas_m3_year: float
     agricultural_biogas_m3_year: float
     livestock_biogas_m3_year: float
+
+    # Urban waste detail
+    rsu_biogas_m3_year: float
+    rpo_biogas_m3_year: float
+
+    # Agricultural substrates
+    sugarcane_biogas_m3_year: float
+    soybean_biogas_m3_year: float
+    corn_biogas_m3_year: float
+    coffee_biogas_m3_year: float
+    citrus_biogas_m3_year: float
+
+    # Livestock substrates
+    cattle_biogas_m3_year: float
+    swine_biogas_m3_year: float
+    poultry_biogas_m3_year: float
+    aquaculture_biogas_m3_year: float
 
     # Energy and environmental
     energy_potential_kwh_day: float
@@ -89,9 +110,15 @@ class MunicipalityDetail(BaseModel):
     urban_population: Optional[int]
     rural_population: Optional[int]
 
+    # Economic
+    gdp_total: Optional[float]
+    gdp_per_capita: Optional[float]
+
     # Location
     centroid: Optional[Dict[str, Any]] = None
     administrative_region: Optional[str]
+    immediate_region: Optional[str]
+    intermediate_region: Optional[str]
 
 
 class ProximityQuery(BaseModel):
@@ -351,12 +378,24 @@ async def get_municipality(municipality_id: int):
             query = """
                 SELECT
                     id, municipality_name, ibge_code,
+                    area_km2,
+                    CASE
+                        WHEN area_km2 > 0 AND population IS NOT NULL
+                        THEN population / area_km2
+                        ELSE NULL
+                    END as population_density,
                     total_biogas_m3_year, total_biogas_m3_day,
                     urban_biogas_m3_year, agricultural_biogas_m3_year, livestock_biogas_m3_year,
+                    rsu_biogas_m3_year, rpo_biogas_m3_year,
+                    sugarcane_biogas_m3_year, soybean_biogas_m3_year, corn_biogas_m3_year,
+                    coffee_biogas_m3_year, citrus_biogas_m3_year,
+                    cattle_biogas_m3_year, swine_biogas_m3_year, poultry_biogas_m3_year,
+                    aquaculture_biogas_m3_year,
                     energy_potential_kwh_day, energy_potential_mwh_year, co2_reduction_tons_year,
                     population, urban_population, rural_population,
+                    gdp_total, gdp_per_capita,
                     ST_AsGeoJSON(centroid)::json as centroid,
-                    administrative_region
+                    administrative_region, immediate_region, intermediate_region
                 FROM municipalities
                 WHERE id = %s
             """
@@ -371,19 +410,36 @@ async def get_municipality(municipality_id: int):
                 id=row['id'],
                 municipality_name=row['municipality_name'],
                 ibge_code=row['ibge_code'],
+                area_km2=row['area_km2'],
+                population_density=row['population_density'],
                 total_biogas_m3_year=row['total_biogas_m3_year'],
                 total_biogas_m3_day=row['total_biogas_m3_day'],
                 urban_biogas_m3_year=row['urban_biogas_m3_year'],
                 agricultural_biogas_m3_year=row['agricultural_biogas_m3_year'],
                 livestock_biogas_m3_year=row['livestock_biogas_m3_year'],
+                rsu_biogas_m3_year=row['rsu_biogas_m3_year'],
+                rpo_biogas_m3_year=row['rpo_biogas_m3_year'],
+                sugarcane_biogas_m3_year=row['sugarcane_biogas_m3_year'],
+                soybean_biogas_m3_year=row['soybean_biogas_m3_year'],
+                corn_biogas_m3_year=row['corn_biogas_m3_year'],
+                coffee_biogas_m3_year=row['coffee_biogas_m3_year'],
+                citrus_biogas_m3_year=row['citrus_biogas_m3_year'],
+                cattle_biogas_m3_year=row['cattle_biogas_m3_year'],
+                swine_biogas_m3_year=row['swine_biogas_m3_year'],
+                poultry_biogas_m3_year=row['poultry_biogas_m3_year'],
+                aquaculture_biogas_m3_year=row['aquaculture_biogas_m3_year'],
                 energy_potential_kwh_day=row['energy_potential_kwh_day'],
                 energy_potential_mwh_year=row['energy_potential_mwh_year'],
                 co2_reduction_tons_year=row['co2_reduction_tons_year'],
                 population=row['population'],
                 urban_population=row['urban_population'],
                 rural_population=row['rural_population'],
+                gdp_total=row['gdp_total'],
+                gdp_per_capita=row['gdp_per_capita'],
                 centroid=row['centroid'],
-                administrative_region=row['administrative_region']
+                administrative_region=row['administrative_region'],
+                immediate_region=row['immediate_region'],
+                intermediate_region=row['intermediate_region']
             )
 
         except HTTPException:
