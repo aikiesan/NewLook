@@ -6,9 +6,24 @@
  */
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Leaf, MapPin, BarChart3, Users, Settings, LogOut } from 'lucide-react'
+import { Leaf, LogOut } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import StatsPanel from '@/components/dashboard/StatsPanel'
+
+// Dynamically import Map component to avoid SSR issues
+const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[600px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] mx-auto"></div>
+        <p className="mt-4 text-gray-600">Carregando mapa...</p>
+      </div>
+    </div>
+  ),
+})
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -80,180 +95,26 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Bem-vindo, {user.full_name}! 👋
-          </h2>
-          <p className="text-gray-600 text-lg">
-            Você está autenticado como <span className="font-semibold">{user.email}</span>
-          </p>
-          <div className="mt-4 inline-flex items-center px-4 py-2 rounded-full bg-cp2b-primary/10 text-cp2b-primary">
-            <span className="font-medium">
-              Nível de acesso: {user.role === 'admin' ? 'Administrador' :
-                                user.role === 'autenticado' ? 'Autenticado' :
-                                'Visitante'}
-            </span>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-cp2b-primary/10 text-cp2b-primary">
-                <MapPin className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Municípios</p>
-                <p className="text-2xl font-bold text-gray-900">645</p>
-              </div>
+      {/* Main Content - Interactive Map Dashboard */}
+      <main className="h-[calc(100vh-80px)]">
+        <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-0">
+          {/* Stats Panel - Left Sidebar */}
+          <div className="lg:col-span-1 bg-gray-50 p-4 overflow-y-auto">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                Dashboard CP2B
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Olá, {user.full_name}!
+              </p>
             </div>
+            <StatsPanel />
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 text-green-600">
-                <BarChart3 className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Análises</p>
-                <p className="text-2xl font-bold text-gray-900">8</p>
-              </div>
-            </div>
+          {/* Map - Main Area */}
+          <div className="lg:col-span-3 bg-white p-4">
+            <MapComponent />
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                <Users className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Usuários</p>
-                <p className="text-2xl font-bold text-gray-900">1</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Modules */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Mapa Interativo
-                </h3>
-                <p className="text-gray-600">
-                  Visualize o potencial de biogás em São Paulo
-                </p>
-              </div>
-              <MapPin className="h-8 w-8 text-cp2b-primary" aria-hidden="true" />
-            </div>
-            <button className="mt-4 w-full px-4 py-2 bg-cp2b-primary text-white rounded-lg hover:bg-cp2b-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-primary">
-              Abrir Mapa
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Análises MCDA
-                </h3>
-                <p className="text-gray-600">
-                  Análise multicritério para localização ótima
-                </p>
-              </div>
-              <BarChart3 className="h-8 w-8 text-green-600" aria-hidden="true" />
-            </div>
-            <button className="mt-4 w-full px-4 py-2 bg-cp2b-primary text-white rounded-lg hover:bg-cp2b-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-primary">
-              Ver Análises
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Meu Perfil
-                </h3>
-                <p className="text-gray-600">
-                  Gerencie suas informações pessoais
-                </p>
-              </div>
-              <Settings className="h-8 w-8 text-blue-600" aria-hidden="true" />
-            </div>
-            <button className="mt-4 w-full px-4 py-2 bg-cp2b-primary text-white rounded-lg hover:bg-cp2b-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-primary">
-              Editar Perfil
-            </button>
-          </div>
-
-          {user.role === 'admin' && (
-            <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-yellow-400">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    👑 Admin Panel
-                  </h3>
-                  <p className="text-gray-600">
-                    Gerenciar usuários e configurações
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-yellow-600" aria-hidden="true" />
-              </div>
-              <button className="mt-4 w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                Acessar Admin
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* User Info Card */}
-        <div className="mt-8 bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Informações da Conta
-          </h3>
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <dt className="text-sm text-gray-600">ID do Usuário</dt>
-              <dd className="mt-1 text-sm font-mono text-gray-900">{user.id}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-600">E-mail</dt>
-              <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-600">Nome Completo</dt>
-              <dd className="mt-1 text-sm text-gray-900">{user.full_name}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-600">Função</dt>
-              <dd className="mt-1 text-sm text-gray-900 capitalize">{user.role}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-600">Membro desde</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {new Date(user.created_at).toLocaleDateString('pt-BR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-600">Última atualização</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {new Date(user.updated_at).toLocaleDateString('pt-BR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </dd>
-            </div>
-          </dl>
         </div>
       </main>
     </div>

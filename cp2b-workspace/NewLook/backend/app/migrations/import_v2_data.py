@@ -12,14 +12,19 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 import sys
+import os
+from dotenv import load_dotenv
 
 # Configuration
 # Look for v2-data directory (could be in different locations)
 _script_dir = Path(__file__).parent
 _v2_data_candidates = [
-    Path("/home/user/NewLook/v2-data"),  # Absolute path
+    Path(r"C:\Users\Lucas\Documents\CP2B\CP2B_Maps_V3\cp2b-workspace\project_map"),  # Windows absolute path
+    Path("cp2b-workspace/project_map"),  # Relative Windows path
+    Path("/home/user/NewLook/v2-data"),  # Linux absolute path
     _script_dir.parent.parent.parent.parent.parent / "v2-data",  # 5 levels up
     _script_dir.parent.parent.parent.parent.parent.parent / "v2-data",  # 6 levels up
+    _script_dir.parent.parent.parent.parent.parent / "project_map",  # 5 levels up to project_map
 ]
 
 V2_DATA_DIR = None
@@ -53,8 +58,8 @@ class DataMigrator:
         if not self.v2_db_path.exists():
             raise FileNotFoundError(f"V2 database not found: {self.v2_db_path}")
 
-        print(f"✓ V2 Database found: {self.v2_db_path}")
-        print(f"✓ V2 References found: {self.v2_references_path}")
+        print(f"[OK] V2 Database found: {self.v2_db_path}")
+        print(f"[OK] V2 References found: {self.v2_references_path}")
 
     def connect_v2_db(self) -> sqlite3.Connection:
         """Connect to V2 SQLite database"""
@@ -66,7 +71,7 @@ class DataMigrator:
 
     def migrate_municipalities(self):
         """Migrate municipality data from V2 to V3"""
-        print("\n📊 Migrating municipalities data...")
+        print("\n[DATA] Migrating municipalities data...")
 
         # Connect to both databases
         v2_conn = self.connect_v2_db()
@@ -199,11 +204,11 @@ class DataMigrator:
             execute_batch(pg_cursor, insert_query, data_to_insert, page_size=100)
             pg_conn.commit()
 
-            print(f"✓ Successfully migrated {len(data_to_insert)} municipalities")
+            print(f"[OK] Successfully migrated {len(data_to_insert)} municipalities")
 
         except Exception as e:
             pg_conn.rollback()
-            print(f"✗ Error migrating municipalities: {e}")
+            print(f"[ERROR] Error migrating municipalities: {e}")
             raise
 
         finally:
@@ -214,10 +219,10 @@ class DataMigrator:
 
     def migrate_scientific_references(self):
         """Migrate scientific references from JSON to PostgreSQL"""
-        print("\n📚 Migrating scientific references...")
+        print("\n[DOCS] Migrating scientific references...")
 
         if not self.v2_references_path.exists():
-            print(f"⚠ References file not found: {self.v2_references_path}")
+            print(f"[WARNING] References file not found: {self.v2_references_path}")
             return
 
         pg_conn = self.connect_postgres()
@@ -268,11 +273,11 @@ class DataMigrator:
             execute_batch(pg_cursor, insert_query, data_to_insert, page_size=50)
             pg_conn.commit()
 
-            print(f"✓ Successfully migrated {len(data_to_insert)} references")
+            print(f"[OK] Successfully migrated {len(data_to_insert)} references")
 
         except Exception as e:
             pg_conn.rollback()
-            print(f"✗ Error migrating references: {e}")
+            print(f"[ERROR] Error migrating references: {e}")
             raise
 
         finally:
@@ -281,7 +286,7 @@ class DataMigrator:
 
     def verify_migration(self):
         """Verify data was migrated successfully"""
-        print("\n🔍 Verifying migration...")
+        print("\n[CHECK] Verifying migration...")
 
         pg_conn = self.connect_postgres()
         pg_cursor = pg_conn.cursor()
@@ -321,12 +326,12 @@ class DataMigrator:
                 print(f"    {idx}. {name}: {biogas:,.2f} m³/year")
 
             if muni_count == 645:
-                print("\n✓ Migration verification successful!")
+                print("\n[OK] Migration verification successful!")
             else:
-                print(f"\n⚠ Warning: Expected 645 municipalities, found {muni_count}")
+                print(f"\n[WARNING] Warning: Expected 645 municipalities, found {muni_count}")
 
         except Exception as e:
-            print(f"✗ Error verifying migration: {e}")
+            print(f"[ERROR] Error verifying migration: {e}")
             raise
 
         finally:
@@ -351,12 +356,12 @@ class DataMigrator:
             self.verify_migration()
 
             print("\n" + "=" * 80)
-            print("✓ MIGRATION COMPLETED SUCCESSFULLY")
+            print("[OK] MIGRATION COMPLETED SUCCESSFULLY")
             print("=" * 80)
 
         except Exception as e:
             print("\n" + "=" * 80)
-            print(f"✗ MIGRATION FAILED: {e}")
+            print(f"[ERROR] MIGRATION FAILED: {e}")
             print("=" * 80)
             sys.exit(1)
 
@@ -366,33 +371,66 @@ def main():
     print("\nCP2B Maps V3 - Data Migration Tool")
     print("-" * 80)
 
-    # Get PostgreSQL connection string from user
-    print("\nPlease provide your Supabase/PostgreSQL connection string")
-    print("Format: postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres")
-    print("\nExample: postgresql://postgres:mypassword@db.xxxxx.supabase.co:5432/postgres\n")
+    # Load environment variables
+    load_dotenv()
 
-    conn_string = input("Connection string: ").strip()
+    # Try to get connection string from command line, env var, or prompt
+    conn_string = None
+
+    # 1. Check command line arguments
+    if len(sys.argv) > 1:
+        conn_string = sys.argv[1]
+        print(f"\n[OK] Using connection string from command line")
+
+    # 2. Check environment variable
+    elif os.getenv('DATABASE_URL'):
+        conn_string = os.getenv('DATABASE_URL')
+        print(f"\n[OK] Using DATABASE_URL from environment")
+
+    # 3. Prompt user
+    else:
+        print("\nPlease provide your Supabase/PostgreSQL connection string")
+        print("Format: postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres")
+        print("\nExample: postgresql://postgres:mypassword@db.xxxxx.supabase.co:5432/postgres\n")
+
+        try:
+            conn_string = input("Connection string: ").strip()
+        except EOFError:
+            print("\nError: No connection string provided")
+            print("You can also:")
+            print("  1. Set DATABASE_URL environment variable")
+            print("  2. Pass connection string as argument: python -m app.migrations.import_v2_data 'postgresql://...'")
+            sys.exit(1)
 
     if not conn_string:
         print("Error: Connection string cannot be empty")
         sys.exit(1)
 
-    # Confirm migration
-    print("\n" + "=" * 80)
-    print("⚠ WARNING: This will INSERT data into your PostgreSQL database")
-    print("=" * 80)
-    print("\nThis migration will:")
-    print("  1. Import 645 municipalities with biogas potential data")
-    print("  2. Import 58 scientific references")
-    print("  3. Create spatial indexes and verify data")
-    print("\nMake sure you have already run: 001_initial_schema.sql")
-    print("-" * 80)
+    # Auto-confirm if running non-interactively
+    auto_confirm = os.getenv('AUTO_CONFIRM', 'false').lower() == 'true' or len(sys.argv) > 1
 
-    confirm = input("\nContinue with migration? (yes/no): ").strip().lower()
+    if not auto_confirm:
+        # Confirm migration
+        print("\n" + "=" * 80)
+        print("[WARNING] WARNING: This will INSERT data into your PostgreSQL database")
+        print("=" * 80)
+        print("\nThis migration will:")
+        print("  1. Import 645 municipalities with biogas potential data")
+        print("  2. Import 58 scientific references")
+        print("  3. Create spatial indexes and verify data")
+        print("\nMake sure you have already run: 001_initial_schema.sql")
+        print("-" * 80)
 
-    if confirm != 'yes':
-        print("Migration cancelled.")
-        sys.exit(0)
+        try:
+            confirm = input("\nContinue with migration? (yes/no): ").strip().lower()
+        except EOFError:
+            confirm = 'yes'  # Auto-confirm on non-interactive
+
+        if confirm != 'yes':
+            print("Migration cancelled.")
+            sys.exit(0)
+    else:
+        print("\n[OK] Auto-confirming migration (non-interactive mode)")
 
     # Run migration
     try:

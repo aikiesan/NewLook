@@ -138,3 +138,26 @@ def require_authenticated(
             detail="Authenticated access required. Please complete email verification."
         )
     return current_user
+
+async def optional_auth(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+) -> Optional[UserProfile]:
+    """
+    Dependency for optional authentication - returns user if authenticated, None otherwise
+
+    Args:
+        credentials: Optional HTTP Bearer credentials from request header
+
+    Returns:
+        Optional[UserProfile]: User profile if authenticated, None if not
+    """
+    if credentials is None:
+        return None
+
+    try:
+        access_token = credentials.credentials
+        user = await auth_service.get_current_user(access_token)
+        return user
+    except Exception:
+        # If authentication fails, return None instead of raising error
+        return None
