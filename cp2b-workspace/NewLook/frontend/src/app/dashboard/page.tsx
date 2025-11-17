@@ -8,7 +8,8 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Leaf, LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { LogOut } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import StatsPanel from '@/components/dashboard/StatsPanel'
 
@@ -69,8 +70,14 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <Link href="/" className="flex items-center space-x-3">
-              <Leaf className="h-8 w-8 text-white" aria-hidden="true" />
-              <h1 className="text-2xl font-bold text-white">CP2B Maps V3</h1>
+              <Image
+                src="/images/logotipo-full-black.png"
+                alt="CP2B Maps Logo"
+                width={180}
+                height={50}
+                className="brightness-0 invert"
+                priority
+              />
             </Link>
 
             <div className="flex items-center space-x-4">
