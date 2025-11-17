@@ -68,6 +68,8 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.0653, -22.9099], // Campinas
+      },
+      },
       properties: createMockMunicipality({
         id: 'mock-1',
         name: 'Campinas',
@@ -84,13 +86,13 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
         urban_biogas_m3_year: 29500000,
         potential_category: 'ALTO',
       }),
-      }),
     },
     {
       type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [-48.6492, -21.7802], // Ribeirão Preto
+      },
       properties: createMockMunicipality({
         id: 'mock-2',
         name: 'Ribeirão Preto',
@@ -111,6 +113,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-48.8765, -22.0145], // Pirassununga
+      },
       properties: createMockMunicipality({
         id: 'mock-3',
         name: 'Pirassununga',
@@ -131,6 +134,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.4531, -23.5089], // Sorocaba
+      },
       properties: createMockMunicipality({
         id: 'mock-4',
         name: 'Sorocaba',
@@ -151,6 +155,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-49.0647, -22.3303], // Bauru
+      },
       properties: createMockMunicipality({
         id: 'mock-5',
         name: 'Bauru',
@@ -171,6 +176,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.8828, -21.1797], // Franca
+      },
       properties: createMockMunicipality({
         id: 'mock-6',
         name: 'Franca',
@@ -191,6 +197,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-48.5234, -27.5969], // Lages (Santa Catarina - sample)
+      },
       properties: createMockMunicipality({
         id: 'mock-7',
         name: 'Araraquara',
@@ -211,6 +218,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.8206, -22.4144], // Limeira
+      },
       properties: createMockMunicipality({
         id: 'mock-8',
         name: 'Limeira',
@@ -231,6 +239,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.3304, -22.7353], // Americana
+      },
       properties: createMockMunicipality({
         id: 'mock-9',
         name: 'Americana',
@@ -251,6 +260,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       geometry: {
         type: 'Point',
         coordinates: [-47.0557, -22.7359], // Sumaré
+      },
       properties: createMockMunicipality({
         id: 'mock-10',
         name: 'Sumaré',
