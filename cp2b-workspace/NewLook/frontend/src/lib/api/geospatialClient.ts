@@ -10,9 +10,11 @@ import type {
   RankingsResponse
 } from '@/types/geospatial';
 
-// FORCE MOCK DATA: Set to true to use client-side mock data (bypasses Railway)
-// Set to false when Railway backend is ready and properly configured
-const USE_MOCK_DATA = true;
+// FORCE MOCK DATA: Use environment variable to control mock data usage
+// NEXT_PUBLIC_USE_MOCK_DATA=true to use client-side mock data (bypasses Railway)
+// NEXT_PUBLIC_USE_MOCK_DATA=false to use real backend API
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' ||
+                       process.env.NEXT_PUBLIC_USE_MOCK_DATA === undefined;
 
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
