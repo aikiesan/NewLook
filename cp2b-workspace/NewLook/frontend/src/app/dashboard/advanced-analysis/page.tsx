@@ -19,7 +19,8 @@ import {
   PieChart,
   Table2,
   ChevronDown,
-  Info
+  Info,
+  MapPin
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
