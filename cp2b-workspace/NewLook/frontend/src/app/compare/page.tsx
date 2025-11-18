@@ -98,7 +98,7 @@ export default function ComparePage() {
                       <div>
                         <dt className="text-xs text-gray-500">Potencial Total</dt>
                         <dd className="text-lg font-medium text-[#1E5128]">
-                          {municipality.totalBiogas?.toLocaleString('pt-BR') || 'N/A'} m³/ano
+                          {municipality.total_biogas_m3_year?.toLocaleString('pt-BR') || 'N/A'} m³/ano
                         </dd>
                       </div>
                       <div>
