@@ -249,54 +249,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Technology Stack Section */}
-      <section className="py-16 bg-gray-50 border-y border-gray-200" role="region" aria-labelledby="tech-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 id="tech-heading" className="text-3xl font-bold text-gray-900 mb-4">
-              Tecnologia Moderna e Robusta
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Construído com as melhores tecnologias do mercado para performance,
-              escalabilidade e experiência do usuário
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">Next.js 15</div>
-              <div className="text-xs text-gray-500">Frontend Framework</div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">FastAPI</div>
-              <div className="text-xs text-gray-500">Backend API</div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">PostgreSQL</div>
-              <div className="text-xs text-gray-500">Database</div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">PostGIS</div>
-              <div className="text-xs text-gray-500">Geospatial</div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">React Leaflet</div>
-              <div className="text-xs text-gray-500">Mapping</div>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="font-bold text-gray-900 mb-1">Supabase</div>
-              <div className="text-xs text-gray-500">Authentication</div>
-            </div>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              TypeScript • Tailwind CSS • Python • WCAG 2.1 AA • SOLID Principles
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 navbar-gradient">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
