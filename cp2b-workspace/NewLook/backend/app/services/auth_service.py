@@ -166,16 +166,16 @@ class AuthService:
             HTTPException: If logout fails
         """
         try:
-            # Set the session for this request
-            self.supabase.auth.set_session(access_token, access_token)
-
-            # Sign out the user
+            # Sign out the user - Supabase handles session invalidation
             self.supabase.auth.sign_out()
 
             return {"message": "Logout successful"}
 
         except Exception as e:
-            # Even if logout fails, we return success (client should clear token)
+            # Log the error but still return success
+            # Client should clear token regardless of server-side result
+            import logging
+            logging.getLogger(__name__).warning(f"Logout warning: {e}")
             return {"message": "Logout successful"}
 
     async def get_current_user(self, access_token: str) -> UserProfile:
