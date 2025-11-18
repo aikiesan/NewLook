@@ -76,7 +76,10 @@ export function getLegendItems() {
  * Format biogas value for display
  * Examples: "123.4 million m³/year", "1.2 billion m³/year"
  */
-export function formatBiogas(value: number): string {
+export function formatBiogas(value: number | undefined | null): string {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
   if (value >= 1_000_000_000) {
     return `${(value / 1_000_000_000).toFixed(2)} billion m³/year`;
   }
@@ -93,7 +96,10 @@ export function formatBiogas(value: number): string {
  * Format biogas value (short version)
  * Examples: "123.4M", "1.2B"
  */
-export function formatBiogasShort(value: number): string {
+export function formatBiogasShort(value: number | undefined | null): string {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
   if (value >= 1_000_000_000) {
     return `${(value / 1_000_000_000).toFixed(1)}B`;
   }
