@@ -74,6 +74,7 @@ export default function TopMunicipalitiesChart({
         callbacks: {
           label: (context) => {
             const value = context.parsed.x;
+            if (value == null) return '0 m³/ano';
             if (value >= 1000000) {
               return `${(value / 1000000).toFixed(2)} milhões m³/ano`;
             } else if (value >= 1000) {
