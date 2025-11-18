@@ -13,6 +13,10 @@ import psycopg2
 from app.core.database import get_db
 from app.middleware.auth import get_current_user, optional_auth
 from app.models.auth import UserProfile
+from app.utils.shapefile_loader import get_shapefile_loader
+
+# Initialize shapefile loader
+shapefile_loader = get_shapefile_loader()
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -297,6 +301,172 @@ async def get_municipality_centroids(
             raise HTTPException(status_code=500, detail="Database query failed")
         finally:
             cursor.close()
+
+
+@router.get(
+    "/municipalities/polygons",
+    summary="Get municipalities with polygon boundaries from shapefile",
+    description="Returns municipality polygon boundaries from shapefile with biogas data from database"
+)
+async def get_municipalities_polygons():
+    """
+    Get municipality boundaries from shapefile joined with biogas data from database.
+
+    This endpoint loads actual polygon boundaries from SP_Municipios_2024.shp
+    and joins them with biogas potential data from the database.
+    """
+    # Load municipality boundaries from shapefile
+    try:
+        shapefile_geojson = shapefile_loader.load_shapefile_as_geojson(
+            "SP_Municipios_2024",
+            simplify_tolerance=0.001  # Simplify to reduce size
+        )
+    except Exception as e:
+        logger.error(f"Error loading municipality shapefile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load municipality boundaries")
+
+    # Get biogas data from database
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        try:
+            # Get all biogas data keyed by IBGE code or name
+            cursor.execute("""
+                SELECT
+                    ibge_code,
+                    municipality_name,
+                    total_biogas_m3_year,
+                    urban_biogas_m3_year,
+                    agricultural_biogas_m3_year,
+                    livestock_biogas_m3_year,
+                    energy_potential_mwh_year,
+                    co2_reduction_tons_year,
+                    population,
+                    administrative_region,
+                    area_km2
+                FROM municipalities
+            """)
+            rows = cursor.fetchall()
+
+            # Create lookup dictionaries by IBGE code and name
+            biogas_by_ibge = {}
+            biogas_by_name = {}
+            for row in rows:
+                ibge_code = str(row.get('ibge_code', '')).strip()
+                name = str(row.get('municipality_name', '')).strip().upper()
+
+                data = {
+                    'total_biogas_m3_year': row.get('total_biogas_m3_year', 0) or 0,
+                    'urban_biogas_m3_year': row.get('urban_biogas_m3_year', 0) or 0,
+                    'agricultural_biogas_m3_year': row.get('agricultural_biogas_m3_year', 0) or 0,
+                    'livestock_biogas_m3_year': row.get('livestock_biogas_m3_year', 0) or 0,
+                    'energy_potential_mwh_year': row.get('energy_potential_mwh_year', 0) or 0,
+                    'co2_reduction_tons_year': row.get('co2_reduction_tons_year', 0) or 0,
+                    'population': row.get('population', 0) or 0,
+                    'administrative_region': row.get('administrative_region', ''),
+                    'area_km2': row.get('area_km2', 0) or 0
+                }
+
+                if ibge_code:
+                    biogas_by_ibge[ibge_code] = data
+                if name:
+                    biogas_by_name[name] = data
+
+            cursor.close()
+
+        except Exception as e:
+            logger.error(f"Error fetching biogas data: {e}")
+            raise HTTPException(status_code=500, detail="Failed to load biogas data")
+
+    # Join shapefile features with biogas data
+    enriched_features = []
+    matched_count = 0
+
+    for feature in shapefile_geojson.get('features', []):
+        props = feature.get('properties', {})
+
+        # Try to match by CD_MUN (IBGE code) or NM_MUN (municipality name)
+        ibge_code = str(props.get('CD_MUN', props.get('cod_ibge', props.get('IBGE', '')))).strip()
+        name = str(props.get('NM_MUN', props.get('nome', props.get('NAME', '')))).strip().upper()
+
+        # Find biogas data
+        biogas_data = None
+        if ibge_code and ibge_code in biogas_by_ibge:
+            biogas_data = biogas_by_ibge[ibge_code]
+        elif name and name in biogas_by_name:
+            biogas_data = biogas_by_name[name]
+
+        # Create enriched properties
+        enriched_props = {
+            'id': ibge_code or name,
+            'name': props.get('NM_MUN', props.get('nome', props.get('NAME', 'Unknown'))),
+            'ibge_code': ibge_code,
+        }
+
+        if biogas_data:
+            matched_count += 1
+            area = biogas_data['area_km2'] or 0
+            pop = biogas_data['population'] or 0
+            enriched_props.update({
+                'total_biogas': round(biogas_data['total_biogas_m3_year'], 2),
+                'total_biogas_m3_year': round(biogas_data['total_biogas_m3_year'], 2),
+                'urban_biogas': round(biogas_data['urban_biogas_m3_year'], 2),
+                'urban_biogas_m3_year': round(biogas_data['urban_biogas_m3_year'], 2),
+                'agricultural_biogas': round(biogas_data['agricultural_biogas_m3_year'], 2),
+                'agricultural_biogas_m3_year': round(biogas_data['agricultural_biogas_m3_year'], 2),
+                'livestock_biogas': round(biogas_data['livestock_biogas_m3_year'], 2),
+                'livestock_biogas_m3_year': round(biogas_data['livestock_biogas_m3_year'], 2),
+                'energy_mwh_year': round(biogas_data['energy_potential_mwh_year'], 2),
+                'energy_potential_mwh_year': round(biogas_data['energy_potential_mwh_year'], 2),
+                'co2_reduction': round(biogas_data['co2_reduction_tons_year'], 2),
+                'co2_reduction_tons_year': round(biogas_data['co2_reduction_tons_year'], 2),
+                'population': pop,
+                'region': biogas_data['administrative_region'],
+                'intermediate_region': biogas_data['administrative_region'],
+                'area_km2': round(area, 2),
+                'population_density': round(pop / area, 2) if area > 0 else 0
+            })
+        else:
+            # No biogas data found - set defaults
+            enriched_props.update({
+                'total_biogas': 0,
+                'total_biogas_m3_year': 0,
+                'urban_biogas': 0,
+                'urban_biogas_m3_year': 0,
+                'agricultural_biogas': 0,
+                'agricultural_biogas_m3_year': 0,
+                'livestock_biogas': 0,
+                'livestock_biogas_m3_year': 0,
+                'energy_mwh_year': 0,
+                'energy_potential_mwh_year': 0,
+                'co2_reduction': 0,
+                'co2_reduction_tons_year': 0,
+                'population': 0,
+                'region': '',
+                'intermediate_region': '',
+                'area_km2': 0,
+                'population_density': 0
+            })
+
+        enriched_features.append({
+            'type': 'Feature',
+            'id': enriched_props['id'],
+            'geometry': feature.get('geometry'),
+            'properties': enriched_props
+        })
+
+    logger.info(f"Matched {matched_count}/{len(enriched_features)} municipalities with biogas data")
+
+    return {
+        'type': 'FeatureCollection',
+        'features': enriched_features,
+        'metadata': {
+            'total_features': len(enriched_features),
+            'matched_with_biogas': matched_count,
+            'source': 'SP_Municipios_2024.shp + Supabase municipalities table',
+            'note': f'{len(enriched_features)} municípios de São Paulo com dados de biogás'
+        }
+    }
 
 
 # ============================================================================

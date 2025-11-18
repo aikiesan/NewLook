@@ -4,6 +4,7 @@ Loads and converts shapefiles to GeoJSON format
 """
 
 import geopandas as gpd
+import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
@@ -61,6 +62,19 @@ class ShapefileLoader:
             if simplify_tolerance:
                 logger.info(f"Simplifying {filename} with tolerance {simplify_tolerance}")
                 gdf['geometry'] = gdf['geometry'].simplify(tolerance=simplify_tolerance, preserve_topology=True)
+
+            # Convert datetime/Timestamp columns to strings to avoid JSON serialization errors
+            for col in gdf.columns:
+                if col == 'geometry':
+                    continue
+                # Check for datetime64 types
+                if pd.api.types.is_datetime64_any_dtype(gdf[col]):
+                    gdf[col] = gdf[col].astype(str).replace('NaT', '')
+                # Check for object columns that might contain Timestamps
+                elif gdf[col].dtype == 'object' and len(gdf) > 0:
+                    sample = gdf[col].dropna().iloc[0] if len(gdf[col].dropna()) > 0 else None
+                    if sample is not None and hasattr(sample, 'timestamp'):
+                        gdf[col] = gdf[col].apply(lambda x: str(x) if pd.notna(x) else '')
 
             # Convert to GeoJSON
             geojson_str = gdf.to_json()

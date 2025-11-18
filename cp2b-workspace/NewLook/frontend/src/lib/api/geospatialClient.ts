@@ -79,7 +79,7 @@ class GeospatialClient {
   private getClientSideMockData<T>(endpoint: string): T {
     const { mockMunicipalitiesGeoJSON, mockSummaryStatistics } = require('@/lib/mockData');
 
-    if (endpoint.includes('/geojson')) {
+    if (endpoint.includes('/geojson') || endpoint.includes('/polygons')) {
       return mockMunicipalitiesGeoJSON as T;
     } else if (endpoint.includes('/summary')) {
       return mockSummaryStatistics as T;
@@ -91,9 +91,10 @@ class GeospatialClient {
 
   /**
    * Get all municipalities as GeoJSON FeatureCollection
+   * Uses /municipalities/polygons endpoint which loads boundaries from shapefile
    */
   async getMunicipalitiesGeoJSON(): Promise<MunicipalityCollection> {
-    return this.fetchJSON<MunicipalityCollection>('/municipalities/geojson');
+    return this.fetchJSON<MunicipalityCollection>('/municipalities/polygons');
   }
 
   /**

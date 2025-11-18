@@ -13,7 +13,7 @@ export default function MapLegend() {
   const legendItems = getLegendItems();
 
   return (
-    <div className="absolute bottom-6 right-6 z-[1000] bg-white rounded-lg shadow-lg">
+    <div className="absolute bottom-6 left-4 z-[1000] bg-white rounded-lg shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
         <h3 className="text-sm font-semibold text-gray-900">

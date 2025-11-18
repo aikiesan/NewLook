@@ -76,7 +76,10 @@ export function getLegendItems() {
  * Format biogas value for display
  * Examples: "123.4 million m³/year", "1.2 billion m³/year"
  */
-export function formatBiogas(value: number): string {
+export function formatBiogas(value: number | undefined | null): string {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'N/A';
+  }
   if (value >= 1_000_000_000) {
     return `${(value / 1_000_000_000).toFixed(2)} billion m³/year`;
   }
@@ -93,7 +96,10 @@ export function formatBiogas(value: number): string {
  * Format biogas value (short version)
  * Examples: "123.4M", "1.2B"
  */
-export function formatBiogasShort(value: number): string {
+export function formatBiogasShort(value: number | undefined | null): string {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'N/A';
+  }
   if (value >= 1_000_000_000) {
     return `${(value / 1_000_000_000).toFixed(1)}B`;
   }
@@ -110,7 +116,10 @@ export function formatBiogasShort(value: number): string {
  * Format population with thousand separators
  * Example: "123,456"
  */
-export function formatPopulation(value: number): string {
+export function formatPopulation(value: number | undefined | null): string {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'N/A';
+  }
   return value.toLocaleString('en-US');
 }
 
@@ -118,7 +127,10 @@ export function formatPopulation(value: number): string {
  * Format area with decimals
  * Example: "1,234.5 km²"
  */
-export function formatArea(value: number): string {
+export function formatArea(value: number | undefined | null): string {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'N/A';
+  }
   return `${value.toLocaleString('en-US', {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1
