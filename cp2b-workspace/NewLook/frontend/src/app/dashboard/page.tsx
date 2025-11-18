@@ -3,15 +3,14 @@
 /**
  * Protected Dashboard Page for CP2B Maps V3
  * Requires authentication
- * V2-inspired design with floating layer control
+ * DBFZ-inspired design with full-width map and floating panels
  */
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { Leaf, LogOut } from 'lucide-react'
+import { Filter } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
+import { DashboardLayout, FloatingFilterPanel } from '@/components/layout'
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
 import { logger } from '@/lib/logger'
 
@@ -30,7 +29,10 @@ const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, loading, logout, isAuthenticated } = useAuth()
+  const { user, loading, isAuthenticated } = useAuth()
+
+  // Filter panel state
+  const [filterPanelOpen, setFilterPanelOpen] = useState(true)
 
   // Filter state
   const [activeFilters, setActiveFilters] = useState<FilterCriteria>({
@@ -49,15 +51,6 @@ export default function DashboardPage() {
       router.push('/login')
     }
   }, [loading, isAuthenticated, router])
-
-  const handleLogout = async () => {
-    try {
-      await logout()
-      router.push('/')
-    } catch (error) {
-      logger.error('Logout error:', error)
-    }
-  }
 
   // Handle filter changes
   const handleFilterChange = (filters: FilterCriteria) => {
@@ -83,56 +76,31 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="navbar-gradient shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-3">
-              <Leaf className="h-8 w-8 text-white" aria-hidden="true" />
-              <h1 className="text-2xl font-bold text-white">CP2B Maps V3</h1>
-            </Link>
+    <DashboardLayout>
+      {/* Full-width Map Container */}
+      <div className="h-[calc(100vh-64px)] relative">
+        {/* Map - Full Width DBFZ Style */}
+        <MapComponent activeFilters={activeFilters} />
 
-            <div className="flex items-center space-x-4">
-              <div className="text-white text-sm">
-                <p className="font-medium">{user.full_name}</p>
-                <p className="text-gray-200 text-xs">
-                  {user.role === 'admin' ? '👑 Administrador' :
-                   user.role === 'autenticado' ? '✓ Autenticado' :
-                   '👋 Visitante'}
-                </p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                aria-label="Sair da conta"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Sair</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+        {/* Floating Filter Panel - Bottom Left */}
+        <FloatingFilterPanel
+          isOpen={filterPanelOpen}
+          onClose={() => setFilterPanelOpen(false)}
+          activeFilters={activeFilters}
+          onFilterChange={handleFilterChange}
+        />
 
-      {/* Main Content - Interactive Map Dashboard */}
-      <main className="h-[calc(100vh-80px)]">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-0">
-          {/* Left Sidebar - V2 Style */}
-          <div className="lg:col-span-1 bg-gray-50 p-4 overflow-y-auto">
-            <DashboardSidebar
-              userName={user.full_name || user.email || 'Usuário'}
-              activeFilters={activeFilters}
-              onFilterChange={handleFilterChange}
-            />
-          </div>
-
-          {/* Map - Main Area with Floating Layer Control */}
-          <div className="lg:col-span-3 bg-white relative">
-            <MapComponent activeFilters={activeFilters} />
-          </div>
-        </div>
-      </main>
-    </div>
+        {/* Toggle Filter Panel Button - When Panel is Closed */}
+        {!filterPanelOpen && (
+          <button
+            onClick={() => setFilterPanelOpen(true)}
+            className="absolute left-4 bottom-4 z-40 p-3 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E5128]"
+            aria-label="Abrir painel de filtros"
+          >
+            <Filter className="h-5 w-5 text-[#1E5128]" />
+          </button>
+        )}
+      </div>
+    </DashboardLayout>
   )
 }
