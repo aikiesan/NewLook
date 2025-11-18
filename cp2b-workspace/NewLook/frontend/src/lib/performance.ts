@@ -110,7 +110,9 @@ export function memoize<T extends (...args: any[]) => any>(
     // Evict oldest if cache is full
     if (cache.size >= maxCacheSize) {
       const firstKey = cache.keys().next().value
-      cache.delete(firstKey)
+      if (firstKey !== undefined) {
+        cache.delete(firstKey)
+      }
     }
     
     cache.set(key, result)
