@@ -34,8 +34,19 @@ class ShapefileLoader:
             shapefile_path = SHAPEFILE_DIR / f"{filename}.shp"
 
             if not shapefile_path.exists():
-                logger.error(f"Shapefile not found: {shapefile_path}")
-                raise FileNotFoundError(f"Shapefile {filename} not found")
+                logger.warning(f"Shapefile not found: {shapefile_path}")
+                # Return empty FeatureCollection instead of raising error
+                return {
+                    "type": "FeatureCollection",
+                    "features": [],
+                    "metadata": {
+                        "source": f"{filename}.shp",
+                        "total_features": 0,
+                        "crs": "EPSG:4326",
+                        "note": f"Shapefile {filename} não encontrado no servidor",
+                        "error": "File not found - shapefiles must be uploaded to Railway"
+                    }
+                }
 
             # Read shapefile
             logger.info(f"Loading shapefile: {filename}")
@@ -68,7 +79,18 @@ class ShapefileLoader:
 
         except Exception as e:
             logger.error(f"Error loading shapefile {filename}: {str(e)}")
-            raise
+            # Return empty FeatureCollection on any error
+            return {
+                "type": "FeatureCollection",
+                "features": [],
+                "metadata": {
+                    "source": f"{filename}.shp",
+                    "total_features": 0,
+                    "crs": "EPSG:4326",
+                    "note": f"Erro ao carregar {filename}",
+                    "error": str(e)
+                }
+            }
 
 
 # Singleton instance
