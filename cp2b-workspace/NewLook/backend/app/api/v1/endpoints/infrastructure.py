@@ -22,18 +22,14 @@ async def get_railways_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with railway lines from Rodovias_Estaduais_SP.shp
     """
-    try:
-        # Use highways shapefile (Rodovias) as proxy for railways
-        # Simplify to reduce file size (tolerance in degrees, ~0.001 = ~100m)
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Rodovias_Estaduais_SP",
-            simplify_tolerance=0.001
-        )
-        geojson["metadata"]["layer_type"] = "railways"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching railways data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch railways data: {str(e)}")
+    # Use highways shapefile (Rodovias) as proxy for railways
+    # Simplify to reduce file size (tolerance in degrees, ~0.001 = ~100m)
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Rodovias_Estaduais_SP",
+        simplify_tolerance=0.001
+    )
+    geojson["metadata"]["layer_type"] = "railways"
+    return geojson
 
 
 @router.get("/pipelines/geojson")
@@ -44,33 +40,29 @@ async def get_pipelines_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with gas pipeline lines from Gasodutos shapefiles
     """
-    try:
-        # Load both distribution and transport pipelines
-        dist_geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Gasodutos_Distribuicao_SP",
-            simplify_tolerance=0.001
-        )
-        transp_geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Gasodutos_Transporte_SP",
-            simplify_tolerance=0.001
-        )
+    # Load both distribution and transport pipelines
+    dist_geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Gasodutos_Distribuicao_SP",
+        simplify_tolerance=0.001
+    )
+    transp_geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Gasodutos_Transporte_SP",
+        simplify_tolerance=0.001
+    )
 
-        # Combine both into one FeatureCollection
-        combined_features = dist_geojson["features"] + transp_geojson["features"]
+    # Combine both into one FeatureCollection
+    combined_features = dist_geojson["features"] + transp_geojson["features"]
 
-        return {
-            "type": "FeatureCollection",
-            "features": combined_features,
-            "metadata": {
-                "source": "Gasodutos_Distribuicao_SP.shp + Gasodutos_Transporte_SP.shp",
-                "total_features": len(combined_features),
-                "layer_type": "pipelines",
-                "note": f"Dados de gasodutos - {len(combined_features)} segmentos"
-            }
+    return {
+        "type": "FeatureCollection",
+        "features": combined_features,
+        "metadata": {
+            "source": "Gasodutos_Distribuicao_SP.shp + Gasodutos_Transporte_SP.shp",
+            "total_features": len(combined_features),
+            "layer_type": "pipelines",
+            "note": f"Dados de gasodutos - {len(combined_features)} segmentos"
         }
-    except Exception as e:
-        logger.error(f"Error fetching pipelines data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch pipelines data: {str(e)}")
+    }
 
 
 @router.get("/substations/geojson")
@@ -81,13 +73,9 @@ async def get_substations_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with substation points from Subestacoes_Energia.shp
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson("Subestacoes_Energia")
-        geojson["metadata"]["layer_type"] = "substations"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching substations data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch substations data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson("Subestacoes_Energia")
+    geojson["metadata"]["layer_type"] = "substations"
+    return geojson
 
 
 @router.get("/biogas-plants/geojson")
@@ -98,13 +86,9 @@ async def get_biogas_plants_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with biogas plant points from Plantas_Biogas_SP.shp
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson("Plantas_Biogas_SP")
-        geojson["metadata"]["layer_type"] = "biogas_plants"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching biogas plants data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch biogas plants data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson("Plantas_Biogas_SP")
+    geojson["metadata"]["layer_type"] = "biogas_plants"
+    return geojson
 
 
 @router.get("/transmission-lines/geojson")
@@ -115,16 +99,12 @@ async def get_transmission_lines_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with transmission line polylines
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Linhas_De_Transmissao_Energia",
-            simplify_tolerance=0.001
-        )
-        geojson["metadata"]["layer_type"] = "transmission_lines"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching transmission lines data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch transmission lines data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Linhas_De_Transmissao_Energia",
+        simplify_tolerance=0.001
+    )
+    geojson["metadata"]["layer_type"] = "transmission_lines"
+    return geojson
 
 
 @router.get("/etes/geojson")
@@ -135,13 +115,9 @@ async def get_etes_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with ETE points
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson("ETEs_2019_SP")
-        geojson["metadata"]["layer_type"] = "etes"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching ETEs data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch ETEs data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson("ETEs_2019_SP")
+    geojson["metadata"]["layer_type"] = "etes"
+    return geojson
 
 
 @router.get("/urban-areas/geojson")
@@ -152,17 +128,13 @@ async def get_urban_areas_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with urban area polygons
     """
-    try:
-        # Urban areas file is large, use higher simplification
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Areas_Urbanas_SP",
-            simplify_tolerance=0.002
-        )
-        geojson["metadata"]["layer_type"] = "urban_areas"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching urban areas data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch urban areas data: {str(e)}")
+    # Urban areas file is large, use higher simplification
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Areas_Urbanas_SP",
+        simplify_tolerance=0.002
+    )
+    geojson["metadata"]["layer_type"] = "urban_areas"
+    return geojson
 
 
 @router.get("/administrative-regions/geojson")
@@ -173,16 +145,12 @@ async def get_admin_regions_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with admin region polygons
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Regiao_Adm_SP",
-            simplify_tolerance=0.001
-        )
-        geojson["metadata"]["layer_type"] = "administrative_regions"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching admin regions data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch admin regions data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Regiao_Adm_SP",
+        simplify_tolerance=0.001
+    )
+    geojson["metadata"]["layer_type"] = "administrative_regions"
+    return geojson
 
 
 @router.get("/intermediate-regions/geojson")
@@ -193,16 +161,12 @@ async def get_intermediate_regions_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with intermediate region polygons
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "SP_RG_Intermediarias_2024",
-            simplify_tolerance=0.001
-        )
-        geojson["metadata"]["layer_type"] = "intermediate_regions"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching intermediate regions data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch intermediate regions data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "SP_RG_Intermediarias_2024",
+        simplify_tolerance=0.001
+    )
+    geojson["metadata"]["layer_type"] = "intermediate_regions"
+    return geojson
 
 
 @router.get("/immediate-regions/geojson")
@@ -213,16 +177,12 @@ async def get_immediate_regions_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with immediate region polygons
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "SP_RG_Imediatas_2024",
-            simplify_tolerance=0.001
-        )
-        geojson["metadata"]["layer_type"] = "immediate_regions"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching immediate regions data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch immediate regions data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "SP_RG_Imediatas_2024",
+        simplify_tolerance=0.001
+    )
+    geojson["metadata"]["layer_type"] = "immediate_regions"
+    return geojson
 
 
 @router.get("/sp-boundary/geojson")
@@ -233,16 +193,12 @@ async def get_sp_boundary_geojson() -> Dict[str, Any]:
     Returns:
         GeoJSON FeatureCollection with state boundary polygon
     """
-    try:
-        geojson = shapefile_loader.load_shapefile_as_geojson(
-            "Limite_SP",
-            simplify_tolerance=0.002
-        )
-        geojson["metadata"]["layer_type"] = "state_boundary"
-        return geojson
-    except Exception as e:
-        logger.error(f"Error fetching SP boundary data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch SP boundary data: {str(e)}")
+    geojson = shapefile_loader.load_shapefile_as_geojson(
+        "Limite_SP",
+        simplify_tolerance=0.002
+    )
+    geojson["metadata"]["layer_type"] = "state_boundary"
+    return geojson
 
 
 @router.get("/health")
