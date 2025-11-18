@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       } else {
         // Fallback: Use auth user data directly (for when user_profiles doesn't exist)
-        console.log('Using auth user data (user_profiles table not found or empty)')
+        logger.debug('Using auth user data (user_profiles table not found or empty)')
         setUser({
           id: authUser.id,
           email: authUser.email || '',
@@ -188,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If table doesn't exist, just update local state
       if (error && error.code === '42P01') {
         // Table doesn't exist, update local state only
-        console.log('user_profiles table not found, updating local state only')
+        logger.debug('user_profiles table not found, updating local state only')
         setUser({
           ...user,
           full_name,

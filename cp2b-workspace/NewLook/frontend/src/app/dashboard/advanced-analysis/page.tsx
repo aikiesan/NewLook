@@ -8,12 +8,12 @@
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { 
-  ArrowLeft, 
-  TrendingUp, 
-  RefreshCw, 
-  Download, 
-  Search, 
+import {
+  ArrowLeft,
+  TrendingUp,
+  RefreshCw,
+  Download,
+  Search,
   Filter,
   BarChart3,
   PieChart,
