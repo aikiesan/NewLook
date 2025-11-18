@@ -28,7 +28,22 @@
       "Bash(git commit:*)",
       "Bash(git rm:*)",
       "Bash(git init:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git pull:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(dir \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\project_map\\data\\database\\cp2b_maps.db\")",
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
+      "Bash(chcp 65001)",
+      "Bash(nul)",
+      "Bash(git fetch:*)",
+      "Bash(npm run build:*)",
+      "Bash(sqlite3:*)",
+      "WebFetch(domain:datalab.dbfz.de)",
+      "Bash(python3:*)",
+      "Bash(tee:*)",
+      "Bash(git merge:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []
