@@ -2,13 +2,15 @@
 MapBiomas API endpoints for raster tile serving
 Provides dynamic tile generation from MapBiomas agricultural land use data
 """
+from __future__ import annotations
+
 import os
 import json
 import math
 import logging
 from pathlib import Path
 from io import BytesIO
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import StreamingResponse
@@ -21,6 +23,7 @@ try:
     HAS_RASTER_DEPS = True
 except ImportError:
     HAS_RASTER_DEPS = False
+    np = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
