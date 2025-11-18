@@ -53,7 +53,6 @@ export default function MapComponent({
     { id: 'transmission-lines', name: 'Linhas de Transmissão', visible: false, category: 'infrastructure' as const, icon: '🔌' },
     { id: 'etes', name: 'ETEs', visible: false, category: 'infrastructure' as const, icon: '💧' },
     { id: 'railways', name: 'Rodovias', visible: false, category: 'infrastructure' as const, icon: '🛣️' },
-    { id: 'urban-areas', name: 'Áreas Urbanas', visible: false, category: 'administrative' as const, icon: '🏙️' },
     { id: 'admin-regions', name: 'Regiões Administrativas', visible: false, category: 'administrative' as const, icon: '🗺️' },
     { id: 'intermediate-regions', name: 'Regiões Intermediárias', visible: false, category: 'administrative' as const, icon: '📍' },
     { id: 'immediate-regions', name: 'Regiões Imediatas', visible: false, category: 'administrative' as const, icon: '📌' },
@@ -231,10 +230,6 @@ export default function MapComponent({
 
         {visibleLayerIds.includes('etes') && (
           <InfrastructureLayer layerType="etes" />
-        )}
-
-        {visibleLayerIds.includes('urban-areas') && (
-          <InfrastructureLayer layerType="urban-areas" />
         )}
 
         {/* Legend - Only show if municipalities layer is visible */}

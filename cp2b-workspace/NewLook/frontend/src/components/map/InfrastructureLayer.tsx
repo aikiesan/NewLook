@@ -18,7 +18,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
     : 'http://localhost:8000');
 
 interface InfrastructureLayerProps {
-  layerType: 'railways' | 'pipelines' | 'substations' | 'biogas-plants' | 'transmission-lines' | 'etes' | 'urban-areas' | 'admin-regions' | 'intermediate-regions' | 'immediate-regions';
+  layerType: 'railways' | 'pipelines' | 'substations' | 'biogas-plants' | 'transmission-lines' | 'etes' | 'admin-regions' | 'intermediate-regions' | 'immediate-regions';
 }
 
 // Layer styling configurations
@@ -38,13 +38,6 @@ const layerStyles: Record<string, any> = {
     weight: 2,
     opacity: 0.7,
     dashArray: '5, 5'
-  },
-  'urban-areas': {
-    color: '#DC143C',
-    weight: 1,
-    opacity: 0.4,
-    fillColor: '#DC143C',
-    fillOpacity: 0.2
   },
   'admin-regions': {
     color: '#4169E1',

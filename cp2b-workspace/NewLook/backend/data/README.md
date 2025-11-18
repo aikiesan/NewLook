@@ -11,7 +11,6 @@ All data files are sourced from: https://github.com/aikiesan/project_map
 ```
 backend/data/
 ├── shapefiles/          # Vector data (roads, pipelines, etc.)
-│   ├── Areas_Urbanas_SP.shp
 │   ├── ETEs_2019_SP.shp
 │   ├── Gasodutos_Distribuicao_SP.shp
 │   ├── Gasodutos_Transporte_SP.shp
@@ -27,6 +26,8 @@ backend/data/
 │   └── Subestacoes_Energia.shp
 └── rasters/             # Raster data (MapBiomas)
     └── mapbiomas_agropecuaria_sp_2024.tif
+
+**Note**: Areas_Urbanas_SP.shp (~36MB) is excluded from deployment to reduce build size.
 ```
 
 ## Deploying to Railway
@@ -87,11 +88,10 @@ The backend automatically returns empty GeoJSON FeatureCollections when shapefil
 
 ## File Sizes
 
-- `Areas_Urbanas_SP.shp`: ~36MB
 - `Gasodutos_Distribuicao_SP.shp`: ~12MB
 - `mapbiomas_agropecuaria_sp_2024.tif`: ~13MB
 - Other files: < 5MB each
-- **Total**: ~94MB
+- **Total**: ~58MB (excluding Areas_Urbanas_SP.shp which was ~36MB)
 
 ## Dependencies Required
 
