@@ -21,7 +21,7 @@ interface MunicipalityLayerProps {
 export default function MunicipalityLayer({ data }: MunicipalityLayerProps) {
   // Style function for polygons (choropleth)
   const style = (feature?: Feature) => {
-    if (!feature) return {};
+    if (!feature || !feature.properties) return {};
 
     const biogas = feature.properties.total_biogas_m3_year || 0;
     const color = getBiogasColor(biogas);
@@ -37,6 +37,8 @@ export default function MunicipalityLayer({ data }: MunicipalityLayerProps) {
 
   // Event handlers for each feature
   const onEachFeature = (feature: any, layer: L.Layer) => {
+    if (!feature || !feature.properties) return;
+
     const props = feature.properties;
 
     // Tooltip (hover)
