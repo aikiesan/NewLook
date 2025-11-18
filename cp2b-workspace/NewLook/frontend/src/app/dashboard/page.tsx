@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
-import { LogOut, Map, TrendingUp, MapPin, Info, Users } from 'lucide-react'
+import { LogOut, Map, TrendingUp, MapPin, Info, Users, FlaskConical } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
@@ -119,6 +119,13 @@ export default function DashboardPage() {
                 <span>Análises Avançadas</span>
               </Link>
               <Link
+                href="/dashboard/scientific-database"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+              >
+                <FlaskConical className="h-4 w-4" />
+                <span>Base Científica</span>
+              </Link>
+              <Link
                 href="/dashboard/proximity"
                 className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
               >
@@ -177,6 +184,13 @@ export default function DashboardPage() {
             >
               <TrendingUp className="h-4 w-4" />
               <span>Análises</span>
+            </Link>
+            <Link
+              href="/dashboard/scientific-database"
+              className="flex items-center gap-2 px-3 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+            >
+              <FlaskConical className="h-4 w-4" />
+              <span>Científica</span>
             </Link>
             <Link
               href="/dashboard/proximity"
