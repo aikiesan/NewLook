@@ -18,26 +18,62 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
     : 'http://localhost:8000');
 
 interface InfrastructureLayerProps {
-  layerType: 'railways' | 'pipelines' | 'substations' | 'biogas-plants';
+  layerType: 'railways' | 'pipelines' | 'substations' | 'biogas-plants' | 'transmission-lines' | 'etes' | 'urban-areas' | 'admin-regions' | 'intermediate-regions' | 'immediate-regions';
 }
 
 // Layer styling configurations
 const layerStyles: Record<string, any> = {
   railways: {
-    color: '#000000',
-    weight: 3,
-    opacity: 0.8,
-    dashArray: '5, 5'
+    color: '#8B4513',
+    weight: 2,
+    opacity: 0.7
   },
   pipelines: {
     color: '#FF6B35',
     weight: 3,
     opacity: 0.8
   },
+  'transmission-lines': {
+    color: '#FFD700',
+    weight: 2,
+    opacity: 0.7,
+    dashArray: '5, 5'
+  },
+  'urban-areas': {
+    color: '#DC143C',
+    weight: 1,
+    opacity: 0.4,
+    fillColor: '#DC143C',
+    fillOpacity: 0.2
+  },
+  'admin-regions': {
+    color: '#4169E1',
+    weight: 2,
+    opacity: 0.6,
+    fillColor: '#4169E1',
+    fillOpacity: 0.1
+  },
+  'intermediate-regions': {
+    color: '#9370DB',
+    weight: 2,
+    opacity: 0.6,
+    fillColor: '#9370DB',
+    fillOpacity: 0.1
+  },
+  'immediate-regions': {
+    color: '#8A2BE2',
+    weight: 1.5,
+    opacity: 0.6,
+    fillColor: '#8A2BE2',
+    fillOpacity: 0.1
+  },
   substations: {
     // Point features use markers instead of styles
   },
   'biogas-plants': {
+    // Point features use markers instead of styles
+  },
+  etes: {
     // Point features use markers instead of styles
   }
 };
@@ -84,6 +120,28 @@ const createBiogasPlantIcon = () => {
     `,
     iconSize: [18, 18],
     iconAnchor: [9, 9]
+  });
+};
+
+const createETEIcon = () => {
+  return L.divIcon({
+    className: 'custom-ete-icon',
+    html: `
+      <div style="
+        background-color: #4682B4;
+        border: 2px solid #1E3A8A;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <span style="color: white; font-size: 10px; font-weight: bold;">💧</span>
+      </div>
+    `,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
   });
 };
 
@@ -135,7 +193,7 @@ export default function InfrastructureLayer({ layerType }: InfrastructureLayerPr
     };
   };
 
-  // Point to layer function for point features (substations, biogas plants)
+  // Point to layer function for point features (substations, biogas plants, ETEs)
   const pointToLayer = (feature: any, latlng: L.LatLng) => {
     let icon: L.DivIcon;
 
@@ -143,6 +201,8 @@ export default function InfrastructureLayer({ layerType }: InfrastructureLayerPr
       icon = createSubstationIcon();
     } else if (layerType === 'biogas-plants') {
       icon = createBiogasPlantIcon();
+    } else if (layerType === 'etes') {
+      icon = createETEIcon();
     } else {
       // Default marker
       icon = L.divIcon({

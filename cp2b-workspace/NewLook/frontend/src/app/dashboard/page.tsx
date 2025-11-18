@@ -3,6 +3,7 @@
 /**
  * Protected Dashboard Page for CP2B Maps V3
  * Requires authentication
+ * V2-inspired design with floating layer control
  */
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,9 +11,8 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Leaf, LogOut } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import StatsPanel from '@/components/dashboard/StatsPanel'
-import LayerControl from '@/components/dashboard/LayerControl'
-import FilterPanel, { type FilterCriteria } from '@/components/dashboard/FilterPanel'
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
+import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
 import { logger } from '@/lib/logger'
 
 // Dynamically import Map component to avoid SSR issues
@@ -31,9 +31,6 @@ const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
 export default function DashboardPage() {
   const router = useRouter()
   const { user, loading, logout, isAuthenticated } = useAuth()
-
-  // Layer visibility state
-  const [visibleLayers, setVisibleLayers] = useState<string[]>(['municipalities', 'biogas-potential'])
 
   // Filter state
   const [activeFilters, setActiveFilters] = useState<FilterCriteria>({
@@ -60,16 +57,6 @@ export default function DashboardPage() {
     } catch (error) {
       logger.error('Logout error:', error)
     }
-  }
-
-  // Handle layer toggle
-  const handleLayerToggle = (layerId: string, visible: boolean) => {
-    setVisibleLayers(prev =>
-      visible
-        ? [...prev, layerId]
-        : prev.filter(id => id !== layerId)
-    )
-    logger.info(`Layer ${layerId} toggled: ${visible}`)
   }
 
   // Handle filter changes
@@ -131,39 +118,18 @@ export default function DashboardPage() {
       {/* Main Content - Interactive Map Dashboard */}
       <main className="h-[calc(100vh-80px)]">
         <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-0">
-          {/* Left Sidebar - Stats, Layers & Filters */}
+          {/* Left Sidebar - V2 Style */}
           <div className="lg:col-span-1 bg-gray-50 p-4 overflow-y-auto">
-            <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900">
-                Dashboard CP2B
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Olá, {user.full_name}!
-              </p>
-            </div>
-
-            {/* Statistics Panel */}
-            <div className="mb-4">
-              <StatsPanel />
-            </div>
-
-            {/* Layer Control */}
-            <div className="mb-4">
-              <LayerControl onLayerToggle={handleLayerToggle} />
-            </div>
-
-            {/* Filter Panel */}
-            <div className="mb-4">
-              <FilterPanel onFilterChange={handleFilterChange} />
-            </div>
+            <DashboardSidebar
+              userName={user.full_name || user.email || 'Usuário'}
+              activeFilters={activeFilters}
+              onFilterChange={handleFilterChange}
+            />
           </div>
 
-          {/* Map - Main Area */}
-          <div className="lg:col-span-3 bg-white p-4">
-            <MapComponent
-              visibleLayers={visibleLayers}
-              activeFilters={activeFilters}
-            />
+          {/* Map - Main Area with Floating Layer Control */}
+          <div className="lg:col-span-3 bg-white relative">
+            <MapComponent activeFilters={activeFilters} />
           </div>
         </div>
       </main>
