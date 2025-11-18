@@ -10,13 +10,22 @@ wget -q https://github.com/aikiesan/project_map/archive/refs/heads/main.zip -O /
 # Extract
 unzip -q /tmp/project_map.zip -d /tmp/
 
-# Copy shapefiles
-cp -r /tmp/project_map-main/data/shapefile/* data/shapefiles/
+# Copy shapefiles (excluding heavy urban areas file)
+echo "📦 Copying shapefiles (excluding Areas_Urbanas_SP - too large)..."
+for file in /tmp/project_map-main/data/shapefile/*; do
+    filename=$(basename "$file")
+    # Skip Areas_Urbanas_SP files (all extensions)
+    if [[ ! "$filename" =~ ^Areas_Urbanas_SP\. ]]; then
+        cp "$file" data/shapefiles/
+    fi
+done
+
+# Copy rasters
 cp -r /tmp/project_map-main/data/rasters/* data/rasters/
 
 # Cleanup
 rm -rf /tmp/project_map.zip /tmp/project_map-main
 
-echo "✅ Shapefiles downloaded successfully"
+echo "✅ Shapefiles downloaded successfully (excluding Areas_Urbanas_SP)"
 echo "📊 Total shapefile files: $(ls -1 data/shapefiles/*.shp 2>/dev/null | wc -l)"
 echo "📊 Total raster files: $(ls -1 data/rasters/*.tif 2>/dev/null | wc -l)"

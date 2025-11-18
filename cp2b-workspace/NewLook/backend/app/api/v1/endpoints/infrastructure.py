@@ -120,23 +120,6 @@ async def get_etes_geojson() -> Dict[str, Any]:
     return geojson
 
 
-@router.get("/urban-areas/geojson")
-async def get_urban_areas_geojson() -> Dict[str, Any]:
-    """
-    Get urban areas GeoJSON for São Paulo state
-
-    Returns:
-        GeoJSON FeatureCollection with urban area polygons
-    """
-    # Urban areas file is large, use higher simplification
-    geojson = shapefile_loader.load_shapefile_as_geojson(
-        "Areas_Urbanas_SP",
-        simplify_tolerance=0.002
-    )
-    geojson["metadata"]["layer_type"] = "urban_areas"
-    return geojson
-
-
 @router.get("/administrative-regions/geojson")
 async def get_admin_regions_geojson() -> Dict[str, Any]:
     """
