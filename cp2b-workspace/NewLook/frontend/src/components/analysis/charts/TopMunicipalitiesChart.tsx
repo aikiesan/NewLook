@@ -130,10 +130,10 @@ export default function TopMunicipalitiesChart({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 h-[400px] flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-md p-6 h-[450px] flex items-center justify-center border border-gray-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">Carregando dados...</span>
+          <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-gray-600 font-medium">Carregando dados...</span>
         </div>
       </div>
     );
@@ -141,15 +141,18 @@ export default function TopMunicipalitiesChart({
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 h-[400px] flex items-center justify-center">
-        <span className="text-sm text-gray-500">Nenhum dado disponível</span>
+      <div className="bg-white rounded-xl shadow-md p-6 h-[450px] flex items-center justify-center border border-gray-100">
+        <div className="text-center">
+          <div className="text-4xl mb-3">📊</div>
+          <span className="text-sm text-gray-500">Nenhum dado disponível</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="h-[400px]">
+    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+      <div className="h-[450px]">
         <Bar data={chartData} options={options} />
       </div>
     </div>

@@ -129,10 +129,10 @@ export default function DistributionHistogram({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 h-[400px] flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-md p-6 h-[450px] flex items-center justify-center border border-gray-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">Carregando dados...</span>
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-gray-600 font-medium">Carregando dados...</span>
         </div>
       </div>
     );
@@ -140,37 +140,43 @@ export default function DistributionHistogram({
 
   if (!histogram || histogram.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 h-[400px] flex items-center justify-center">
-        <span className="text-sm text-gray-500">Nenhum dado disponível</span>
+      <div className="bg-white rounded-xl shadow-md p-6 h-[450px] flex items-center justify-center border border-gray-100">
+        <div className="text-center">
+          <div className="text-4xl mb-3">📈</div>
+          <span className="text-sm text-gray-500">Nenhum dado disponível</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="h-[300px]">
+    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+      <div className="h-[320px]">
         <Bar data={chartData} options={options} />
       </div>
 
       {/* Statistics Summary */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <h4 className="text-xs font-semibold text-gray-600 mb-2 uppercase">Estatísticas</h4>
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="bg-gray-50 rounded p-2">
-            <span className="text-gray-500 block">Média</span>
-            <span className="font-semibold text-gray-800">
+      <div className="mt-5 pt-5 border-t border-gray-200">
+        <h4 className="text-xs font-semibold text-gray-600 mb-3 uppercase flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+          Estatísticas da Distribuição
+        </h4>
+        <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-3 border border-blue-100">
+            <span className="text-gray-600 block mb-1">Média</span>
+            <span className="font-bold text-blue-900 text-base">
               {(statistics.mean / 1000000).toFixed(2)}M
             </span>
           </div>
-          <div className="bg-gray-50 rounded p-2">
-            <span className="text-gray-500 block">Mediana</span>
-            <span className="font-semibold text-gray-800">
+          <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg p-3 border border-purple-100">
+            <span className="text-gray-600 block mb-1">Mediana</span>
+            <span className="font-bold text-purple-900 text-base">
               {(statistics.median / 1000000).toFixed(2)}M
             </span>
           </div>
-          <div className="bg-gray-50 rounded p-2">
-            <span className="text-gray-500 block">Desvio Padrão</span>
-            <span className="font-semibold text-gray-800">
+          <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-3 border border-orange-100">
+            <span className="text-gray-600 block mb-1">Desvio Padrão</span>
+            <span className="font-bold text-orange-900 text-base">
               {(statistics.std / 1000000).toFixed(2)}M
             </span>
           </div>
