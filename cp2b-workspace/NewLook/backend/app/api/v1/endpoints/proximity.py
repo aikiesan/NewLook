@@ -13,6 +13,13 @@ import time
 
 from app.services.proximity_service import ProximityService
 from app.services.mapbiomas_service import MapBiomasService
+from app.services.cache_service import (
+    proximity_cache,
+    get_proximity_cache_key,
+    get_mapbiomas_cache_key,
+    mapbiomas_cache
+)
+from app.services.validation_service import ValidationService, ValidationError
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -167,6 +174,41 @@ async def analyze_proximity(request: ProximityAnalysisRequest):
     logger.info(f"Starting proximity analysis {analysis_id}")
     logger.info(f"Point: ({request.latitude}, {request.longitude}), Radius: {request.radius_km}km")
 
+    # Sprint 4: Validate request (Task 4.2 - Error Handling & Edge Cases)
+    try:
+        validation_result = ValidationService.validate_analysis_request(
+            request.latitude,
+            request.longitude,
+            request.radius_km
+        )
+        # Log warnings if any
+        for warning in validation_result.get("warnings", []):
+            logger.warning(f"Validation warning: {warning}")
+    except ValidationError as e:
+        logger.warning(f"Validation failed: {e.message}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": e.message,
+                "code": e.code,
+                "suggestion": e.suggestion
+            }
+        )
+
+    # Check cache first (Sprint 4: Performance Optimization)
+    cache_key = get_proximity_cache_key(request.latitude, request.longitude, request.radius_km)
+    cached_result = proximity_cache.get(cache_key)
+    
+    if cached_result is not None:
+        logger.info(f"✅ Cache hit for proximity analysis {analysis_id}")
+        # Add cache indicator to response
+        cached_result["from_cache"] = True
+        cached_result["analysis_id"] = analysis_id
+        # Add validation warnings to cached result
+        if validation_result.get("warnings"):
+            cached_result["warnings"] = validation_result["warnings"]
+        return cached_result
+
     try:
         # Initialize services
         proximity_service = ProximityService()
@@ -271,6 +313,12 @@ async def analyze_proximity(request: ProximityAnalysisRequest):
         )
 
         logger.info(f"Analysis {analysis_id} completed in {processing_time}ms")
+        
+        # Store in cache (Sprint 4: Performance Optimization - 5 min TTL)
+        response_dict = response.dict()
+        response_dict["from_cache"] = False
+        proximity_cache.set(cache_key, response_dict, ttl=300)
+        
         return response
 
     except Exception as e:

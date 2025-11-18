@@ -1,6 +1,7 @@
 """
 CP2B Maps V3 Backend API
 FastAPI application for geospatial biogas potential analysis
+Sprint 4: Performance optimizations, error handling, and production deployment
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +15,9 @@ from datetime import datetime, timezone
 from app.core.config import settings
 from app.core.database import test_db_connection
 from app.api.v1.api import api_router
+from app.middleware.rate_limiter import rate_limit_middleware
+from app.middleware.response_compression import gzip_middleware
+from app.services.cache_service import get_all_cache_stats
 
 # Create FastAPI app
 app = FastAPI(
@@ -24,7 +28,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware - NO WILDCARDS
+# Sprint 4: Performance Middleware (applied in order)
+# 1. Rate limiting (prevents abuse)
+app.middleware("http")(rate_limit_middleware)
+
+# 2. CORS middleware - NO WILDCARDS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes both default and production origins
@@ -33,6 +41,9 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "Accept"],  # Explicit headers only
     max_age=3600,  # Cache preflight requests for 1 hour
 )
+
+# 3. Response compression (reduces bandwidth)
+app.middleware("http")(gzip_middleware)
 
 # Trusted host middleware - DISABLED for Railway deployment
 # Railway uses dynamic host headers that don't work well with TrustedHostMiddleware
@@ -115,6 +126,19 @@ async def liveness_check():
     return {
         "alive": True,
         "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.get("/stats/cache")
+async def cache_statistics():
+    """
+    Cache performance statistics (Sprint 4)
+    Shows hit rates and cache efficiency
+    """
+    stats = get_all_cache_stats()
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "caches": stats
     }
 
 if __name__ == "__main__":
