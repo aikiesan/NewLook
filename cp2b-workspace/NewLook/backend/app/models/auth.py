@@ -2,9 +2,10 @@
 Authentication models for CP2B Maps V3
 Pydantic models for request/response validation
 """
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, Literal
 from datetime import datetime
+import re
 
 # User role types
 UserRole = Literal["visitante", "autenticado", "admin"]
@@ -12,14 +13,34 @@ UserRole = Literal["visitante", "autenticado", "admin"]
 class UserRegistration(BaseModel):
     """User registration request model"""
     email: EmailStr
-    password: str = Field(..., min_length=6, max_length=100)
+    password: str = Field(..., min_length=8, max_length=100)
     full_name: str = Field(..., min_length=2, max_length=100)
+
+    @field_validator('password')
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """
+        Validate password strength requirements.
+
+        Requirements:
+        - At least 8 characters (enforced by Field)
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one digit
+        """
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one digit')
+        return v
 
     class Config:
         json_schema_extra = {
             "example": {
                 "email": "usuario@example.com",
-                "password": "senhaSegura123",
+                "password": "SenhaSegura123",
                 "full_name": "João Silva"
             }
         }
