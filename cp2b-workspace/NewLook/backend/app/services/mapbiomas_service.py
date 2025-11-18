@@ -10,8 +10,16 @@ import numpy as np
 from collections import Counter
 import json
 
-import rasterio
-from rasterio.mask import mask
+# Optional rasterio import - requires GDAL system dependencies
+try:
+    import rasterio
+    from rasterio.mask import mask
+    RASTERIO_AVAILABLE = True
+except ImportError:
+    RASTERIO_AVAILABLE = False
+    rasterio = None
+    mask = None
+
 from shapely.geometry import Point, mapping
 from shapely.ops import transform
 import pyproj
@@ -140,6 +148,7 @@ class MapBiomasService:
         """Initialize service and check raster availability"""
         self.raster_path = RASTER_PATH
         self._raster_info = None
+        self._rasterio_available = RASTERIO_AVAILABLE
 
         # Coordinate transformers
         self.wgs84_to_utm = pyproj.Transformer.from_crs(
@@ -149,11 +158,15 @@ class MapBiomasService:
             UTM_23S, WGS84, always_xy=True
         ).transform
 
-        if not self.raster_path.exists():
+        if not RASTERIO_AVAILABLE:
+            logger.warning("Rasterio not available - MapBiomas analysis disabled")
+        elif not self.raster_path.exists():
             logger.warning(f"MapBiomas raster not found at {self.raster_path}")
 
-    def _get_raster_info(self) -> Dict[str, Any]:
+    def _get_raster_info(self) -> Optional[Dict[str, Any]]:
         """Get cached raster metadata"""
+        if not self._rasterio_available:
+            return None
         if self._raster_info is None and self.raster_path.exists():
             with rasterio.open(self.raster_path) as src:
                 self._raster_info = {
@@ -183,6 +196,15 @@ class MapBiomasService:
         Returns:
             Dictionary with land use analysis results
         """
+        if not self._rasterio_available:
+            return {
+                "error": "Rasterio library not installed - MapBiomas analysis unavailable",
+                "total_area_km2": 0,
+                "by_class": {},
+                "dominant_class": "unknown",
+                "agricultural_percent": 0
+            }
+
         if not self.raster_path.exists():
             return {
                 "error": "MapBiomas raster not available",

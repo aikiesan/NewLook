@@ -106,7 +106,7 @@ export default function CategoryComparisonChart({
         callbacks: {
           label: (context) => {
             const value = context.parsed.y;
-            return `Total: ${value.toFixed(2)} bilhões m³/ano`;
+            return `Total: ${value?.toFixed(2) ?? '0.00'} bilhões m³/ano`;
           }
         }
       }
