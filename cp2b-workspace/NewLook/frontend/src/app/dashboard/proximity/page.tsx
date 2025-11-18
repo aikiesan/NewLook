@@ -3,25 +3,221 @@
 /**
  * Dashboard Proximity Analysis Page for CP2B Maps V3
  * Spatial analysis with capture radius and land use integration (MapBiomas)
- * Based on CP2B Maps V2 Proximity Analysis features
+ * Fully functional implementation using backend API
  */
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, MapPin, Circle, Layers, Info } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
+import {
+  ArrowLeft,
+  MapPin,
+  Circle,
+  Layers,
+  Download,
+  Share2,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Info,
+  Building,
+  Leaf,
+  Zap
+} from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import {
+  analyzeProximity,
+  exportAnalysisToCSV,
+  generateShareURL,
+  parseShareURL
+} from '@/services/proximityApi'
+
+// Dynamically import map to avoid SSR issues
+const ProximityMap = dynamic(() => import('@/components/map/ProximityMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 text-purple-600 animate-spin mx-auto mb-2" />
+        <p className="text-gray-600">Carregando mapa...</p>
+      </div>
+    </div>
+  )
+})
+
+interface AnalysisResult {
+  analysis_id: string
+  request: {
+    latitude: number
+    longitude: number
+    radius_km: number
+  }
+  results: {
+    buffer_geometry: any
+    municipalities: any[]
+    biogas_potential?: {
+      total_m3_year: number
+      by_category: Record<string, number>
+      energy_potential_mwh_year: number
+      co2_reduction_tons_year: number
+      homes_powered_equivalent: number
+    }
+    land_use?: {
+      total_area_km2: number
+      by_class: Record<string, any>
+      dominant_class: string
+      agricultural_percent: number
+    }
+    infrastructure?: any[]
+  }
+  summary: {
+    total_area_km2: number
+    total_municipalities: number
+    total_population: number
+    total_biogas_m3_year: number
+    energy_potential_mwh_year: number
+    radius_recommendation: string
+  }
+  metadata: {
+    analysis_timestamp: string
+    processing_time_ms: number
+  }
+}
 
 export default function ProximityAnalysisPage() {
   const router = useRouter()
-  const { user, loading, isAuthenticated } = useAuth()
+  const searchParams = useSearchParams()
+  const { user, loading: authLoading, isAuthenticated } = useAuth()
+
+  // Analysis state
+  const [selectedPoint, setSelectedPoint] = useState<{lat: number, lng: number} | null>(null)
+  const [radius, setRadius] = useState(20)
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showShareToast, setShowShareToast] = useState(false)
+
+  // Parse URL parameters for shared analysis
+  useEffect(() => {
+    const params = parseShareURL()
+    if (params.latitude && params.longitude) {
+      setSelectedPoint({ lat: params.latitude, lng: params.longitude })
+      if (params.radiusKm) {
+        setRadius(params.radiusKm)
+      }
+    }
+  }, [searchParams])
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login')
     }
-  }, [loading, isAuthenticated, router])
+  }, [authLoading, isAuthenticated, router])
 
-  if (loading) {
+  // Handle map click
+  const handleMapClick = useCallback((lat: number, lng: number) => {
+    setSelectedPoint({ lat, lng })
+    setAnalysisResult(null)
+    setError(null)
+  }, [])
+
+  // Perform analysis
+  const handleAnalyze = async () => {
+    if (!selectedPoint) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const result = await analyzeProximity({
+        latitude: selectedPoint.lat,
+        longitude: selectedPoint.lng,
+        radius_km: radius
+      })
+      setAnalysisResult(result as unknown as AnalysisResult)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao realizar análise')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Export results
+  const handleExport = () => {
+    if (!analysisResult) return
+
+    // Convert to format expected by export function
+    const exportData = {
+      analysis_point: {
+        latitude: analysisResult.request.latitude,
+        longitude: analysisResult.request.longitude
+      },
+      radius_km: analysisResult.request.radius_km,
+      land_use: {
+        agricultural_percentage: analysisResult.results.land_use?.agricultural_percent || 0,
+        total_area_km2: analysisResult.results.land_use?.total_area_km2 || 0,
+        breakdown: Object.entries(analysisResult.results.land_use?.by_class || {}).map(([key, value]: [string, any]) => ({
+          class_name: value.name || key,
+          percentage: value.percent || 0,
+          area_km2: value.area_km2 || 0,
+          color: value.color || '#888'
+        }))
+      },
+      municipalities: analysisResult.results.municipalities.map((m: any) => ({
+        name: m.name,
+        ibge_code: m.ibge_code || '',
+        distance_km: m.distance_km || 0,
+        biogas_m3_year: m.biogas_m3_year || 0,
+        population: m.population || 0
+      })),
+      biogas_potential: {
+        agricultural: analysisResult.results.biogas_potential?.by_category?.agricultural || 0,
+        livestock: analysisResult.results.biogas_potential?.by_category?.livestock || 0,
+        urban: analysisResult.results.biogas_potential?.by_category?.urban || 0,
+        total: analysisResult.results.biogas_potential?.total_m3_year || 0
+      },
+      infrastructure: (analysisResult.results.infrastructure || []).map((inf: any) => ({
+        type: inf.type,
+        name: inf.name || '',
+        distance_km: inf.distance_km || 0,
+        coordinates: inf.coordinates || { latitude: 0, longitude: 0 }
+      })),
+      summary: {
+        total_municipalities: analysisResult.summary.total_municipalities,
+        total_population: analysisResult.summary.total_population,
+        avg_distance_km: 0,
+        total_biogas_m3_year: analysisResult.summary.total_biogas_m3_year
+      },
+      processing_time_seconds: analysisResult.metadata.processing_time_ms / 1000
+    }
+
+    exportAnalysisToCSV(exportData as any)
+  }
+
+  // Share analysis
+  const handleShare = () => {
+    if (!selectedPoint) return
+
+    const url = generateShareURL(selectedPoint.lat, selectedPoint.lng, radius)
+    navigator.clipboard.writeText(url)
+    setShowShareToast(true)
+    setTimeout(() => setShowShareToast(false), 3000)
+  }
+
+  // Get radius color based on recommendation
+  const getRadiusColor = (km: number) => {
+    if (km <= 20) return 'text-green-600'
+    if (km <= 30) return 'text-yellow-600'
+    return 'text-red-600'
+  }
+
+  const getRadiusLabel = (km: number) => {
+    if (km <= 20) return 'Ótimo'
+    if (km <= 30) return 'Aceitável'
+    return 'Excessivo'
+  }
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -38,252 +234,328 @@ export default function ProximityAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with purple gradient (matching V2 style) */}
+      {/* Header with purple gradient */}
       <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center text-white/80 hover:text-white mb-6 transition-colors"
+            className="flex items-center text-white/80 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Voltar ao Dashboard
           </button>
 
-          <h1 className="text-4xl font-bold mb-3">🎯 Análise de Proximidade</h1>
-          <p className="text-xl text-purple-100 max-w-3xl">
-            Análise especializada de uso do solo e potencial de biogás por raio de captação
+          <h1 className="text-3xl font-bold mb-2">🎯 Análise de Proximidade</h1>
+          <p className="text-lg text-purple-100">
+            Análise espacial de potencial de biogás por raio de captação
           </p>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-purple-200">
-            <span>📍 Geoanálise</span>
-            <span>•</span>
-            <span>🗺️ MapBiomas</span>
-            <span>•</span>
-            <span>🌾 Resíduos Agrícolas</span>
-          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Coming Soon Banner */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-8 mb-8 text-center">
-          <div className="inline-flex items-center justify-center h-16 w-16 bg-purple-100 rounded-full mb-4">
-            <MapPin className="h-8 w-8 text-purple-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Em Desenvolvimento</h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Estamos implementando a análise de proximidade com integração de dados MapBiomas. 
-            Esta ferramenta permitirá análise espacial avançada com raios de captação personalizáveis.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Panel - Controls */}
+          <div className="space-y-4">
+            {/* Instructions */}
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <Info className="h-5 w-5 mr-2 text-purple-600" />
+                Como usar
+              </h3>
+              <ol className="text-sm text-gray-600 space-y-2">
+                <li className="flex items-start">
+                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">1</span>
+                  Clique no mapa para selecionar um ponto
+                </li>
+                <li className="flex items-start">
+                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">2</span>
+                  Ajuste o raio de captação
+                </li>
+                <li className="flex items-start">
+                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
+                  Clique em &quot;Analisar&quot; para ver os resultados
+                </li>
+              </ol>
+            </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Feature 1 - Radius Analysis */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500">
-            <div className="flex items-center mb-4">
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                <Circle className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Raio de Captação</h3>
+            {/* Point Selection */}
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <MapPin className="h-5 w-5 mr-2 text-purple-600" />
+                Ponto Selecionado
+              </h3>
+              {selectedPoint ? (
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <span className="text-gray-500 w-20">Latitude:</span>
+                    <span className="font-mono text-gray-900">{selectedPoint.lat.toFixed(6)}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <span className="text-gray-500 w-20">Longitude:</span>
+                    <span className="font-mono text-gray-900">{selectedPoint.lng.toFixed(6)}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  Clique no mapa para selecionar um ponto
+                </p>
+              )}
             </div>
-            <p className="text-gray-600 text-sm mb-4">
-              Defina raios personalizáveis para análise de proximidade a pontos de interesse
-            </p>
-            <div className="space-y-2 text-xs text-gray-500">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
-                <span>Raios de 10km a 100km</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
-                <span>Análise multi-ponto</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
-                <span>Visualização no mapa</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Feature 2 - Land Use */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500">
-            <div className="flex items-center mb-4">
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                <Layers className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Uso do Solo</h3>
-            </div>
-            <p className="text-gray-600 text-sm mb-4">
-              Integração com dados MapBiomas para análise detalhada de uso e cobertura do solo
-            </p>
-            <div className="space-y-2 text-xs text-gray-500">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                <span>Agropecuária</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                <span>Floresta</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                <span>Área urbana</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Feature 3 - Infrastructure */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500">
-            <div className="flex items-center mb-4">
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <Info className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Infraestrutura</h3>
-            </div>
-            <p className="text-gray-600 text-sm mb-4">
-              Análise de proximidade com infraestrutura existente (gasodutos, ferrovias, etc.)
-            </p>
-            <div className="space-y-2 text-xs text-gray-500">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                <span>Gasodutos</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                <span>Ferrovias</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                <span>Subestações</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Workflow Preview */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Como Funcionará</h2>
-          
-          <div className="space-y-6">
-            {/* Step 1 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 text-purple-600 font-bold">
-                  1
+            {/* Radius Control */}
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <Circle className="h-5 w-5 mr-2 text-purple-600" />
+                Raio de Captação
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-gray-900">{radius} km</span>
+                  <span className={`text-sm font-medium ${getRadiusColor(radius)}`}>
+                    {getRadiusLabel(radius)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  value={radius}
+                  onChange={(e) => setRadius(parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                />
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>10 km</span>
+                  <span>50 km</span>
+                  <span>100 km</span>
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Selecione um Ponto no Mapa</h3>
-                <p className="text-gray-600">
-                  Clique em qualquer localização no mapa interativo para definir o centro da análise de proximidade.
-                </p>
-              </div>
             </div>
 
-            {/* Step 2 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 text-purple-600 font-bold">
-                  2
-                </div>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Configure o Raio de Análise</h3>
-                <p className="text-gray-600">
-                  Ajuste o raio de captação (10-100 km) para definir a área de interesse ao redor do ponto selecionado.
-                </p>
-              </div>
-            </div>
+            {/* Analyze Button */}
+            <button
+              onClick={handleAnalyze}
+              disabled={!selectedPoint || loading}
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
+                selectedPoint && !loading
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-5 w-5 mr-2" />
+                  Analisar
+                </>
+              )}
+            </button>
 
-            {/* Step 3 */}
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 text-purple-600 font-bold">
-                  3
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700 whitespace-pre-line">{error}</p>
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Visualize os Resultados</h3>
-                <p className="text-gray-600">
-                  Obtenha análises detalhadas de uso do solo, potencial de biogás, e proximidade com infraestrutura.
-                </p>
-              </div>
+            )}
+          </div>
+
+          {/* Center Panel - Map */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <ProximityMap
+                selectedPoint={selectedPoint}
+                radius={radius}
+                onMapClick={handleMapClick}
+                bufferGeometry={analysisResult?.results.buffer_geometry}
+                municipalities={analysisResult?.results.municipalities}
+              />
             </div>
           </div>
         </div>
 
-        {/* Analysis Types */}
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Tipos de Análise</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border-l-4 border-green-500 pl-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Análise de Uso do Solo</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Composição detalhada do uso e cobertura do solo dentro do raio de análise:
-              </p>
-              <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Área de agropecuária (%)</li>
-                <li>• Cobertura florestal (%)</li>
-                <li>• Área urbana e infraestrutura</li>
-                <li>• Corpos d&apos;água</li>
-              </ul>
+        {/* Results Section */}
+        {analysisResult && (
+          <div className="mt-6 space-y-6">
+            {/* Results Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <CheckCircle2 className="h-6 w-6 text-green-600 mr-2" />
+                <h2 className="text-xl font-bold text-gray-900">Resultados da Análise</h2>
+                <span className="ml-3 text-sm text-gray-500">
+                  Processado em {analysisResult.metadata.processing_time_ms}ms
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleShare}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Compartilhar
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar CSV
+                </button>
+              </div>
             </div>
 
-            <div className="border-l-4 border-blue-500 pl-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Potencial de Biogás</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Cálculo do potencial de geração de biogás dentro do raio:
-              </p>
-              <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Total de m³ de biogás/ano</li>
-                <li>• Distribuição por tipo de resíduo</li>
-                <li>• Municípios incluídos</li>
-                <li>• Potencial energético (MWh)</li>
-              </ul>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg shadow-md p-4">
+                <p className="text-sm text-gray-500">Municípios</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {analysisResult.summary.total_municipalities}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-4">
+                <p className="text-sm text-gray-500">População Total</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {analysisResult.summary.total_population.toLocaleString('pt-BR')}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-4">
+                <p className="text-sm text-gray-500">Biogás Total</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {(analysisResult.summary.total_biogas_m3_year / 1000000).toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500">milhões m³/ano</p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-4">
+                <p className="text-sm text-gray-500">Energia</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {(analysisResult.summary.energy_potential_mwh_year / 1000).toFixed(1)}
+                </p>
+                <p className="text-xs text-gray-500">GWh/ano</p>
+              </div>
             </div>
 
-            <div className="border-l-4 border-purple-500 pl-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Proximidade com Infraestrutura</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Análise de infraestrutura existente próxima ao ponto:
-              </p>
-              <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Gasodutos (distância e capacidade)</li>
-                <li>• Linhas de transmissão</li>
-                <li>• Ferrovias</li>
-                <li>• Subestações elétricas</li>
-              </ul>
-            </div>
+            {/* Detailed Results */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Biogas Breakdown */}
+              {analysisResult.results.biogas_potential && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <Zap className="h-5 w-5 mr-2 text-yellow-500" />
+                    Potencial de Biogás por Categoria
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(analysisResult.results.biogas_potential.by_category).map(([category, value]) => (
+                      <div key={category} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 capitalize">
+                          {category === 'agricultural' ? 'Agrícola' :
+                           category === 'livestock' ? 'Pecuária' :
+                           category === 'urban' ? 'Urbano' : category}
+                        </span>
+                        <span className="font-medium text-gray-900">
+                          {(value / 1000000).toFixed(2)} milhões m³/ano
+                        </span>
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">Total</span>
+                      <span className="font-bold text-purple-600">
+                        {(analysisResult.results.biogas_potential.total_m3_year / 1000000).toFixed(2)} milhões m³/ano
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            <div className="border-l-4 border-orange-500 pl-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Análise Municipal</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Informações sobre municípios dentro do raio:
-              </p>
-              <ul className="space-y-1 text-sm text-gray-600">
-                <li>• Lista de municípios interceptados</li>
-                <li>• População total</li>
-                <li>• Potencial de biogás agregado</li>
-                <li>• Perfil de resíduos predominante</li>
-              </ul>
+              {/* Land Use */}
+              {analysisResult.results.land_use && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <Leaf className="h-5 w-5 mr-2 text-green-500" />
+                    Uso do Solo (MapBiomas)
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Área Total</span>
+                      <span className="font-medium text-gray-900">
+                        {analysisResult.results.land_use.total_area_km2.toFixed(2)} km²
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Classe Dominante</span>
+                      <span className="font-medium text-gray-900 capitalize">
+                        {analysisResult.results.land_use.dominant_class}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Área Agrícola</span>
+                      <span className="font-medium text-green-600">
+                        {analysisResult.results.land_use.agricultural_percent.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Municipalities List */}
+              <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <Building className="h-5 w-5 mr-2 text-blue-500" />
+                  Municípios na Área de Análise
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 font-medium text-gray-600">Município</th>
+                        <th className="text-right py-2 font-medium text-gray-600">Distância</th>
+                        <th className="text-right py-2 font-medium text-gray-600">População</th>
+                        <th className="text-right py-2 font-medium text-gray-600">Biogás (m³/ano)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysisResult.results.municipalities
+                        .slice(0, 10)
+                        .map((mun: any, index: number) => (
+                          <tr key={index} className="border-b border-gray-100">
+                            <td className="py-2 text-gray-900">{mun.name}</td>
+                            <td className="py-2 text-right text-gray-600">
+                              {mun.distance_km?.toFixed(1) || '0'} km
+                            </td>
+                            <td className="py-2 text-right text-gray-600">
+                              {(mun.population || 0).toLocaleString('pt-BR')}
+                            </td>
+                            <td className="py-2 text-right font-medium text-purple-600">
+                              {(mun.biogas_m3_year || 0).toLocaleString('pt-BR')}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                  {analysisResult.results.municipalities.length > 10 && (
+                    <p className="text-sm text-gray-500 mt-2 text-center">
+                      ... e mais {analysisResult.results.municipalities.length - 10} municípios
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Temporary Navigation */}
-        <div className="mt-8 flex justify-center gap-4">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-          >
-            Voltar ao Explorar Dados
-            <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />
-          </button>
-        </div>
+        )}
       </div>
+
+      {/* Share Toast */}
+      {showShareToast && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center">
+          <CheckCircle2 className="h-5 w-5 mr-2 text-green-400" />
+          Link copiado para a área de transferência!
+        </div>
+      )}
     </div>
   )
 }
-
