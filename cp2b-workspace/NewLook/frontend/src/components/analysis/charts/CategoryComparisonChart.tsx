@@ -139,7 +139,7 @@ export default function CategoryComparisonChart({
           color: '#374151',
           font: {
             size: 12,
-            weight: '600'
+            weight: 'bold'
           }
         },
         grid: {

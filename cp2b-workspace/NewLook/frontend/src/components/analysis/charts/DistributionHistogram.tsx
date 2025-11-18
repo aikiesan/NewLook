@@ -76,7 +76,7 @@ export default function DistributionHistogram({
             return `${(bin.bin_start / 1000000).toFixed(2)} - ${(bin.bin_end / 1000000).toFixed(2)} milhões m³/ano`;
           },
           label: (context) => {
-            return `${context.parsed.y} município(s)`;
+            return `${context.parsed.y ?? 0} município(s)`;
           }
         }
       }
