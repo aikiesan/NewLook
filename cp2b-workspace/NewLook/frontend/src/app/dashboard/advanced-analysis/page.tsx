@@ -2,15 +2,15 @@
 
 /**
  * Dashboard Advanced Analysis Page for CP2B Maps V3
- * Residue-based analysis, municipality comparison, and detailed statistics
- * Based on CP2B Maps V2 Data Explorer and Residue Analysis features
- * Enhanced with interactive exploration and better visuals
+ * Enhanced with DBFZ-inspired features: correction factors, cascade, Sankey, scenarios
+ * Based on SAF (Surplus Availability Factor) methodology
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   TrendingUp,
+  TrendingDown,
   RefreshCw,
   Download,
   Search,
@@ -20,16 +20,26 @@ import {
   Table2,
   ChevronDown,
   Info,
-  MapPin
+  MapPin,
+  GitBranch,
+  Layers,
+  BookOpen
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Components
+// Existing Components
 import ResidueSelector, { ResidueCategory } from '@/components/analysis/ResidueSelector'
 import TopMunicipalitiesChart from '@/components/analysis/charts/TopMunicipalitiesChart'
 import DistributionHistogram from '@/components/analysis/charts/DistributionHistogram'
 import RegionalPieChart from '@/components/analysis/charts/RegionalPieChart'
 import CategoryComparisonChart from '@/components/analysis/charts/CategoryComparisonChart'
+
+// New Enhanced Components
+import PotentialCascadeChart from '@/components/analysis/charts/PotentialCascadeChart'
+import BiomassFlowSankey from '@/components/analysis/charts/BiomassFlowSankey'
+import FactorRangeSliders from '@/components/analysis/FactorRangeSliders'
+import ScenarioComparator from '@/components/analysis/ScenarioComparator'
+import MethodologyPanel from '@/components/analysis/MethodologyPanel'
 
 // API
 import {
@@ -44,6 +54,15 @@ import {
   DistributionStatistics
 } from '@/services/analysisApi'
 
+// Types
+import {
+  CorrectionFactors,
+  DEFAULT_FACTORS,
+  calculateFDE,
+  Scenario,
+  AnalysisViewMode
+} from '@/types/analysis'
+
 export default function AdvancedAnalysisPage() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
@@ -54,7 +73,15 @@ export default function AdvancedAnalysisPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'biogas' | 'population'>('biogas')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [viewMode, setViewMode] = useState<'charts' | 'table'>('charts')
+
+  // View mode - enhanced with new tabs
+  const [viewMode, setViewMode] = useState<AnalysisViewMode>('cascade')
+
+  // Correction factors state
+  const [factors, setFactors] = useState<CorrectionFactors>(DEFAULT_FACTORS)
+
+  // Methodology panel state
+  const [showMethodology, setShowMethodology] = useState(false)
 
   // State for data
   const [topMunicipalities, setTopMunicipalities] = useState<Municipality[]>([])
@@ -72,6 +99,17 @@ export default function AdvancedAnalysisPage() {
   // Error state
   const [error, setError] = useState<string | null>(null)
 
+  // Calculate theoretical potential from category stats
+  const theoreticalPotential = useMemo(() => {
+    if (!categoryStats) return 0
+    return categoryStats.categories[selectedCategory]?.total || 0
+  }, [categoryStats, selectedCategory])
+
+  // Calculate FDE-adjusted potential
+  const fdeAdjustedPotential = useMemo(() => {
+    return theoreticalPotential * calculateFDE(factors)
+  }, [theoreticalPotential, factors])
+
   // Fetch all data
   const fetchAllData = useCallback(async () => {
     setError(null)
@@ -86,7 +124,7 @@ export default function AdvancedAnalysisPage() {
       setTopMunicipalities(residueResponse.data)
     } catch (err) {
       console.error('Error fetching municipalities:', err)
-      setError('Erro ao carregar dados dos municípios')
+      setError('Erro ao carregar dados dos municipios')
     } finally {
       setLoadingMunicipalities(false)
     }
@@ -131,6 +169,11 @@ export default function AdvancedAnalysisPage() {
     fetchAllData()
   }
 
+  // Handle scenario selection
+  const handleSelectScenario = (scenario: Scenario) => {
+    setFactors(scenario.factors)
+  }
+
   // Filtered and sorted municipalities
   const filteredMunicipalities = useMemo(() => {
     let filtered = [...topMunicipalities]
@@ -165,13 +208,15 @@ export default function AdvancedAnalysisPage() {
 
   // Export to CSV
   const handleExportCSV = useCallback(() => {
-    const headers = ['Posição', 'Município', 'Região', 'Biogás (m³/ano)', 'População']
+    const headers = ['Posicao', 'Municipio', 'Regiao', 'Biogas (m3/ano)', 'Populacao', 'FDE (%)']
+    const fdePercent = (calculateFDE(factors) * 100).toFixed(1)
     const rows = filteredMunicipalities.map((m, idx) => [
       idx + 1,
       m.municipality_name,
       m.administrative_region || 'N/A',
       m.biogas_m3_year.toFixed(2),
-      m.population || 'N/A'
+      m.population || 'N/A',
+      fdePercent
     ])
 
     const csv = [
@@ -182,9 +227,9 @@ export default function AdvancedAnalysisPage() {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `analise_${selectedCategory}_${new Date().toISOString().split('T')[0]}.csv`
+    link.download = `analise_${selectedCategory}_fde${fdePercent}_${new Date().toISOString().split('T')[0]}.csv`
     link.click()
-  }, [filteredMunicipalities, selectedCategory])
+  }, [filteredMunicipalities, selectedCategory, factors])
 
   // Initial data fetch
   useEffect(() => {
@@ -217,9 +262,17 @@ export default function AdvancedAnalysisPage() {
 
   // Category labels
   const categoryLabels: Record<ResidueCategory, string> = {
-    agricultural: 'Agrícola',
-    livestock: 'Pecuário',
+    agricultural: 'Agricola',
+    livestock: 'Pecuario',
     urban: 'Urbano'
+  }
+
+  // Format large numbers
+  const formatValue = (value: number): string => {
+    if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`
+    if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`
+    if (value >= 1e3) return `${(value / 1e3).toFixed(2)}k`
+    return value.toFixed(0)
   }
 
   return (
@@ -237,12 +290,19 @@ export default function AdvancedAnalysisPage() {
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2 tracking-tight">Análises Avançadas</h1>
+              <h1 className="text-4xl font-bold mb-2 tracking-tight">Analises Avancadas</h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Explore dados detalhados de potencial de biogás por categoria e resíduo
+                Potencial de biogas com fatores de correcao SAF (FC, FCp, FS, FL)
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setShowMethodology(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
+              >
+                <BookOpen className="h-4 w-4" />
+                Metodologia
+              </button>
               <button
                 onClick={fetchAllData}
                 disabled={loadingMunicipalities || loadingStats}
@@ -277,12 +337,12 @@ export default function AdvancedAnalysisPage() {
           </div>
         )}
 
-        {/* Stats Summary with enhanced design */}
+        {/* Stats Summary with FDE */}
         {categoryStats && !loadingStats && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Total Municípios</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Total Municipios</div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                   <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                 </div>
@@ -290,25 +350,40 @@ export default function AdvancedAnalysisPage() {
               <div className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {categoryStats.total_municipalities}
               </div>
-              <div className="text-xs text-gray-500 mt-1">municípios cadastrados</div>
+              <div className="text-xs text-gray-500 mt-1">municipios cadastrados</div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-green-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-green-500">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Agrícola</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Teorico</div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 </div>
               </div>
               <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                {(categoryStats.categories.agricultural.total / 1000000000).toFixed(2)}B
+                {formatValue(theoreticalPotential)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">m³/ano de biogás</div>
+              <div className="text-xs text-gray-500 mt-1">m3/ano (100%)</div>
             </div>
-            
+
+            <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-emerald-600">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs sm:text-sm font-medium text-gray-600">FDE Ajustado</div>
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-700">
+                {formatValue(fdeAdjustedPotential)}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                m3/ano ({(calculateFDE(factors) * 100).toFixed(1)}%)
+              </div>
+            </div>
+
             <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-orange-500">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Pecuário</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Pecuario</div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
                 </div>
@@ -316,9 +391,9 @@ export default function AdvancedAnalysisPage() {
               <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {(categoryStats.categories.livestock.total / 1000000000).toFixed(2)}B
               </div>
-              <div className="text-xs text-gray-500 mt-1">m³/ano de biogás</div>
+              <div className="text-xs text-gray-500 mt-1">m3/ano de biogas</div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-blue-500">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-xs sm:text-sm font-medium text-gray-600">Urbano</div>
@@ -329,14 +404,14 @@ export default function AdvancedAnalysisPage() {
               <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {(categoryStats.categories.urban.total / 1000000000).toFixed(2)}B
               </div>
-              <div className="text-xs text-gray-500 mt-1">m³/ano de biogás</div>
+              <div className="text-xs text-gray-500 mt-1">m3/ano de biogas</div>
             </div>
           </div>
         )}
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar - Residue Selector */}
+          {/* Sidebar - Residue Selector + Factors */}
           <div className="lg:col-span-1 space-y-4">
             <ResidueSelector
               selectedCategory={selectedCategory}
@@ -344,6 +419,13 @@ export default function AdvancedAnalysisPage() {
               onCategoryChange={setSelectedCategory}
               onResiduesChange={setSelectedResidues}
               onApply={handleApplyFilter}
+            />
+
+            {/* Factor Range Sliders */}
+            <FactorRangeSliders
+              factors={factors}
+              onChange={setFactors}
+              showFDEPreview={true}
             />
 
             {/* Category Info Card */}
@@ -358,21 +440,21 @@ export default function AdvancedAnalysisPage() {
               {categoryStats && (
                 <div className="space-y-2.5 pt-3 border-t border-gray-100">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Municípios:</span>
+                    <span className="text-gray-600">Municipios:</span>
                     <span className="font-semibold text-gray-900">
                       {categoryStats.categories[selectedCategory].count}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Máximo:</span>
+                    <span className="text-gray-600">Maximo:</span>
                     <span className="font-semibold text-gray-900">
-                      {(categoryStats.categories[selectedCategory].max / 1000000).toFixed(2)}M m³/ano
+                      {(categoryStats.categories[selectedCategory].max / 1000000).toFixed(2)}M m3/ano
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Média:</span>
+                    <span className="text-gray-600">Media:</span>
                     <span className="font-semibold text-gray-900">
-                      {(categoryStats.categories[selectedCategory].average / 1000000).toFixed(2)}M m³/ano
+                      {(categoryStats.categories[selectedCategory].average / 1000000).toFixed(2)}M m3/ano
                     </span>
                   </div>
                 </div>
@@ -391,7 +473,7 @@ export default function AdvancedAnalysisPage() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Nome ou região..."
+                    placeholder="Nome ou regiao..."
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-8"
                   />
                   {searchQuery && (
@@ -399,11 +481,11 @@ export default function AdvancedAnalysisPage() {
                       onClick={() => setSearchQuery('')}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      ×
+                      x
                     </button>
                   )}
                 </div>
-                
+
                 <div>
                   <label className="text-xs text-gray-600 block mb-1.5">Ordenar por:</label>
                   <select
@@ -411,9 +493,9 @@ export default function AdvancedAnalysisPage() {
                     onChange={(e) => setSortBy(e.target.value as 'name' | 'biogas' | 'population')}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
-                    <option value="biogas">Potencial de Biogás</option>
-                    <option value="name">Nome do Município</option>
-                    <option value="population">População</option>
+                    <option value="biogas">Potencial de Biogas</option>
+                    <option value="name">Nome do Municipio</option>
+                    <option value="population">Populacao</option>
                   </select>
                 </div>
 
@@ -454,41 +536,72 @@ export default function AdvancedAnalysisPage() {
 
           {/* Charts Grid */}
           <div className="lg:col-span-3 space-y-6">
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle - Enhanced with tabs */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 bg-white rounded-xl shadow-md p-4 sm:p-4 border border-gray-100">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                Visualização de Dados
+                Visualizacao de Dados
               </h3>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2 flex-wrap">
                 <button
-                  onClick={() => setViewMode('charts')}
-                  className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
-                    viewMode === 'charts'
+                  onClick={() => setViewMode('cascade')}
+                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
+                    viewMode === 'cascade'
                       ? 'bg-green-600 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <PieChart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span>Gráficos</span>
+                  <TrendingDown className="h-3.5 w-3.5" />
+                  <span>Cascata</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('flow')}
+                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
+                    viewMode === 'flow'
+                      ? 'bg-green-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <GitBranch className="h-3.5 w-3.5" />
+                  <span>Fluxo</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('scenarios')}
+                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
+                    viewMode === 'scenarios'
+                      ? 'bg-green-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>Cenarios</span>
                 </button>
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none ${
+                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
                     viewMode === 'table'
                       ? 'bg-green-600 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <Table2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Table2 className="h-3.5 w-3.5" />
                   <span>Tabela</span>
                 </button>
               </div>
             </div>
 
-            {viewMode === 'charts' && (
+            {/* Cascade View */}
+            {viewMode === 'cascade' && (
               <>
-                {/* Category Comparison - Full Width */}
+                {/* Potential Cascade Chart */}
+                <PotentialCascadeChart
+                  theoreticalPotential={theoreticalPotential}
+                  factors={factors}
+                  title={`Cascata de Potencial - ${categoryLabels[selectedCategory]}`}
+                  loading={loadingStats}
+                />
+
+                {/* Category Comparison */}
                 <CategoryComparisonChart
                   data={categoryStats}
                   loading={loadingStats}
@@ -497,25 +610,35 @@ export default function AdvancedAnalysisPage() {
                 {/* Top Municipalities */}
                 <TopMunicipalitiesChart
                   data={filteredMunicipalities}
-                  title={`Top 20 Municípios - ${categoryLabels[selectedCategory]}`}
+                  title={`Top 20 Municipios - ${categoryLabels[selectedCategory]}`}
                   loading={loadingMunicipalities}
                   maxItems={20}
+                />
+              </>
+            )}
+
+            {/* Flow View */}
+            {viewMode === 'flow' && (
+              <>
+                {/* Sankey Diagram */}
+                <BiomassFlowSankey
+                  theoreticalPotential={theoreticalPotential}
+                  factors={factors}
+                  title={`Fluxo de Biomassa - ${categoryLabels[selectedCategory]}`}
+                  loading={loadingStats}
                 />
 
                 {/* Two Column Charts */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                  {/* Distribution Histogram */}
                   <DistributionHistogram
                     histogram={histogramData}
                     statistics={distributionStats || { count: 0, min: 0, max: 0, mean: 0, median: 0, std: 0 }}
-                    title={`Distribuição - ${categoryLabels[selectedCategory]}`}
+                    title={`Distribuicao - ${categoryLabels[selectedCategory]}`}
                     loading={loadingDistribution}
                   />
-
-                  {/* Regional Pie Chart */}
                   <RegionalPieChart
                     data={regionData}
-                    title={`Distribuição Regional - ${categoryLabels[selectedCategory]}`}
+                    title={`Distribuicao Regional - ${categoryLabels[selectedCategory]}`}
                     loading={loadingRegion}
                     maxRegions={8}
                   />
@@ -523,20 +646,49 @@ export default function AdvancedAnalysisPage() {
               </>
             )}
 
-            {/* Enhanced Data Table */}
-            {(viewMode === 'table' || viewMode === 'charts') && filteredMunicipalities.length > 0 && (
+            {/* Scenarios View */}
+            {viewMode === 'scenarios' && (
+              <>
+                <ScenarioComparator
+                  theoreticalPotential={theoreticalPotential}
+                  onSelectScenario={handleSelectScenario}
+                  currentFactors={factors}
+                  title="Comparacao de Cenarios FDE"
+                  loading={loadingStats}
+                />
+
+                {/* Distribution after scenario selection */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <DistributionHistogram
+                    histogram={histogramData}
+                    statistics={distributionStats || { count: 0, min: 0, max: 0, mean: 0, median: 0, std: 0 }}
+                    title={`Distribuicao - ${categoryLabels[selectedCategory]}`}
+                    loading={loadingDistribution}
+                  />
+                  <RegionalPieChart
+                    data={regionData}
+                    title={`Distribuicao Regional - ${categoryLabels[selectedCategory]}`}
+                    loading={loadingRegion}
+                    maxRegions={8}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Table View */}
+            {viewMode === 'table' && filteredMunicipalities.length > 0 && (
               <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-5">
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
                       <Table2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                      Ranking de Municípios
+                      Ranking de Municipios
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      {filteredMunicipalities.length} município(s) listado(s)
+                      {filteredMunicipalities.length} municipio(s) listado(s) | FDE: {(calculateFDE(factors) * 100).toFixed(1)}%
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={handleExportCSV}
                     className="flex items-center justify-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors w-full sm:w-auto"
                   >
@@ -550,20 +702,20 @@ export default function AdvancedAnalysisPage() {
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                       <tr className="border-b border-gray-200">
                         <th className="text-left py-4 px-4 font-semibold text-gray-700 w-16">#</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Município</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Região</th>
+                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Municipio</th>
+                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Regiao</th>
                         <th className="text-right py-4 px-4 font-semibold text-gray-700 min-w-[140px]">
-                          Biogás (m³/ano)
+                          Biogas (m3/ano)
                         </th>
                         <th className="text-right py-4 px-4 font-semibold text-gray-700 min-w-[120px]">
-                          População
+                          Populacao
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {filteredMunicipalities.slice(0, viewMode === 'table' ? 50 : 10).map((municipality, index) => (
-                        <tr 
-                          key={municipality.id} 
+                      {filteredMunicipalities.slice(0, 50).map((municipality, index) => (
+                        <tr
+                          key={municipality.id}
                           className="hover:bg-green-50/50 transition-colors cursor-pointer"
                           onClick={() => router.push(`/dashboard/municipality/${municipality.id}`)}
                         >
@@ -588,7 +740,7 @@ export default function AdvancedAnalysisPage() {
                                   : municipality.biogas_m3_year.toFixed(2)
                                 }
                               </span>
-                              <span className="text-xs text-gray-500">m³/ano</span>
+                              <span className="text-xs text-gray-500">m3/ano</span>
                             </div>
                           </td>
                           <td className="py-4 px-4 text-right text-gray-700 font-medium">
@@ -600,35 +752,35 @@ export default function AdvancedAnalysisPage() {
                   </table>
                 </div>
 
-                {filteredMunicipalities.length > (viewMode === 'table' ? 50 : 10) && (
+                {filteredMunicipalities.length > 50 && (
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <div className="text-sm text-gray-500">
-                      Mostrando {viewMode === 'table' ? 50 : 10} de {filteredMunicipalities.length} municípios
+                      Mostrando 50 de {filteredMunicipalities.length} municipios
                     </div>
-                    {viewMode === 'charts' && (
-                      <button
-                        onClick={() => setViewMode('table')}
-                        className="text-sm font-medium text-green-600 hover:text-green-700 flex items-center gap-1"
-                      >
-                        Ver todos
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    )}
                   </div>
                 )}
+              </div>
+            )}
 
-                {filteredMunicipalities.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-lg font-medium mb-1">Nenhum município encontrado</p>
-                    <p className="text-sm">Tente ajustar os filtros de busca</p>
-                  </div>
-                )}
+            {viewMode === 'table' && filteredMunicipalities.length === 0 && (
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                <div className="text-center py-12 text-gray-500">
+                  <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-lg font-medium mb-1">Nenhum municipio encontrado</p>
+                  <p className="text-sm">Tente ajustar os filtros de busca</p>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Methodology Panel */}
+      <MethodologyPanel
+        factors={factors}
+        isOpen={showMethodology}
+        onClose={() => setShowMethodology(false)}
+      />
     </div>
   )
 }
