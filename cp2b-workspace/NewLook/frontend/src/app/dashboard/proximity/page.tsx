@@ -5,7 +5,7 @@
  * Spatial analysis with capture radius and land use integration (MapBiomas)
  * Fully functional implementation using backend API
  */
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
@@ -83,7 +83,8 @@ interface AnalysisResult {
   }
 }
 
-export default function ProximityAnalysisPage() {
+// Inner component that uses useSearchParams
+function ProximityAnalysisContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
@@ -557,5 +558,21 @@ export default function ProximityAnalysisPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// Default export with Suspense boundary for useSearchParams
+export default function ProximityAnalysisPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <ProximityAnalysisContent />
+    </Suspense>
   )
 }
