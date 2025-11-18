@@ -13,9 +13,8 @@ import { logger } from '@/lib/logger';
 
 // FORCE MOCK DATA: Use environment variable to control mock data usage
 // NEXT_PUBLIC_USE_MOCK_DATA=true to use client-side mock data (bypasses Railway)
-// NEXT_PUBLIC_USE_MOCK_DATA=false to use real backend API
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' ||
-                       process.env.NEXT_PUBLIC_USE_MOCK_DATA === undefined;
+// NEXT_PUBLIC_USE_MOCK_DATA=false or undefined to use real backend API
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
