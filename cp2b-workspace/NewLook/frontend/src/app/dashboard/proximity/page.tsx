@@ -227,7 +227,7 @@ export default function ProximityAnalysisPage() {
                 <li>• Área de agropecuária (%)</li>
                 <li>• Cobertura florestal (%)</li>
                 <li>• Área urbana e infraestrutura</li>
-                <li>• Corpos d'água</li>
+                <li>• Corpos d&apos;água</li>
               </ul>
             </div>
 

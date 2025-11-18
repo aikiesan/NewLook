@@ -8,18 +8,19 @@
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { 
-  ArrowLeft, 
-  TrendingUp, 
-  RefreshCw, 
-  Download, 
-  Search, 
+import {
+  ArrowLeft,
+  TrendingUp,
+  RefreshCw,
+  Download,
+  Search,
   Filter,
   BarChart3,
   PieChart,
   Table2,
   ChevronDown,
-  Info
+  Info,
+  MapPin
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
