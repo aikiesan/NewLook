@@ -1,0 +1,5 @@
+# Nixpacks configuration for Railway deployment
+# Installs additional packages needed for the build
+
+[phases.setup]
+aptPkgs = ["unzip", "curl"]
