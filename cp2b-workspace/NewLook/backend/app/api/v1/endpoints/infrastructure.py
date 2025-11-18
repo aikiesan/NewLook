@@ -1,14 +1,17 @@
 """
 CP2B Maps V3 - Infrastructure Endpoints
-Provides GeoJSON data for infrastructure layers (railways, pipelines, substations, etc.)
+Provides GeoJSON data for infrastructure layers from real shapefiles
 """
 
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 import logging
+from app.utils.shapefile_loader import get_shapefile_loader
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+shapefile_loader = get_shapefile_loader()
 
 
 @router.get("/railways/geojson")
@@ -17,57 +20,17 @@ async def get_railways_geojson() -> Dict[str, Any]:
     Get railway network GeoJSON for São Paulo state
 
     Returns:
-        GeoJSON FeatureCollection with railway lines
-
-    Note: Currently returns sample data. Will be connected to real database in future.
+        GeoJSON FeatureCollection with railway lines from Rodovias_Estaduais_SP.shp
     """
     try:
-        # TODO: Connect to real railways database table
-        # For now, return sample GeoJSON with a few railway lines in São Paulo
-        return {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-46.6333, -23.5505],  # São Paulo
-                            [-47.0608, -22.9099]   # Campinas
-                        ]
-                    },
-                    "properties": {
-                        "id": "railway_1",
-                        "name": "Linha São Paulo - Campinas",
-                        "type": "Ferrovia Principal",
-                        "operator": "Rumo Logística",
-                        "status": "Ativa"
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-46.6333, -23.5505],  # São Paulo
-                            [-45.8872, -23.1790]   # São José dos Campos
-                        ]
-                    },
-                    "properties": {
-                        "id": "railway_2",
-                        "name": "Linha São Paulo - Vale do Paraíba",
-                        "type": "Ferrovia Regional",
-                        "operator": "MRS Logística",
-                        "status": "Ativa"
-                    }
-                }
-            ],
-            "metadata": {
-                "total_features": 2,
-                "source": "Sample data - Production will use real railway database",
-                "note": "Dados de exemplo para demonstração"
-            }
-        }
+        # Use highways shapefile (Rodovias) as proxy for railways
+        # Simplify to reduce file size (tolerance in degrees, ~0.001 = ~100m)
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Rodovias_Estaduais_SP",
+            simplify_tolerance=0.001
+        )
+        geojson["metadata"]["layer_type"] = "railways"
+        return geojson
     except Exception as e:
         logger.error(f"Error fetching railways data: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch railways data: {str(e)}")
@@ -79,58 +42,30 @@ async def get_pipelines_geojson() -> Dict[str, Any]:
     Get pipeline network GeoJSON for São Paulo state
 
     Returns:
-        GeoJSON FeatureCollection with gas/oil pipeline lines
-
-    Note: Currently returns sample data. Will be connected to real database in future.
+        GeoJSON FeatureCollection with gas pipeline lines from Gasodutos shapefiles
     """
     try:
-        # TODO: Connect to real pipelines database table
+        # Load both distribution and transport pipelines
+        dist_geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Gasodutos_Distribuicao_SP",
+            simplify_tolerance=0.001
+        )
+        transp_geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Gasodutos_Transporte_SP",
+            simplify_tolerance=0.001
+        )
+
+        # Combine both into one FeatureCollection
+        combined_features = dist_geojson["features"] + transp_geojson["features"]
+
         return {
             "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-46.6333, -23.5505],  # São Paulo
-                            [-46.9844, -23.5489]   # Santos direction
-                        ]
-                    },
-                    "properties": {
-                        "id": "pipeline_1",
-                        "name": "Gasoduto São Paulo - Santos",
-                        "type": "Gasoduto de Gás Natural",
-                        "diameter_mm": 600,
-                        "operator": "TBG",
-                        "capacity_m3_day": 5000000,
-                        "status": "Operacional"
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [
-                            [-47.0608, -22.9099],  # Campinas
-                            [-47.8875, -21.7622]   # Ribeirão Preto direction
-                        ]
-                    },
-                    "properties": {
-                        "id": "pipeline_2",
-                        "name": "Gasoduto Campinas - Interior",
-                        "type": "Gasoduto de Distribuição",
-                        "diameter_mm": 400,
-                        "operator": "Comgás",
-                        "capacity_m3_day": 2000000,
-                        "status": "Operacional"
-                    }
-                }
-            ],
+            "features": combined_features,
             "metadata": {
-                "total_features": 2,
-                "source": "Sample data - Production will use real pipeline database",
-                "note": "Dados de exemplo para demonstração"
+                "source": "Gasodutos_Distribuicao_SP.shp + Gasodutos_Transporte_SP.shp",
+                "total_features": len(combined_features),
+                "layer_type": "pipelines",
+                "note": f"Dados de gasodutos - {len(combined_features)} segmentos"
             }
         }
     except Exception as e:
@@ -144,70 +79,12 @@ async def get_substations_geojson() -> Dict[str, Any]:
     Get electrical substations GeoJSON for São Paulo state
 
     Returns:
-        GeoJSON FeatureCollection with substation points
-
-    Note: Currently returns sample data. Will be connected to real database in future.
+        GeoJSON FeatureCollection with substation points from Subestacoes_Energia.shp
     """
     try:
-        # TODO: Connect to real substations database table
-        return {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-46.6333, -23.5505]
-                    },
-                    "properties": {
-                        "id": "substation_1",
-                        "name": "Subestação Bandeirantes",
-                        "voltage_kv": 440,
-                        "capacity_mva": 1500,
-                        "operator": "CTEEP",
-                        "type": "Transmissão",
-                        "status": "Operacional"
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-47.0608, -22.9099]
-                    },
-                    "properties": {
-                        "id": "substation_2",
-                        "name": "Subestação Campinas",
-                        "voltage_kv": 230,
-                        "capacity_mva": 800,
-                        "operator": "CPFL",
-                        "type": "Distribuição",
-                        "status": "Operacional"
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-45.8872, -23.1790]
-                    },
-                    "properties": {
-                        "id": "substation_3",
-                        "name": "Subestação Vale do Paraíba",
-                        "voltage_kv": 138,
-                        "capacity_mva": 500,
-                        "operator": "EDP",
-                        "type": "Distribuição",
-                        "status": "Operacional"
-                    }
-                }
-            ],
-            "metadata": {
-                "total_features": 3,
-                "source": "Sample data - Production will use real substations database",
-                "note": "Dados de exemplo para demonstração"
-            }
-        }
+        geojson = shapefile_loader.load_shapefile_as_geojson("Subestacoes_Energia")
+        geojson["metadata"]["layer_type"] = "substations"
+        return geojson
     except Exception as e:
         logger.error(f"Error fetching substations data: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch substations data: {str(e)}")
@@ -219,59 +96,153 @@ async def get_biogas_plants_geojson() -> Dict[str, Any]:
     Get existing biogas plants GeoJSON for São Paulo state
 
     Returns:
-        GeoJSON FeatureCollection with biogas plant points
-
-    Note: Currently returns sample data. Will be connected to real database in future.
+        GeoJSON FeatureCollection with biogas plant points from Plantas_Biogas_SP.shp
     """
     try:
-        # TODO: Connect to real biogas plants database table
-        return {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-47.8875, -21.7622]
-                    },
-                    "properties": {
-                        "id": "plant_1",
-                        "name": "Usina de Biogás Ribeirão Preto",
-                        "type": "Aterro Sanitário",
-                        "capacity_m3_hour": 500,
-                        "power_mw": 2.5,
-                        "feedstock": "RSU (Resíduo Sólido Urbano)",
-                        "status": "Operacional",
-                        "commissioning_year": 2018
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-47.0608, -22.9099]
-                    },
-                    "properties": {
-                        "id": "plant_2",
-                        "name": "Usina de Biogás Campinas",
-                        "type": "Agrícola",
-                        "capacity_m3_hour": 300,
-                        "power_mw": 1.5,
-                        "feedstock": "Vinhaça de cana-de-açúcar",
-                        "status": "Operacional",
-                        "commissioning_year": 2020
-                    }
-                }
-            ],
-            "metadata": {
-                "total_features": 2,
-                "source": "Sample data - Production will use real biogas plants database",
-                "note": "Dados de exemplo para demonstração"
-            }
-        }
+        geojson = shapefile_loader.load_shapefile_as_geojson("Plantas_Biogas_SP")
+        geojson["metadata"]["layer_type"] = "biogas_plants"
+        return geojson
     except Exception as e:
         logger.error(f"Error fetching biogas plants data: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch biogas plants data: {str(e)}")
+
+
+@router.get("/transmission-lines/geojson")
+async def get_transmission_lines_geojson() -> Dict[str, Any]:
+    """
+    Get electrical transmission lines GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with transmission line polylines
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Linhas_De_Transmissao_Energia",
+            simplify_tolerance=0.001
+        )
+        geojson["metadata"]["layer_type"] = "transmission_lines"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching transmission lines data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch transmission lines data: {str(e)}")
+
+
+@router.get("/etes/geojson")
+async def get_etes_geojson() -> Dict[str, Any]:
+    """
+    Get wastewater treatment plants (ETEs) GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with ETE points
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson("ETEs_2019_SP")
+        geojson["metadata"]["layer_type"] = "etes"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching ETEs data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch ETEs data: {str(e)}")
+
+
+@router.get("/urban-areas/geojson")
+async def get_urban_areas_geojson() -> Dict[str, Any]:
+    """
+    Get urban areas GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with urban area polygons
+    """
+    try:
+        # Urban areas file is large, use higher simplification
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Areas_Urbanas_SP",
+            simplify_tolerance=0.002
+        )
+        geojson["metadata"]["layer_type"] = "urban_areas"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching urban areas data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch urban areas data: {str(e)}")
+
+
+@router.get("/administrative-regions/geojson")
+async def get_admin_regions_geojson() -> Dict[str, Any]:
+    """
+    Get administrative regions GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with admin region polygons
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Regiao_Adm_SP",
+            simplify_tolerance=0.001
+        )
+        geojson["metadata"]["layer_type"] = "administrative_regions"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching admin regions data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch admin regions data: {str(e)}")
+
+
+@router.get("/intermediate-regions/geojson")
+async def get_intermediate_regions_geojson() -> Dict[str, Any]:
+    """
+    Get intermediate geographic regions GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with intermediate region polygons
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "SP_RG_Intermediarias_2024",
+            simplify_tolerance=0.001
+        )
+        geojson["metadata"]["layer_type"] = "intermediate_regions"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching intermediate regions data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch intermediate regions data: {str(e)}")
+
+
+@router.get("/immediate-regions/geojson")
+async def get_immediate_regions_geojson() -> Dict[str, Any]:
+    """
+    Get immediate geographic regions GeoJSON for São Paulo state
+
+    Returns:
+        GeoJSON FeatureCollection with immediate region polygons
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "SP_RG_Imediatas_2024",
+            simplify_tolerance=0.001
+        )
+        geojson["metadata"]["layer_type"] = "immediate_regions"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching immediate regions data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch immediate regions data: {str(e)}")
+
+
+@router.get("/sp-boundary/geojson")
+async def get_sp_boundary_geojson() -> Dict[str, Any]:
+    """
+    Get São Paulo state boundary GeoJSON
+
+    Returns:
+        GeoJSON FeatureCollection with state boundary polygon
+    """
+    try:
+        geojson = shapefile_loader.load_shapefile_as_geojson(
+            "Limite_SP",
+            simplify_tolerance=0.002
+        )
+        geojson["metadata"]["layer_type"] = "state_boundary"
+        return geojson
+    except Exception as e:
+        logger.error(f"Error fetching SP boundary data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch SP boundary data: {str(e)}")
 
 
 @router.get("/health")
@@ -280,5 +251,5 @@ async def health_check() -> Dict[str, str]:
     return {
         "status": "healthy",
         "module": "infrastructure",
-        "note": "Currently serving sample data"
+        "note": "Serving real shapefile data from project_map repo"
     }

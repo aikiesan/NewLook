@@ -61,4 +61,6 @@ Thumbs.db
 
 # Backups
 *.bak
-*~
+*~# Shapefile data (large files, sourced from project_map repo)
+backend/data/shapefiles/
+backend/data/rasters/

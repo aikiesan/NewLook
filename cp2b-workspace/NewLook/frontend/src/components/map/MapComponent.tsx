@@ -26,25 +26,57 @@ const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), {
   ssr: false,
 });
 
+const FloatingLayerControl = dynamic(() => import('./FloatingLayerControl'), {
+  ssr: false,
+});
+
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
 const DEFAULT_ZOOM = 8;
 
 interface MapComponentProps {
-  visibleLayers?: string[];
   activeFilters?: FilterCriteria;
 }
 
 export default function MapComponent({
-  visibleLayers = ['municipalities'],
   activeFilters
 }: MapComponentProps = {}) {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
 
+  // Initialize layer state with all available layers
+  const [layers, setLayers] = useState([
+    { id: 'municipalities', name: 'Municípios SP', visible: true, category: 'base' as const, icon: '📍' },
+    { id: 'biogas-plants', name: 'Plantas de Biogás', visible: false, category: 'infrastructure' as const, icon: '🏭' },
+    { id: 'pipelines', name: 'Gasodutos', visible: false, category: 'infrastructure' as const, icon: '🔧' },
+    { id: 'substations', name: 'Subestações', visible: false, category: 'infrastructure' as const, icon: '⚡' },
+    { id: 'transmission-lines', name: 'Linhas de Transmissão', visible: false, category: 'infrastructure' as const, icon: '🔌' },
+    { id: 'etes', name: 'ETEs', visible: false, category: 'infrastructure' as const, icon: '💧' },
+    { id: 'railways', name: 'Rodovias', visible: false, category: 'infrastructure' as const, icon: '🛣️' },
+    { id: 'urban-areas', name: 'Áreas Urbanas', visible: false, category: 'administrative' as const, icon: '🏙️' },
+    { id: 'admin-regions', name: 'Regiões Administrativas', visible: false, category: 'administrative' as const, icon: '🗺️' },
+    { id: 'intermediate-regions', name: 'Regiões Intermediárias', visible: false, category: 'administrative' as const, icon: '📍' },
+    { id: 'immediate-regions', name: 'Regiões Imediatas', visible: false, category: 'administrative' as const, icon: '📌' },
+  ]);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Handle layer toggle
+  const handleLayerToggle = (layerId: string, visible: boolean) => {
+    setLayers(prevLayers =>
+      prevLayers.map(layer =>
+        layer.id === layerId ? { ...layer, visible } : layer
+      )
+    );
+  };
+
+  // Get visible layer IDs
+  const visibleLayerIds = useMemo(() =>
+    layers.filter(layer => layer.visible).map(layer => layer.id),
+    [layers]
+  );
 
   // Apply filters to municipality data
   const filteredData = useMemo(() => {
@@ -172,30 +204,50 @@ export default function MapComponent({
         />
 
         {/* Municipality Layer - Conditional rendering based on layer visibility */}
-        {visibleLayers.includes('municipalities') && displayData && (
+        {visibleLayerIds.includes('municipalities') && displayData && (
           <MunicipalityLayer data={displayData} />
         )}
 
         {/* Infrastructure Layers */}
-        {visibleLayers.includes('biogas-plants') && (
+        {visibleLayerIds.includes('biogas-plants') && (
           <InfrastructureLayer layerType="biogas-plants" />
         )}
 
-        {visibleLayers.includes('railways') && (
+        {visibleLayerIds.includes('railways') && (
           <InfrastructureLayer layerType="railways" />
         )}
 
-        {visibleLayers.includes('pipelines') && (
+        {visibleLayerIds.includes('pipelines') && (
           <InfrastructureLayer layerType="pipelines" />
         )}
 
-        {visibleLayers.includes('substations') && (
+        {visibleLayerIds.includes('substations') && (
           <InfrastructureLayer layerType="substations" />
         )}
 
+        {visibleLayerIds.includes('transmission-lines') && (
+          <InfrastructureLayer layerType="transmission-lines" />
+        )}
+
+        {visibleLayerIds.includes('etes') && (
+          <InfrastructureLayer layerType="etes" />
+        )}
+
+        {visibleLayerIds.includes('urban-areas') && (
+          <InfrastructureLayer layerType="urban-areas" />
+        )}
+
         {/* Legend - Only show if municipalities layer is visible */}
-        {visibleLayers.includes('municipalities') && <MapLegend />}
+        {visibleLayerIds.includes('municipalities') && <MapLegend />}
       </MapContainer>
+
+      {/* Floating Layer Control */}
+      {isMounted && (
+        <FloatingLayerControl
+          layers={layers}
+          onLayerToggle={handleLayerToggle}
+        />
+      )}
 
       {/* Data Source Note with Filter Status */}
       <div className="absolute top-4 left-4 z-[1000] bg-white px-3 py-2 rounded-lg shadow-md">
