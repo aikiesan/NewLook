@@ -30,6 +30,14 @@ const FloatingLayerControl = dynamic(() => import('./FloatingLayerControl'), {
   ssr: false,
 });
 
+const MapBiomasLayer = dynamic(() => import('./MapBiomasLayer'), {
+  ssr: false,
+});
+
+const MapBiomasLegend = dynamic(() => import('./MapBiomasLegend'), {
+  ssr: false,
+});
+
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
 const DEFAULT_ZOOM = 8;
@@ -46,14 +54,18 @@ export default function MapComponent({
 
   // Initialize layer state with all available layers
   const [layers, setLayers] = useState([
-    { id: 'municipalities', name: 'Municípios SP', visible: true, category: 'base' as const, icon: '📍' },
-    { id: 'biogas-plants', name: 'Plantas de Biogás', visible: false, category: 'infrastructure' as const, icon: '🏭' },
+    { id: 'municipalities', name: 'Municipios SP', visible: true, category: 'base' as const, icon: '📍' },
+    { id: 'mapbiomas', name: 'MapBiomas Agropecuaria 2024', visible: false, category: 'environmental' as const, icon: '🌳' },
+    { id: 'biogas-plants', name: 'Plantas de Biogas', visible: false, category: 'infrastructure' as const, icon: '🏭' },
     { id: 'pipelines', name: 'Gasodutos', visible: false, category: 'infrastructure' as const, icon: '🔧' },
-    { id: 'substations', name: 'Subestações', visible: false, category: 'infrastructure' as const, icon: '⚡' },
-    { id: 'transmission-lines', name: 'Linhas de Transmissão', visible: false, category: 'infrastructure' as const, icon: '🔌' },
+    { id: 'substations', name: 'Subestacoes', visible: false, category: 'infrastructure' as const, icon: '⚡' },
+    { id: 'transmission-lines', name: 'Linhas de Transmissao', visible: false, category: 'infrastructure' as const, icon: '🔌' },
     { id: 'etes', name: 'ETEs', visible: false, category: 'infrastructure' as const, icon: '💧' },
     { id: 'railways', name: 'Rodovias', visible: false, category: 'infrastructure' as const, icon: '🛣️' },
   ]);
+
+  // MapBiomas layer opacity state
+  const [mapBiomasOpacity, setMapBiomasOpacity] = useState(0.7);
 
   useEffect(() => {
     setIsMounted(true);
@@ -204,6 +216,11 @@ export default function MapComponent({
           <MunicipalityLayer data={displayData} />
         )}
 
+        {/* MapBiomas Environmental Layer */}
+        {visibleLayerIds.includes('mapbiomas') && (
+          <MapBiomasLayer opacity={mapBiomasOpacity} />
+        )}
+
         {/* Infrastructure Layers */}
         {visibleLayerIds.includes('biogas-plants') && (
           <InfrastructureLayer layerType="biogas-plants" />
@@ -232,6 +249,11 @@ export default function MapComponent({
         {/* Legend - Only show if municipalities layer is visible */}
         {visibleLayerIds.includes('municipalities') && <MapLegend />}
       </MapContainer>
+
+      {/* MapBiomas Legend - Show when layer is visible */}
+      {visibleLayerIds.includes('mapbiomas') && (
+        <MapBiomasLegend visible={true} />
+      )}
 
       {/* Floating Layer Control */}
       {isMounted && (

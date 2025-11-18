@@ -29,7 +29,7 @@ export default function FloatingLayerControl({
 }: FloatingLayerControlProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['base', 'infrastructure'])
+    new Set(['base', 'infrastructure', 'environmental'])
   );
 
   const categories = {

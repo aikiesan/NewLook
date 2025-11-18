@@ -3,7 +3,7 @@ Main API router for CP2B Maps V3
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure
+from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas
 
 api_router = APIRouter()
 
@@ -49,4 +49,11 @@ api_router.include_router(
     mock_geospatial.router,
     prefix="/mock",
     tags=["mock-data", "development"]
+)
+
+# MapBiomas raster tile endpoints
+api_router.include_router(
+    mapbiomas.router,
+    prefix="/mapbiomas",
+    tags=["mapbiomas", "raster", "environmental"]
 )
