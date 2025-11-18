@@ -3,15 +3,18 @@
 /**
  * Protected Dashboard Page for CP2B Maps V3
  * Requires authentication
+ * V2-inspired design with floating layer control
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import StatsPanel from '@/components/dashboard/StatsPanel'
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
+import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
+import { logger } from '@/lib/logger'
 
 // Dynamically import Map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
@@ -30,6 +33,17 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, loading, logout, isAuthenticated } = useAuth()
 
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState<FilterCriteria>({
+    residueTypes: [],
+    regions: [],
+    searchQuery: '',
+    nearRailway: false,
+    nearPipeline: false,
+    nearSubstation: false,
+    proximityRadius: 50
+  })
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -42,8 +56,14 @@ export default function DashboardPage() {
       await logout()
       router.push('/')
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
+  }
+
+  // Handle filter changes
+  const handleFilterChange = (filters: FilterCriteria) => {
+    setActiveFilters(filters)
+    logger.info('Filters updated:', filters)
   }
 
   // Show loading state
@@ -105,22 +125,18 @@ export default function DashboardPage() {
       {/* Main Content - Interactive Map Dashboard */}
       <main className="h-[calc(100vh-80px)]">
         <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-0">
-          {/* Stats Panel - Left Sidebar */}
+          {/* Left Sidebar - V2 Style */}
           <div className="lg:col-span-1 bg-gray-50 p-4 overflow-y-auto">
-            <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900">
-                Dashboard CP2B
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Olá, {user.full_name}!
-              </p>
-            </div>
-            <StatsPanel />
+            <DashboardSidebar
+              userName={user.full_name || user.email || 'Usuário'}
+              activeFilters={activeFilters}
+              onFilterChange={handleFilterChange}
+            />
           </div>
 
-          {/* Map - Main Area */}
-          <div className="lg:col-span-3 bg-white p-4">
-            <MapComponent />
+          {/* Map - Main Area with Floating Layer Control */}
+          <div className="lg:col-span-3 bg-white relative">
+            <MapComponent activeFilters={activeFilters} />
           </div>
         </div>
       </main>

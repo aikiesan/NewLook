@@ -12,6 +12,7 @@ import type {
   LoginCredentials,
   RegistrationData
 } from '@/types/auth'
+import { logger } from '@/lib/logger'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(session.user.id, session.access_token)
       }
     } catch (error) {
-      console.error('Error loading user:', error)
+      logger.error('Error loading user:', error)
     } finally {
       setLoading(false)
     }
@@ -100,24 +101,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error)
-      // Even if profile fetch fails, still set basic user from auth
-      const {
-        data: { user: authUser }
-      } = await supabase.auth.getUser(accessToken)
-
-      if (authUser) {
-        setUser({
-          id: authUser.id,
-          email: authUser.email || '',
-          full_name: authUser.user_metadata?.full_name || 'User',
-          role: 'autenticado',
-          created_at: authUser.created_at || new Date().toISOString(),
-          updated_at: authUser.updated_at || new Date().toISOString()
-        })
-      } else {
-        setUser(null)
-      }
+      logger.error('Error fetching user profile:', error)
+      setUser(null)
     }
   }
 
@@ -142,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(authData.user.id, authData.session.access_token)
       }
     } catch (error: any) {
-      console.error('Registration error:', error)
+      logger.error('Registration error:', error)
       throw new Error(error.message || 'Registration failed')
     } finally {
       setLoading(false)
@@ -165,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(data.user.id, data.session.access_token)
       }
     } catch (error: any) {
-      console.error('Login error:', error)
+      logger.error('Login error:', error)
       throw new Error(error.message || 'Login failed')
     } finally {
       setLoading(false)
@@ -180,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error
       setUser(null)
     } catch (error: any) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
       throw new Error(error.message || 'Logout failed')
     } finally {
       setLoading(false)
@@ -219,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
     } catch (error: any) {
-      console.error('Update profile error:', error)
+      logger.error('Update profile error:', error)
       throw new Error(error.message || 'Profile update failed')
     } finally {
       setLoading(false)

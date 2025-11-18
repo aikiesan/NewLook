@@ -6,6 +6,7 @@ import { BarChart3, Map, Users, ArrowRight, Play, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import { logger } from '@/lib/logger'
 
 export default function HomePage() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -16,7 +17,7 @@ export default function HomePage() {
     try {
       await logout()
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 
@@ -234,7 +235,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-gray-900">Plataforma Colaborativa</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Sistema de autenticação com três níveis de acesso (Visitante, Autenticado, Admin).
-                  Assistente AI "Bagacinho" integrado para consultas sobre biogás e análise de
+                  Assistente AI &quot;Bagacinho&quot; integrado para consultas sobre biogás e análise de
                   58 referências científicas via RAG.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">

@@ -9,6 +9,7 @@ import type {
   MunicipalityFeature,
   RankingsResponse
 } from '@/types/geospatial';
+import { logger } from '@/lib/logger';
 
 // FORCE MOCK DATA: Use environment variable to control mock data usage
 // NEXT_PUBLIC_USE_MOCK_DATA=true to use client-side mock data (bypasses Railway)
@@ -17,7 +18,11 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' ||
                        process.env.NEXT_PUBLIC_USE_MOCK_DATA === undefined;
 
 // API base URL - automatically detects production vs development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://newlook-production.up.railway.app'
+    : 'http://localhost:8000');
+// Use geospatial endpoints when not using mock data
 const API_PREFIX = USE_MOCK_DATA ? '' : '/api/v1/geospatial';
 
 class GeospatialClient {
@@ -59,8 +64,8 @@ class GeospatialClient {
       return await response.json();
     } catch (error) {
       if (error instanceof Error) {
-        console.warn(`API fetch failed for ${endpoint}:`, error.message);
-        console.info('🔄 Using client-side mock data as fallback');
+        logger.warn(`API fetch failed for ${endpoint}: ${error.message}`);
+        logger.info('🔄 Using client-side mock data as fallback');
         // Use client-side mock data as fallback
         return this.getClientSideMockData<T>(endpoint);
       }
