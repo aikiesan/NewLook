@@ -274,7 +274,7 @@ export default function ProximityAnalysisPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
-                  Clique em "Analisar" para ver os resultados
+                  Clique em &quot;Analisar&quot; para ver os resultados
                 </li>
               </ol>
             </div>
