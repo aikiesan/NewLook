@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 interface Municipality {
   id: number;
   name: string;
+  total_biogas_m3_year?: number;
+  region?: string;
 }
 
 interface ComparisonContextType {

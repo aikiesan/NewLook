@@ -4,8 +4,8 @@ set -e
 echo "📥 Downloading shapefiles from project_map repo..."
 mkdir -p data/shapefiles data/rasters
 
-# Download from GitHub
-wget -q https://github.com/aikiesan/project_map/archive/refs/heads/main.zip -O /tmp/project_map.zip
+# Download from GitHub (using curl as wget may not be available in all environments)
+curl -sL https://github.com/aikiesan/project_map/archive/refs/heads/main.zip -o /tmp/project_map.zip
 
 # Extract
 unzip -q /tmp/project_map.zip -d /tmp/
