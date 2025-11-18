@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
-import { LogOut } from 'lucide-react'
+import { LogOut, Map, BarChart3, Calculator, Download, HelpCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
@@ -88,20 +88,21 @@ export default function DashboardPage() {
       {/* Navigation Header */}
       <header className="navbar-gradient shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          {/* Top bar with logo and user info */}
+          <div className="flex justify-between items-center py-3">
             <Link href="/" className="flex items-center space-x-3">
               <Image
                 src="/images/logotipo-full-black.png"
                 alt="CP2B Maps Logo"
-                width={180}
-                height={50}
+                width={160}
+                height={45}
                 className="brightness-0 invert"
                 priority
               />
             </Link>
 
             <div className="flex items-center space-x-4">
-              <div className="text-white text-sm">
+              <div className="text-white text-sm hidden sm:block">
                 <p className="font-medium">{user.full_name}</p>
                 <p className="text-gray-200 text-xs">
                   {user.role === 'admin' ? '👑 Administrador' :
@@ -111,7 +112,7 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white text-sm"
                 aria-label="Sair da conta"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -119,11 +120,50 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
+
+          {/* Navigation Menu */}
+          <nav className="flex items-center space-x-1 pb-3 overflow-x-auto">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 px-4 py-2 bg-white/30 text-white rounded-lg text-sm font-medium"
+            >
+              <Map className="h-4 w-4" />
+              <span>Mapa</span>
+            </Link>
+            <Link
+              href="/dashboard/compare"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span>Comparativo</span>
+            </Link>
+            <Link
+              href="/dashboard/mcda"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <Calculator className="h-4 w-4" />
+              <span>MCDA</span>
+            </Link>
+            <Link
+              href="/dashboard/export"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              <span>Exportar</span>
+            </Link>
+            <Link
+              href="/dashboard/help"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-white/20 text-white/90 hover:text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span>Ajuda</span>
+            </Link>
+          </nav>
         </div>
       </header>
 
       {/* Main Content - Interactive Map Dashboard */}
-      <main className="h-[calc(100vh-80px)]">
+      <main className="h-[calc(100vh-120px)]">
         <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-0">
           {/* Left Sidebar - V2 Style */}
           <div className="lg:col-span-1 bg-gray-50 p-4 overflow-y-auto">

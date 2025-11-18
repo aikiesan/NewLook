@@ -214,38 +214,76 @@ export default function InfrastructureLayer({ layerType }: InfrastructureLayerPr
     const props = feature.properties;
 
     // Create popup content based on layer type
-    let popupContent = `<div style="font-family: sans-serif; max-width: 250px;">`;
-    popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${props.name || 'Sem nome'}</h3>`;
+    let popupContent = `<div style="font-family: sans-serif; max-width: 280px;">`;
 
-    // Add specific properties based on layer type
+    // Add specific properties based on layer type with actual shapefile field mappings
     if (layerType === 'railways') {
+      const name = props.nome || props.name || props.NOME || 'Ferrovia';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
       popupContent += `
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.type || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Operador:</strong> ${props.operator || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${props.status || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.tipo || props.type || 'Ferrovia'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Operador:</strong> ${props.operador || props.operator || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${props.status || props.STATUS || 'N/A'}</p>
       `;
     } else if (layerType === 'pipelines') {
+      // Actual fields: Nome_Dut_1, Label, name, Transporta, Diam_Pol_x, P_Max_Op, situaDuo, COMPRIM_KM
+      const name = props.Nome_Dut_1 || props.Label || props.name || 'Gasoduto';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
       popupContent += `
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.type || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Diâmetro:</strong> ${props.diameter_mm || 'N/A'} mm</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Capacidade:</strong> ${props.capacity_m3_day?.toLocaleString() || 'N/A'} m³/dia</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Operador:</strong> ${props.operator || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.name || 'Gasoduto'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Operador:</strong> ${props.Transporta || props.operator || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Diâmetro:</strong> ${props.Diam_Pol_x ? props.Diam_Pol_x + ' pol' : 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Pressão Máx:</strong> ${props.P_Max_Op ? props.P_Max_Op + ' bar' : 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Extensão:</strong> ${props.COMPRIM_KM ? props.COMPRIM_KM.toFixed(1) + ' km' : 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${props.situaDuo || 'N/A'}</p>
+        ${props.MUNIC_ORIG && props.MUNIC_DEST ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Trecho:</strong> ${props.MUNIC_ORIG} → ${props.MUNIC_DEST}</p>` : ''}
+      `;
+    } else if (layerType === 'transmission-lines') {
+      // Actual fields: Nome, label, Concession, Tensao, Extensao, Ano_Opera
+      const name = props.Nome || props.label || props.name || 'Linha de Transmissão';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
+      popupContent += `
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Concessionária:</strong> ${props.Concession || props.concession || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Tensão:</strong> ${props.Tensao || props.tensao || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Extensão:</strong> ${props.Extensao || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Ano Operação:</strong> ${props.Ano_Opera || 'N/A'}</p>
       `;
     } else if (layerType === 'substations') {
+      // Actual fields: nome, potencia, combust, propriet, ceg, ini_oper
+      const name = props.nome || props.name || 'Subestação';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
       popupContent += `
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Tensão:</strong> ${props.voltage_kv || 'N/A'} kV</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Capacidade:</strong> ${props.capacity_mva || 'N/A'} MVA</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.type || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Operador:</strong> ${props.operator || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Potência:</strong> ${props.potencia ? props.potencia.toLocaleString() + ' kW' : 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Combustível:</strong> ${props.combust || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Proprietário:</strong> ${props.propriet || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>CEG:</strong> ${props.ceg || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Início Operação:</strong> ${props.ini_oper || 'N/A'}</p>
       `;
     } else if (layerType === 'biogas-plants') {
+      // Actual fields: TIPO_PLANT, SUBTIPO, STATUS, FONTE_DADO
+      const name = props.TIPO_PLANT ? `Planta de ${props.TIPO_PLANT}` : 'Planta de Biogás';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
       popupContent += `
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.type || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Matéria-prima:</strong> ${props.feedstock || 'N/A'}</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Capacidade:</strong> ${props.capacity_m3_hour || 'N/A'} m³/h</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Potência:</strong> ${props.power_mw || 'N/A'} MW</p>
-        <p style="margin: 4px 0; font-size: 12px;"><strong>Ano:</strong> ${props.commissioning_year || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo:</strong> ${props.TIPO_PLANT || 'Biogás'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Subtipo:</strong> ${props.SUBTIPO || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${props.STATUS || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Fonte:</strong> ${props.FONTE_DADO || 'N/A'}</p>
       `;
+    } else if (layerType === 'etes') {
+      // Actual fields: ETE_NM, ETE_DS_STA, ETE_DS_TIP, ETE_QT_POP, ETE_PC_REM, ETE_DS_TI
+      const name = props.ETE_NM || props.name || 'ETE';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
+      popupContent += `
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${props.ETE_DS_STA || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Tipo Tratamento:</strong> ${props.ETE_DS_TIP || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Sistema:</strong> ${props.ETE_DS_TI || 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>População Atendida:</strong> ${props.ETE_QT_POP ? props.ETE_QT_POP.toLocaleString() : 'N/A'}</p>
+        <p style="margin: 4px 0; font-size: 12px;"><strong>Eficiência Remoção:</strong> ${props.ETE_PC_REM ? props.ETE_PC_REM + '%' : 'N/A'}</p>
+      `;
+    } else {
+      // Default popup for other layers (admin regions, etc.)
+      const name = props.name || props.nome || props.NM_MUN || 'Sem nome';
+      popupContent += `<h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${name}</h3>`;
     }
 
     popupContent += `</div>`;
@@ -256,7 +294,7 @@ export default function InfrastructureLayer({ layerType }: InfrastructureLayerPr
     });
 
     // Hover effect for line features
-    if (layer instanceof L.Path && (layerType === 'railways' || layerType === 'pipelines')) {
+    if (layer instanceof L.Path && (layerType === 'railways' || layerType === 'pipelines' || layerType === 'transmission-lines')) {
       layer.on({
         mouseover: (e) => {
           const target = e.target;

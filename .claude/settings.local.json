@@ -43,7 +43,14 @@
       "Bash(python3:*)",
       "Bash(tee:*)",
       "Bash(git merge:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(git stash pop:*)",
+      "Bash(git stash drop:*)",
+      "Bash(dir C:UsersLucasDocumentsCP2BCP2B_Maps_V2 /s /b 2)",
+      "Bash(findstr:*)",
+      "Bash(dir \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\NewLook\\backend\\data\\shapefiles\" /b)",
+      "Bash(dir \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\NewLook\\backend\\data\\shapefiles\" /b /a)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
