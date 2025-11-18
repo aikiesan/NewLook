@@ -7,8 +7,14 @@ mkdir -p data/shapefiles data/rasters
 # Download from GitHub (using curl as wget may not be available in all environments)
 curl -sL https://github.com/aikiesan/project_map/archive/refs/heads/main.zip -o /tmp/project_map.zip
 
-# Extract
-unzip -q /tmp/project_map.zip -d /tmp/
+# Extract using Python (built-in, no external dependencies)
+echo "📦 Extracting archive..."
+python3 -c "
+import zipfile
+import os
+with zipfile.ZipFile('/tmp/project_map.zip', 'r') as zip_ref:
+    zip_ref.extractall('/tmp/')
+"
 
 # Copy shapefiles (excluding heavy urban areas file)
 echo "📦 Copying shapefiles (excluding Areas_Urbanas_SP - too large)..."
