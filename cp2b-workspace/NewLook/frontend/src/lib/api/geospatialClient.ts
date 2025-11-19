@@ -10,11 +10,14 @@ import type {
   RankingsResponse
 } from '@/types/geospatial';
 import { logger } from '@/lib/logger';
+import { supabaseGeospatialClient } from './supabaseGeospatial';
 
-// FORCE MOCK DATA: Use environment variable to control mock data usage
-// NEXT_PUBLIC_USE_MOCK_DATA=true to use client-side mock data (bypasses Railway)
-// NEXT_PUBLIC_USE_MOCK_DATA=false or undefined to use real backend API
+// Data source configuration
+// NEXT_PUBLIC_USE_MOCK_DATA=true - Use client-side mock data
+// NEXT_PUBLIC_USE_SUPABASE=true - Use Supabase directly (recommended)
+// Otherwise - Use FastAPI backend
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
 
 // API base URL - automatically detects production vs development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
@@ -35,13 +38,19 @@ class GeospatialClient {
    * Generic fetch wrapper with error handling and client-side fallback
    */
   private async fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    // If USE_MOCK_DATA is true, return mock data immediately without network call
+    // Priority 1: Use Supabase directly if enabled
+    if (USE_SUPABASE) {
+      console.info('🔌 Using Supabase database directly');
+      return this.getFromSupabase<T>(endpoint);
+    }
+
+    // Priority 2: Use mock data if enabled
     if (USE_MOCK_DATA) {
       console.info('📦 Using client-side mock data (Railway backend bypassed)');
       return this.getClientSideMockData<T>(endpoint);
     }
 
-    // Otherwise, try to fetch from backend API
+    // Priority 3: Use FastAPI backend
     const url = `${this.baseUrl}${API_PREFIX}${endpoint}`;
 
     try {
@@ -64,12 +73,42 @@ class GeospatialClient {
     } catch (error) {
       if (error instanceof Error) {
         logger.warn(`API fetch failed for ${endpoint}: ${error.message}`);
-        logger.info('🔄 Using client-side mock data as fallback');
-        // Use client-side mock data as fallback
+        // Try Supabase as fallback
+        if (!USE_MOCK_DATA) {
+          try {
+            logger.info('🔄 Trying Supabase as fallback');
+            return await this.getFromSupabase<T>(endpoint);
+          } catch {
+            logger.info('🔄 Using client-side mock data as final fallback');
+          }
+        }
+        // Use client-side mock data as final fallback
         return this.getClientSideMockData<T>(endpoint);
       }
       throw new Error('Unknown error occurred');
     }
+  }
+
+  /**
+   * Get data from Supabase
+   */
+  private async getFromSupabase<T>(endpoint: string): Promise<T> {
+    if (endpoint.includes('/geojson') || endpoint.includes('/polygons')) {
+      return supabaseGeospatialClient.getMunicipalitiesGeoJSON() as Promise<T>;
+    } else if (endpoint.includes('/summary')) {
+      return supabaseGeospatialClient.getSummaryStatistics() as Promise<T>;
+    } else if (endpoint.includes('/rankings')) {
+      // Parse criteria and limit from endpoint
+      const url = new URL(endpoint, 'http://dummy');
+      const criteria = url.searchParams.get('criteria') as 'total' | 'agricultural' | 'livestock' | 'urban' || 'total';
+      const limit = parseInt(url.searchParams.get('limit') || '10');
+      return supabaseGeospatialClient.getRankings(criteria, limit) as Promise<T>;
+    } else if (endpoint.match(/\/municipalities\/\d+/)) {
+      const id = endpoint.split('/').pop();
+      return supabaseGeospatialClient.getMunicipalityDetail(id || '') as Promise<T>;
+    }
+
+    throw new Error(`No Supabase handler for endpoint: ${endpoint}`);
   }
 
   /**
