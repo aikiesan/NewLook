@@ -135,17 +135,10 @@ export default function DashboardPage() {
                 <span>Proximidade</span>
               </Link>
               <Link
-                href="/dashboard/info"
-                className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/20 text-white/90 hover:text-white rounded text-xs font-medium transition-colors whitespace-nowrap"
-              >
-                <Info className="h-3.5 w-3.5" />
-                <span>Info</span>
-              </Link>
-              <Link
                 href="/dashboard/about"
                 className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/20 text-white/90 hover:text-white rounded text-xs font-medium transition-colors whitespace-nowrap"
               >
-                <Users className="h-3.5 w-3.5" />
+                <Info className="h-3.5 w-3.5" />
                 <span>Sobre</span>
               </Link>
             </nav>
