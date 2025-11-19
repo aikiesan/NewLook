@@ -1,42 +1,44 @@
 # CP2B Maps V3 Backend Setup and Start Script
-# This script creates the .env file and starts the backend server
+# This script checks for .env file and starts the backend server
+# IMPORTANT: Configure your .env file with your Supabase credentials before running
 
 Write-Host "=" * 60 -ForegroundColor Cyan
 Write-Host "CP2B Maps V3 - Backend Setup & Start" -ForegroundColor Cyan
 Write-Host "=" * 60 -ForegroundColor Cyan
 Write-Host ""
 
-# Step 1: Create .env file
-Write-Host "[Step 1/4] Creating .env file..." -ForegroundColor Yellow
+# Step 1: Check .env file
+Write-Host "[Step 1/4] Checking .env file..." -ForegroundColor Yellow
 
-$envContent = @"
-APP_NAME=CP2B Maps V3 API
+if (-not (Test-Path ".env")) {
+    Write-Host "✗ .env file not found!" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Please create a .env file with your Supabase credentials:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Example .env file:" -ForegroundColor Cyan
+    Write-Host @"
 APP_ENV=development
 DEBUG=True
 
-SUPABASE_URL=https://zyuxkzfhkueeipokyhgw.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5dXhremZoa3VlZWlwb2t5aGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDI3OTEsImV4cCI6MjA3ODkxODc5MX0.hDozt0JQVQdXf_QcZabJM_SCf4HbARGIawmgUDquOLA
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5dXhremZoa3VlZWlwb2t5aGd3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzM0Mjc5MSwiZXhwIjoyMDc4OTE4NzkxfQ.C684xLDDSrrpznNS_UV-UQBVO5BFvuxplKEo8To9ePM
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-DATABASE_URL=postgresql://postgres:Bauzi%23S%239285@db.zyuxkzfhkueeipokyhgw.supabase.co:5432/postgres
-POSTGRES_HOST=db.zyuxkzfhkueeipokyhgw.supabase.co
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.xxx.supabase.co:5432/postgres
+POSTGRES_HOST=db.xxx.supabase.co
 POSTGRES_PORT=5432
 POSTGRES_DB=postgres
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=Bauzi#S#9285
+POSTGRES_PASSWORD=YOUR_PASSWORD
 
-SECRET_KEY=cp2b-maps-v3-development-secret-key-32chars
-"@
-
-$envContent | Out-File -FilePath ".env" -Encoding UTF8 -Force
-
-if (Test-Path ".env") {
-    Write-Host "✓ .env file created successfully!" -ForegroundColor Green
-} else {
-    Write-Host "✗ Failed to create .env file" -ForegroundColor Red
+SECRET_KEY=your-secret-key-at-least-32-characters
+"@ -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "See .env.example or documentation for more details." -ForegroundColor Yellow
     exit 1
 }
 
+Write-Host "✓ .env file found" -ForegroundColor Green
 Write-Host ""
 
 # Step 2: Kill existing Python processes
@@ -93,4 +95,3 @@ Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
 Write-Host ""
 
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
