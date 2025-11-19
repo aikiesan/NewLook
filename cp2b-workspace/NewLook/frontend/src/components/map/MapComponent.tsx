@@ -238,10 +238,10 @@ export default function MapComponent({
         {visibleLayerIds.includes('etes') && (
           <InfrastructureLayer layerType="etes" />
         )}
-
-        {/* Legend */}
-        {visibleLayerIds.includes('municipalities') && <MapLegend />}
       </MapContainer>
+
+      {/* Legend - Outside MapContainer to prevent positioning issues */}
+      {visibleLayerIds.includes('municipalities') && <MapLegend />}
 
       {/* Floating Control Panel (Top-Left) */}
       {isMounted && (

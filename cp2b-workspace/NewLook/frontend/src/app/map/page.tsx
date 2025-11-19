@@ -7,21 +7,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { Leaf, LogIn, Info } from 'lucide-react'
-
-// Dynamically import Map component to avoid SSR issues
-const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] mx-auto"></div>
-        <p className="mt-4 text-gray-600">Carregando mapa...</p>
-      </div>
-    </div>
-  ),
-})
+import ClientOnlyMap from '@/components/map/ClientOnlyMap'
 
 export default function PublicMapPage() {
   const [showInfo, setShowInfo] = useState(false)
@@ -99,7 +86,7 @@ export default function PublicMapPage() {
 
       {/* Main Map Area */}
       <main className="flex-1 relative">
-        <MapComponent />
+        <ClientOnlyMap />
 
         {/* Call-to-Action Overlay */}
         <div className="absolute top-4 right-4 z-[1000] max-w-sm">
