@@ -360,8 +360,8 @@ export default function HomePage() {
         {t('accessibility.skipToContent')}
       </a>
 
-      {/* Unified Navigation Header */}
-      <UnifiedHeader />
+      {/* Unified Navigation Header - Always public on landing page */}
+      <UnifiedHeader variant="public" />
 
       {/* Hero Section */}
       <section
