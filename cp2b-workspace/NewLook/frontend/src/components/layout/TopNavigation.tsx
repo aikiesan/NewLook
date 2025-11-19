@@ -23,6 +23,8 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
 
 interface NavItem {
   href: string
@@ -127,8 +129,15 @@ export default function TopNavigation() {
             ))}
           </div>
 
-          {/* User Menu (Desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Theme & Language Toggles + User Menu (Desktop) */}
+          <div className="hidden md:flex items-center space-x-3">
+            {/* Language Toggle */}
+            <LanguageToggle />
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User Menu */}
             {isAuthenticated && user ? (
               <div className="relative">
                 <button
