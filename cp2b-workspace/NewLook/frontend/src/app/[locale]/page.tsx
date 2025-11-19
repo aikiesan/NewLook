@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import {
@@ -64,17 +65,17 @@ const StatCard = ({
   description: string
   icon: React.ReactNode
 }) => (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-cp2b-lime hover:shadow-lg transition-all duration-300">
+  <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-slate-700 hover:border-cp2b-lime dark:hover:border-emerald-500 hover:shadow-lg dark:hover:shadow-dark-lg transition-all duration-300">
     <div className="flex justify-center mb-3">
       {icon}
     </div>
-    <div className="text-3xl font-bold text-cp2b-gray-900 mb-1">
+    <div className="text-3xl font-bold text-cp2b-gray-900 dark:text-gray-100 mb-1">
       {number}
     </div>
-    <div className="text-sm font-semibold text-cp2b-green mb-1">
+    <div className="text-sm font-semibold text-cp2b-green dark:text-emerald-400 mb-1">
       {label}
     </div>
-    <div className="text-xs text-cp2b-gray-600">
+    <div className="text-xs text-cp2b-gray-600 dark:text-gray-400">
       {description}
     </div>
   </div>
@@ -339,6 +340,8 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const { user, logout, isAuthenticated } = useAuth()
+  const t = useTranslations('landing')
+  const tNav = useTranslations('nav')
 
   const handleLogout = async () => {
     try {
@@ -372,7 +375,7 @@ export default function HomePage() {
         className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 bg-cp2b-green text-white px-4 py-2 rounded-md"
         tabIndex={0}
       >
-        Pular para o conteúdo principal
+        {t('accessibility.skipToContent')}
       </a>
 
       {/* Navigation Header */}
@@ -405,26 +408,25 @@ export default function HomePage() {
                 href="/"
                 className="text-sm font-medium text-cp2b-gray-900 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
               >
-                Início
+                {tNav('home')}
               </Link>
               <Link
                 href="/dashboard"
                 className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
-                aria-label="Acessar Dashboard (requer autenticação)"
               >
-                Dashboard
+                {tNav('dashboard')}
               </Link>
               <Link
                 href="/analysis"
                 className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
               >
-                Análises
+                {tNav('analysis')}
               </Link>
               <Link
                 href="/about"
                 className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
               >
-                Sobre
+                {tNav('about')}
               </Link>
             </nav>
 
@@ -437,7 +439,7 @@ export default function HomePage() {
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sair
+                  {tNav('user.logout')}
                 </button>
               </div>
             ) : (
@@ -445,7 +447,7 @@ export default function HomePage() {
                 href="/login"
                 className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
               >
-                Acessar Plataforma
+                {t('header.login')}
               </Link>
             )}
 
@@ -473,28 +475,28 @@ export default function HomePage() {
                   className="px-4 py-2 text-sm font-medium text-cp2b-gray-900 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Início
+                  {tNav('home')}
                 </Link>
                 <Link
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  {tNav('dashboard')}
                 </Link>
                 <Link
                   href="/analysis"
                   className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Análises
+                  {tNav('analysis')}
                 </Link>
                 <Link
                   href="/about"
                   className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Sobre
+                  {tNav('about')}
                 </Link>
                 {isAuthenticated ? (
                   <button
@@ -504,7 +506,7 @@ export default function HomePage() {
                     }}
                     className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md text-left"
                   >
-                    Sair
+                    {tNav('user.logout')}
                   </button>
                 ) : (
                   <Link
@@ -512,7 +514,7 @@ export default function HomePage() {
                     className="px-4 py-2 text-sm font-medium text-white bg-cp2b-green rounded-md"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Acessar Plataforma
+                    {t('header.login')}
                   </Link>
                 )}
               </nav>

@@ -1,0 +1,94 @@
+{
+  "hero": {
+    "title": "São Paulo Center for Biogas and Bioproducts Studies",
+    "subtitle": "CP2B - NIPE/UNICAMP",
+    "tagline": "Smart Waste Utilization for Sustainable Development",
+    "description": "CP2B is a center of excellence in research, innovation, and education dedicated to developing transformative solutions for the biogas chain in São Paulo State."
+  },
+
+  "sections": {
+    "mission": "Mission and Vision",
+    "potential": "São Paulo Potential",
+    "leadership": "Leadership",
+    "axes": "8 Thematic Axis",
+    "partners": "Strategic Partners",
+    "methodology": "SAF Methodology"
+  },
+
+  "mission": {
+    "title": "Our Mission",
+    "text": "To promote sustainable development of the biogas and bioproducts sector in São Paulo State through excellent research, qualified human resource training, and knowledge transfer to society."
+  },
+
+  "vision": {
+    "title": "Our Vision",
+    "text": "To be a national and international reference in biogas and bioproducts research and innovation, contributing to energy transition and circular economy."
+  },
+
+  "values": {
+    "title": "Our Values",
+    "items": [
+      "Scientific excellence",
+      "Environmental sustainability",
+      "Technological innovation",
+      "Institutional collaboration",
+      "Knowledge transfer"
+    ]
+  },
+
+  "coordinator": {
+    "title": "Coordinator",
+    "name": "Prof. Dr. Bruna de Souza Moraes",
+    "affiliation": "NIPE/UNICAMP",
+    "bio": "Researcher with extensive experience in biogas and biomethane, leading high-impact projects for sustainable development."
+  },
+
+  "funding": {
+    "title": "Funding",
+    "agency": "FAPESP",
+    "grant": "2025/08745-2",
+    "amount": "R$ 20 million",
+    "period": "February 2025 - February 2030"
+  },
+
+  "axes": {
+    "1": {
+      "title": "Waste Inventory and Technology Mapping",
+      "description": "Systematic survey of waste sources and available technologies"
+    },
+    "2": {
+      "title": "Regional Integration and Consortiums",
+      "description": "Promotion of partnerships and inter-municipal consortiums"
+    },
+    "3": {
+      "title": "Biomethane Logistics and Transportation",
+      "description": "Route optimization and distribution infrastructure"
+    },
+    "4": {
+      "title": "Public Policies and Regulation",
+      "description": "Support for policy formulation and regulatory framework"
+    },
+    "5": {
+      "title": "Market and Economic Analysis",
+      "description": "Feasibility studies and market analysis"
+    },
+    "6": {
+      "title": "Sustainability and Life Cycle Analysis",
+      "description": "Environmental and life cycle assessment"
+    },
+    "7": {
+      "title": "Communication and Training",
+      "description": "Knowledge dissemination and professional training"
+    },
+    "8": {
+      "title": "Administrative and Financial Management",
+      "description": "Center coordination and management"
+    }
+  },
+
+  "contact": {
+    "title": "Get in Touch",
+    "description": "Interested in learning more about CP2B or collaborating with us?",
+    "cta": "Contact Us"
+  }
+}

@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   CP2B DARK MODE - CSS VARIABLES
+   ============================================ */
+
 /* Custom CP2B theme variables - Extended palette */
 :root {
   /* Legacy colors */
@@ -42,6 +46,48 @@
 
   /* Accessibility */
   --focus-ring: 0 0 0 3px rgba(159, 204, 101, 0.4);
+
+  /* Dark Mode Variables - Light Theme Defaults */
+  --background: 248 249 250; /* #F8F9FA */
+  --surface: 255 255 255;    /* #FFFFFF */
+  --foreground: 32 33 36;    /* #202124 */
+  --border: 226 232 240;     /* #E2E8F0 */
+  --divider: 238 238 238;    /* #EEEEEE */
+
+  /* Text Colors */
+  --text-primary: 32 33 36;
+  --text-secondary: 97 97 97;
+  --text-disabled: 158 158 158;
+}
+
+/* Dark Theme Overrides */
+.dark {
+  /* Background Colors */
+  --background: 15 23 42;    /* #0F172A - Slate 900 */
+  --surface: 30 41 59;       /* #1E293B - Slate 800 */
+  --foreground: 248 250 252; /* #F8FAFC - Slate 50 */
+
+  /* CP2B Primary (Lighter for dark mode) */
+  --cp2b-primary: #2A7A3E;
+  --cp2b-secondary: #6BC454;
+  --cp2b-green: #3D9948;
+  --cp2b-green-light: #5DBF68;
+
+  /* Border & Divider */
+  --border: 51 65 85;        /* #334155 - Slate 700 */
+  --divider: 71 85 105;      /* #475569 - Slate 600 */
+
+  /* Text Colors */
+  --text-primary: 248 250 252;
+  --text-secondary: 203 213 225;
+  --text-disabled: 148 163 184;
+
+  /* Neutral Palette for dark mode */
+  --cp2b-gray-50: #1E293B;
+  --cp2b-gray-100: #334155;
+  --cp2b-gray-200: #475569;
+  --cp2b-gray-600: #CBD5E1;
+  --cp2b-gray-900: #F8FAFC;
 }
 
 /* Base styles */
@@ -51,32 +97,39 @@
   }
 
   body {
+    @apply bg-[rgb(var(--background))] text-[rgb(var(--text-primary))];
+    @apply transition-colors duration-200;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Smooth transitions for dark mode toggle */
+  * {
+    @apply transition-colors duration-150;
   }
 }
 
 /* Component styles */
 @layer components {
   .btn-primary {
-    @apply bg-cp2b-green hover:bg-cp2b-dark-green text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime;
+    @apply bg-cp2b-green hover:bg-cp2b-dark-green dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime dark:focus:ring-emerald-500;
   }
 
   .btn-secondary {
-    @apply bg-white text-cp2b-green border-2 border-cp2b-green hover:bg-cp2b-gray-50 px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime;
+    @apply bg-white dark:bg-slate-800 text-cp2b-green dark:text-emerald-400 border-2 border-cp2b-green dark:border-emerald-500 hover:bg-cp2b-gray-50 dark:hover:bg-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime dark:focus:ring-emerald-500;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-cp2b-gray-600 hover:text-cp2b-green hover:bg-cp2b-gray-100 px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cp2b-lime;
+    @apply bg-transparent text-cp2b-gray-600 dark:text-slate-300 hover:text-cp2b-green dark:hover:text-emerald-400 hover:bg-cp2b-gray-100 dark:hover:bg-slate-800 px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cp2b-lime dark:focus:ring-emerald-500;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-cp2b-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:border-cp2b-lime;
+    @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm dark:shadow-dark-sm border border-cp2b-gray-200 dark:border-slate-700 p-6 transition-all duration-300 hover:shadow-lg dark:hover:shadow-dark-lg hover:border-cp2b-lime dark:hover:border-emerald-500;
   }
 
   .card-elevated {
-    @apply bg-white rounded-2xl shadow-lg border border-cp2b-gray-200 p-8;
+    @apply bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-dark-lg border border-cp2b-gray-200 dark:border-slate-700 p-8;
   }
 
   .navbar-gradient {
@@ -103,12 +156,25 @@
   }
 
   .badge-primary {
-    @apply badge bg-cp2b-lime-light text-cp2b-dark-green;
+    @apply badge bg-cp2b-lime-light dark:bg-emerald-900 text-cp2b-dark-green dark:text-emerald-300;
   }
 
   .badge-secondary {
-    @apply badge bg-cp2b-gray-100 text-cp2b-gray-600;
+    @apply badge bg-cp2b-gray-100 dark:bg-slate-700 text-cp2b-gray-600 dark:text-slate-300;
   }
+}
+
+/* Screen reader only utility (accessibility) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Utilities */

@@ -1,0 +1,60 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Visão geral do potencial de biogás em São Paulo",
+  "welcome": "Bem-vindo ao CP2B",
+  "loadingMap": "Carregando mapa...",
+
+  "stats": {
+    "municipalities": "Municípios",
+    "totalPotential": "Potencial Total",
+    "avgPotential": "Potencial Médio",
+    "topProducers": "Principais Produtores",
+    "potential": "Potencial",
+    "biogasUnit": "m³ CH₄/ano",
+    "biomethaneUnit": "Nm³/dia"
+  },
+
+  "charts": {
+    "topMunicipalities": "Top 10 Municípios por Potencial",
+    "residueTypes": "Distribuição por Tipo de Resíduo",
+    "regionalDistribution": "Distribuição Regional",
+    "monthlyProduction": "Produção Mensal Estimada"
+  },
+
+  "filters": {
+    "title": "Filtros",
+    "region": "Região",
+    "allRegions": "Todas as Regiões",
+    "residueType": "Tipo de Resíduo",
+    "allTypes": "Todos os Tipos",
+    "minPotential": "Potencial Mínimo",
+    "maxDistance": "Distância Máxima (km)",
+    "apply": "Aplicar Filtros",
+    "clear": "Limpar Filtros"
+  },
+
+  "residues": {
+    "sugarcane": "Cana-de-açúcar",
+    "citrus": "Citros",
+    "corn": "Milho",
+    "soy": "Soja",
+    "swine": "Suínos",
+    "poultry": "Avícola",
+    "urban": "Urbano (RSU)",
+    "sewage": "Esgoto Sanitário"
+  },
+
+  "actions": {
+    "viewDetails": "Ver Detalhes",
+    "compare": "Comparar",
+    "exportData": "Exportar Dados",
+    "generateReport": "Gerar Relatório"
+  },
+
+  "layers": {
+    "title": "Camadas",
+    "biomassTypes": "Tipos de Biomassa",
+    "infrastructure": "Infraestrutura",
+    "administrative": "Administrativa"
+  }
+}

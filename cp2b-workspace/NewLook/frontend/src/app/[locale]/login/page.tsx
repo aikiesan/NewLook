@@ -70,12 +70,12 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white shadow-2xl rounded-lg p-8">
+        <div className="bg-white dark:bg-slate-800 shadow-2xl dark:shadow-dark-lg rounded-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Error Message */}
             {error && (
               <div
-                className="bg-red-50 border-l-4 border-red-400 p-4 rounded"
+                className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-500 p-4 rounded"
                 role="alert"
                 aria-live="assertive"
               >
@@ -84,7 +84,7 @@ export default function LoginPage() {
                     className="h-5 w-5 text-red-400 mt-0.5 mr-3 flex-shrink-0"
                     aria-hidden="true"
                   />
-                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
                 </div>
               </div>
             )}
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 Endereço de e-mail
               </label>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cp2b-primary focus:border-transparent transition-colors"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-lg shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cp2b-primary dark:focus:ring-emerald-500 focus:border-transparent transition-colors"
                 placeholder="seu@email.com"
                 aria-required="true"
                 aria-invalid={!!error}
@@ -118,7 +118,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
                 Senha
               </label>
@@ -130,7 +130,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cp2b-primary focus:border-transparent transition-colors"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 rounded-lg shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cp2b-primary dark:focus:ring-emerald-500 focus:border-transparent transition-colors"
                 placeholder="••••••••"
                 aria-required="true"
                 aria-invalid={!!error}
@@ -145,11 +145,11 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-cp2b-primary focus:ring-cp2b-primary border-gray-300 rounded"
+                  className="h-4 w-4 text-cp2b-primary dark:text-emerald-500 focus:ring-cp2b-primary dark:focus:ring-emerald-500 border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900"
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-700"
+                  className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
                 >
                   Lembrar-me
                 </label>
@@ -158,7 +158,7 @@ export default function LoginPage() {
               <div className="text-sm">
                 <a
                   href="#"
-                  className="font-medium text-cp2b-primary hover:text-cp2b-secondary underline focus:outline-none focus:ring-2 focus:ring-cp2b-primary rounded"
+                  className="font-medium text-cp2b-primary dark:text-emerald-400 hover:text-cp2b-secondary dark:hover:text-emerald-300 underline focus:outline-none focus:ring-2 focus:ring-cp2b-primary dark:focus:ring-emerald-500 rounded"
                 >
                   Esqueceu a senha?
                 </a>
