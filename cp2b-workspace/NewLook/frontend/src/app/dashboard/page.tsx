@@ -19,10 +19,10 @@ import { logger } from '@/lib/logger'
 const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+    <div className="w-full h-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] mx-auto"></div>
-        <p className="mt-4 text-gray-600">Carregando mapa...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] dark:border-emerald-500 mx-auto"></div>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando mapa...</p>
       </div>
     </div>
   ),
@@ -72,10 +72,10 @@ export default function DashboardPage() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cp2b-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cp2b-primary dark:border-emerald-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando...</p>
         </div>
       </div>
     )
@@ -87,7 +87,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors">
       {/* Compact Navigation Header */}
       <header className="navbar-gradient shadow-lg flex-shrink-0">
         <div className="max-w-full mx-auto px-4">

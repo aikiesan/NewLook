@@ -64,17 +64,17 @@ const StatCard = ({
   description: string
   icon: React.ReactNode
 }) => (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-cp2b-lime hover:shadow-lg transition-all duration-300">
+  <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-slate-700 hover:border-cp2b-lime dark:hover:border-emerald-500 hover:shadow-lg dark:hover:shadow-dark-lg transition-all duration-300">
     <div className="flex justify-center mb-3">
       {icon}
     </div>
-    <div className="text-3xl font-bold text-cp2b-gray-900 mb-1">
+    <div className="text-3xl font-bold text-cp2b-gray-900 dark:text-gray-100 mb-1">
       {number}
     </div>
-    <div className="text-sm font-semibold text-cp2b-green mb-1">
+    <div className="text-sm font-semibold text-cp2b-green dark:text-emerald-400 mb-1">
       {label}
     </div>
-    <div className="text-xs text-cp2b-gray-600">
+    <div className="text-xs text-cp2b-gray-600 dark:text-gray-400">
       {description}
     </div>
   </div>

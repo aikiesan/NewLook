@@ -70,12 +70,12 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white shadow-2xl rounded-lg p-8">
+        <div className="bg-white dark:bg-slate-800 shadow-2xl dark:shadow-dark-lg rounded-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Error Message */}
             {error && (
               <div
-                className="bg-red-50 border-l-4 border-red-400 p-4 rounded"
+                className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-500 p-4 rounded"
                 role="alert"
                 aria-live="assertive"
               >
