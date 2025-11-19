@@ -83,6 +83,10 @@ async def rate_limit_middleware(request: Request, call_next):
     """
     Middleware to apply rate limiting to API endpoints
     """
+    # Skip rate limiting for OPTIONS preflight requests (CORS)
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     # Get client identifier (prefer user ID, fallback to IP)
     client_id = request.client.host if request.client else "unknown"
     
