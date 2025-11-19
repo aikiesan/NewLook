@@ -23,7 +23,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Github,
-  Building2,
   Sparkles,
 } from 'lucide-react'
 
@@ -94,17 +93,6 @@ const PulseGlow = ({ children, className = '' }: { children: React.ReactNode; cl
   </div>
 )
 
-// Accessibility icon component
-const AccessibilityIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="4" r="1" />
-    <path d="M12 21v-8" />
-    <path d="M12 13H4l4-9" />
-    <path d="M12 13h8l-4-9" />
-    <path d="M12 13l-4 8" />
-    <path d="M12 13l4 8" />
-  </svg>
-)
 
 // StatCard Component with hover animations
 const StatCard = ({
@@ -204,27 +192,6 @@ const FeatureCard = ({
   </article>
 )
 
-// FooterLink Component
-const FooterLink = ({
-  href,
-  text,
-  external,
-}: {
-  href: string
-  text: string
-  external?: boolean
-}) => (
-  <li>
-    <Link
-      href={href}
-      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1"
-      {...(external && { target: '_blank', rel: 'noopener noreferrer' })}
-    >
-      {text}
-      {external && <ExternalLink className="w-3 h-3" />}
-    </Link>
-  </li>
-)
 
 // Animated Map Background Component
 const AnimatedMapBackground = () => {
@@ -390,7 +357,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors">
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
@@ -573,7 +540,7 @@ export default function HomePage() {
                 number="AA"
                 label="WCAG 2.1"
                 description="Acessibilidade"
-                icon={<AccessibilityIcon className="w-7 h-7 text-cp2b-green" />}
+                icon={<Check className="w-7 h-7 text-cp2b-green" />}
               />
             </div>
           </FadeIn>
@@ -735,149 +702,52 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-cp2b-gray-900 text-white pt-16 pb-8">
+      <footer className="bg-cp2b-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Section */}
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            {/* Column 1: Brand */}
-            <div className="md:col-span-1">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Logo and Attribution */}
+            <div className="flex flex-col items-center md:items-start gap-2">
               <Image
                 src="/images/logotipo-full-black.png"
                 alt="CP2B"
-                width={120}
-                height={40}
-                className="mb-4 brightness-200"
+                width={100}
+                height={34}
+                className="brightness-200"
               />
-              <p className="text-sm text-gray-400 leading-relaxed mb-4">
-                Plataforma de mapeamento e análise de potencial de biogás
-                desenvolvida pelo NIPE-UNICAMP.
+              <p className="text-xs text-gray-400 text-center md:text-left">
+                Processo FAPESP 2025/08745-2
               </p>
-              <div className="flex items-center gap-3">
-                <a
-                  href="https://github.com/aikiesan/NewLook"
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Github className="w-3 h-3" />
-                  Open Source
-                </a>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 text-xs font-medium">
-                  <AccessibilityIcon className="w-3 h-3" />
-                  WCAG 2.1 AA
-                </span>
-              </div>
             </div>
 
-            {/* Column 2: Platform */}
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
-                Plataforma
-              </h3>
-              <ul className="space-y-3" role="list">
-                <FooterLink href="/map" text="Explorar Mapa" />
-                <FooterLink href="/dashboard" text="Dashboard" />
-                <FooterLink href="/analysis" text="Análises MCDA" />
-                <FooterLink href="/chat" text="Assistente AI" />
-                <FooterLink href="/data" text="Base de Dados" />
-              </ul>
-            </div>
-
-            {/* Column 3: Resources */}
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
-                Recursos
-              </h3>
-              <ul className="space-y-3" role="list">
-                <FooterLink href="/methodology" text="Metodologia SAF" />
-                <FooterLink href="/docs" text="Documentação" />
-                <FooterLink href="/api" text="API REST" />
-                <FooterLink href="/downloads" text="Downloads" />
-                <FooterLink
-                  href="https://github.com/aikiesan/NewLook"
-                  text="GitHub"
-                  external
-                />
-              </ul>
-            </div>
-
-            {/* Column 4: About */}
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
+            {/* Links */}
+            <div className="flex items-center gap-6 text-sm">
+              <Link
+                href="/about"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 Sobre
-              </h3>
-              <ul className="space-y-3" role="list">
-                <FooterLink href="/about" text="Sobre o CP2B" />
-                <FooterLink
-                  href="https://nipe.unicamp.br/cp2b/"
-                  text="Site Institucional"
-                  external
-                />
-                <FooterLink href="/team" text="Equipe" />
-                <FooterLink
-                  href="https://nipe.unicamp.br/cp2b/fale-com-o-cp2b/"
-                  text="Contato"
-                  external
-                />
-                <FooterLink href="/fapesp" text="Processo FAPESP" />
-              </ul>
+              </Link>
+              <a
+                href="https://github.com/aikiesan/NewLook"
+                className="text-gray-400 hover:text-white transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github className="w-4 h-4" />
+              </a>
+              <a
+                href="https://nipe.unicamp.br/cp2b/"
+                className="text-gray-400 hover:text-white transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
-          </div>
 
-          {/* Divider */}
-          <div className="border-t border-gray-800 pt-8 mt-8">
-            {/* Bottom Section */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              {/* Copyright */}
-              <div className="text-sm text-gray-400 text-center md:text-left">
-                © 2025 NIPE-UNICAMP. Todos os direitos reservados.
-                <br className="md:hidden" />
-                <span className="md:ml-2">Processo FAPESP 2025/08745-2</span>
-              </div>
-
-              {/* Legal Links */}
-              <div className="flex items-center gap-6 text-sm">
-                <Link
-                  href="/privacy"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Privacidade
-                </Link>
-                <Link
-                  href="/terms"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Termos de Uso
-                </Link>
-                <Link
-                  href="/accessibility"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Acessibilidade
-                </Link>
-              </div>
-
-              {/* Social/Institution Links */}
-              <div className="flex items-center gap-4">
-                <a
-                  href="https://nipe.unicamp.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
-                  aria-label="Visitar site do NIPE"
-                >
-                  <ExternalLink className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://fapesp.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
-                  aria-label="Visitar site da FAPESP"
-                >
-                  <Building2 className="w-5 h-5" />
-                </a>
-              </div>
+            {/* Copyright */}
+            <div className="text-xs text-gray-500 text-center md:text-right">
+              © 2025 NIPE-UNICAMP
             </div>
           </div>
         </div>
