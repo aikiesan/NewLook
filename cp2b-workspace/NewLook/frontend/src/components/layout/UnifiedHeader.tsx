@@ -12,9 +12,6 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   Map,
-  BarChart3,
-  GitCompare,
-  Database,
   Settings,
   Menu,
   X,
@@ -40,35 +37,7 @@ interface UnifiedHeaderProps {
   variant?: 'auto' | 'public' | 'authenticated'
 }
 
-// Navigation items for authenticated users
-const authenticatedNavItems: NavItem[] = [
-  {
-    href: '/dashboard',
-    label: 'Mapa',
-    icon: <Map className="h-4 w-4" />,
-    description: 'Mapa interativo'
-  },
-  {
-    href: '/analysis',
-    label: 'Análises',
-    icon: <BarChart3 className="h-4 w-4" />,
-    description: 'MCDA e estatísticas'
-  },
-  {
-    href: '/compare',
-    label: 'Comparar',
-    icon: <GitCompare className="h-4 w-4" />,
-    description: 'Comparar municípios'
-  },
-  {
-    href: '/data',
-    label: 'Dados',
-    icon: <Database className="h-4 w-4" />,
-    description: 'Explorar dados'
-  },
-]
-
-// Navigation items for public users
+// Navigation items for public users (landing page)
 const publicNavItems: NavItem[] = [
   {
     href: '/',
@@ -76,11 +45,19 @@ const publicNavItems: NavItem[] = [
     icon: <Home className="h-4 w-4" />,
   },
   {
+    href: '/map',
+    label: 'Mapa',
+    icon: <Map className="h-4 w-4" />,
+  },
+  {
     href: '/about',
     label: 'Sobre',
     icon: <Info className="h-4 w-4" />,
   },
 ]
+
+// Navigation items for authenticated users (minimal - dashboard has its own nav)
+const authenticatedNavItems: NavItem[] = []
 
 export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) {
   const pathname = usePathname()

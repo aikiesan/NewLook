@@ -3,48 +3,12 @@ Municipalities API endpoints
 """
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
+from app.services.supabase_client import get_supabase_client
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Sample data (will be replaced with database queries)
-SAMPLE_MUNICIPALITIES = [
-    {
-        "id": 1,
-        "name": "São Paulo",
-        "code": "3550308",
-        "population": 12396372,
-        "area_km2": 1521.11,
-        "biogas_potential": 850.5,
-        "coordinates": {
-            "lat": -23.5505,
-            "lng": -46.6333
-        }
-    },
-    {
-        "id": 2,
-        "name": "Guarulhos",
-        "code": "3518800",
-        "population": 1393297,
-        "area_km2": 318.68,
-        "biogas_potential": 125.8,
-        "coordinates": {
-            "lat": -23.4538,
-            "lng": -46.5333
-        }
-    },
-    {
-        "id": 3,
-        "name": "Campinas",
-        "code": "3509502",
-        "population": 1213792,
-        "area_km2": 794.43,
-        "biogas_potential": 98.7,
-        "coordinates": {
-            "lat": -22.9056,
-            "lng": -47.0608
-        }
-    }
-]
 
 @router.get("/")
 async def get_municipalities(
@@ -54,66 +18,98 @@ async def get_municipalities(
 ):
     """Get list of municipalities with optional filtering"""
     try:
+        supabase = get_supabase_client()
+
+        # Build query
+        query = supabase.table("municipios").select("*")
+
         # Apply search filter if provided
-        filtered_data = SAMPLE_MUNICIPALITIES
         if search:
-            filtered_data = [
-                m for m in SAMPLE_MUNICIPALITIES
-                if search.lower() in m["name"].lower()
-            ]
+            query = query.ilike("nm_mun", f"%{search}%")
 
         # Apply pagination
-        start = offset
-        end = offset + limit
-        paginated_data = filtered_data[start:end]
+        query = query.range(offset, offset + limit - 1)
+
+        # Execute query
+        result = query.execute()
+
+        # Get total count
+        count_result = supabase.table("municipios").select("cd_mun", count="exact").execute()
+        total = count_result.count if count_result.count else len(result.data)
 
         return {
-            "data": paginated_data,
-            "total": len(filtered_data),
+            "data": result.data,
+            "total": total,
             "limit": limit,
             "offset": offset,
-            "has_more": end < len(filtered_data)
+            "has_more": offset + limit < total
         }
     except Exception as e:
+        logger.error(f"Error fetching municipalities: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching municipalities: {str(e)}")
 
 @router.get("/{municipality_id}")
-async def get_municipality(municipality_id: int):
-    """Get specific municipality details"""
+async def get_municipality(municipality_id: str):
+    """Get specific municipality details by IBGE code (cd_mun)"""
     try:
-        municipality = next(
-            (m for m in SAMPLE_MUNICIPALITIES if m["id"] == municipality_id),
-            None
-        )
+        supabase = get_supabase_client()
 
-        if not municipality:
+        # Query by IBGE code (cd_mun)
+        result = supabase.table("municipios").select("*").eq("cd_mun", municipality_id).execute()
+
+        if not result.data or len(result.data) == 0:
             raise HTTPException(
                 status_code=404,
-                detail=f"Municipality with ID {municipality_id} not found"
+                detail=f"Municipality with code {municipality_id} not found"
             )
 
+        municipality = result.data[0]
+
+        # Also fetch biomass data for this municipality
+        try:
+            biomass_result = supabase.table("biomassa_municipal").select("*").eq("cd_mun", municipality_id).execute()
+            if biomass_result.data and len(biomass_result.data) > 0:
+                municipality["biomass_data"] = biomass_result.data[0]
+        except Exception as e:
+            logger.warning(f"Could not fetch biomass data: {str(e)}")
+
         return municipality
+
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error fetching municipality: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching municipality: {str(e)}")
 
 @router.get("/stats/summary")
 async def get_municipalities_stats():
     """Get summary statistics for all municipalities"""
     try:
-        total_municipalities = len(SAMPLE_MUNICIPALITIES)
-        total_population = sum(m["population"] for m in SAMPLE_MUNICIPALITIES)
-        total_area = sum(m["area_km2"] for m in SAMPLE_MUNICIPALITIES)
-        total_biogas_potential = sum(m["biogas_potential"] for m in SAMPLE_MUNICIPALITIES)
+        supabase = get_supabase_client()
+
+        # Get count of municipalities
+        count_result = supabase.table("municipios").select("cd_mun", count="exact").execute()
+        total_municipalities = count_result.count if count_result.count else 0
+
+        # Get aggregated stats
+        stats_result = supabase.table("municipios").select("populacao_2022, area_km2").execute()
+
+        total_population = 0
+        total_area = 0.0
+
+        if stats_result.data:
+            for m in stats_result.data:
+                if m.get("populacao_2022"):
+                    total_population += m["populacao_2022"]
+                if m.get("area_km2"):
+                    total_area += float(m["area_km2"]) if m["area_km2"] else 0
 
         return {
             "total_municipalities": total_municipalities,
             "total_population": total_population,
             "total_area_km2": round(total_area, 2),
-            "total_biogas_potential": round(total_biogas_potential, 2),
-            "average_biogas_potential": round(total_biogas_potential / total_municipalities, 2),
-            "timestamp": "2025-11-16T20:00:00Z"
+            "timestamp": "2025-11-19T00:00:00Z"
         }
     except Exception as e:
+        logger.error(f"Error calculating stats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error calculating stats: {str(e)}")
