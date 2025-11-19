@@ -20,14 +20,23 @@ import {
   Y_CH4_STOICHIOMETRIC
 } from '@/types/scientific'
 
+import {
+  REAL_KINETICS_DATA,
+  REAL_CHEMICAL_DATA,
+  REAL_REFERENCES
+} from '@/data/scientificData'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // ==========================================
-// MOCK DATA (to be replaced with real API)
+// REAL DATA from CP2B Panorama Repository
+// Source: https://github.com/aikiesan/Panorama_CP2B
 // ==========================================
 
-// Sample kinetic data based on DBFZ model
+// Use real data from validated scientific sources
 const MOCK_KINETICS_DATA: KineticData[] = [
+  ...REAL_KINETICS_DATA,
+  // Additional sample data for demonstration
   {
     residue_id: 1,
     residue_name: 'Bagaço de cana',
@@ -198,11 +207,13 @@ const MOCK_KINETICS_DATA: KineticData[] = [
   }
 ]
 
-// Sample chemical data based on PanoramaCP2B
+// Chemical data from PanoramaCP2B validated sources
 const MOCK_CHEMICAL_DATA: ChemicalData[] = [
+  ...REAL_CHEMICAL_DATA,
+  // Additional sample data
   {
-    residue_id: 1,
-    residue_name: 'Bagaço de cana',
+    residue_id: 101,
+    residue_name: 'Bagaço de cana (sample)',
     sector: 'agricultural',
     moisture: 50,
     ts: 50,
@@ -362,17 +373,19 @@ const MOCK_CHEMICAL_DATA: ChemicalData[] = [
   }
 ]
 
-// Sample scientific references
+// Scientific references from PanoramaCP2B validated sources
 const MOCK_REFERENCES: ScientificReference[] = [
+  ...REAL_REFERENCES,
+  // Additional sample references
   {
-    id: 1,
+    id: 1001,
     authors: 'Silva, J. M.; Santos, P. R.; Oliveira, A. B.',
-    title: 'Potencial de biogás do bagaço de cana-de-açúcar em São Paulo',
+    title: 'Potencial de biogás do bagaço de cana-de-açúcar em São Paulo (sample)',
     journal: 'Bioresource Technology',
     year: 2021,
     volume: '312',
     pages: '123456',
-    doi: '10.1016/j.biortech.2021.123456',
+    doi: '10.1016/j.biortech.2021.sample',
     reference_type: 'journal',
     peer_reviewed: true,
     sector: 'agricultural',
