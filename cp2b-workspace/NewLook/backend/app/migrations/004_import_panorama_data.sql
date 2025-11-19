@@ -7,7 +7,7 @@
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'CANA',
+    'AG_CANA',
     'Cana-de-açúcar',
     'AG_AGRICULTURA',
     1
@@ -15,7 +15,7 @@ VALUES (
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'CITROS',
+    'AG_CITROS',
     'Citros',
     'AG_AGRICULTURA',
     2
@@ -23,7 +23,7 @@ VALUES (
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'CAFE',
+    'AG_CAFE',
     'Café',
     'AG_AGRICULTURA',
     3
@@ -31,7 +31,7 @@ VALUES (
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'MILHO',
+    'AG_MILHO',
     'Milho',
     'AG_AGRICULTURA',
     4
@@ -39,7 +39,7 @@ VALUES (
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'SOJA',
+    'AG_SOJA',
     'Soja',
     'AG_AGRICULTURA',
     5
@@ -47,8 +47,8 @@ VALUES (
 
 INSERT INTO subsectors (codigo, nome, sector_codigo, ordem)
 VALUES (
-    'EUCALIPTO',
-    'Eucalipto',
+    'AG_SILVICULTURA',
+    'Silvicultura/Eucalipto',
     'AG_AGRICULTURA',
     6
 ) ON CONFLICT (codigo) DO NOTHING;
