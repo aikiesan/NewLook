@@ -16,6 +16,60 @@ from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
+# MapBiomas Class to Residuos Mapping
+# Maps MapBiomas land use classes to corresponding residue types in the database
+MAPBIOMAS_RESIDUOS_MAPPING = {
+    # Agricultural Classes
+    20: {  # Cana-de-açúcar (Sugarcane)
+        "residuos": ["Bagaço de cana", "Palha de cana", "Vinhaça"],
+        "subsector_codigo": "AG_CANA",
+        "production_factor": 0.14,  # tons residue per hectare
+        "description": "Resíduos da produção de cana-de-açúcar"
+    },
+    39: {  # Soja (Soybean)
+        "residuos": ["Palha de soja"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.08,
+        "description": "Resíduos da colheita de soja"
+    },
+    15: {  # Pastagem (Pasture)
+        "residuos": ["Dejetos bovinos", "Dejetos equinos"],
+        "subsector_codigo": "PC_BOVINOS",
+        "production_factor": None,  # Based on animal count
+        "description": "Dejetos de animais em pastagens"
+    },
+    46: {  # Café (Coffee)
+        "residuos": ["Palha de café", "Casca de café"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.05,
+        "description": "Resíduos do processamento de café"
+    },
+    47: {  # Citros (Citrus)
+        "residuos": ["Bagaço de laranja"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.06,
+        "description": "Resíduos do processamento de citros"
+    },
+    41: {  # Outras Temporárias (Other Annual Crops)
+        "residuos": ["Palha de milho", "Sabugo de milho", "Palha de arroz"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.10,
+        "description": "Resíduos de culturas temporárias diversas"
+    },
+    9: {  # Silvicultura (Forestry)
+        "residuos": ["Resíduos florestais"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.15,
+        "description": "Resíduos da silvicultura"
+    },
+    21: {  # Mosaico Agricultura-Pastagem
+        "residuos": ["Dejetos bovinos", "Palha de milho"],
+        "subsector_codigo": "AG_CULTURAS",
+        "production_factor": 0.07,
+        "description": "Resíduos de áreas mistas agricultura-pastagem"
+    }
+}
+
 # Coordinate Reference Systems
 WGS84 = "EPSG:4326"  # Input/output
 UTM_23S = "EPSG:31983"  # SIRGAS 2000 / UTM zone 23S - for accurate buffer in meters
@@ -287,6 +341,233 @@ class ProximityService:
             "energy_potential_mwh_year": 0,
             "co2_reduction_tons_year": 0,
             "homes_powered_equivalent": 0
+        }
+
+    def get_residuos_for_municipalities(
+        self, municipality_names: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Get detailed residuos data for municipalities.
+
+        Retrieves residue types with their chemical parameters (BMP, TS, VS)
+        for biogas calculation refinement.
+
+        Args:
+            municipality_names: List of municipality names to query
+
+        Returns:
+            Dictionary with residuos organized by sector and subsector
+        """
+        if not municipality_names:
+            return self._empty_residuos_result()
+
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+
+                # Get all residuos with their chemical parameters
+                cursor.execute("""
+                    SELECT
+                        r.id,
+                        r.codigo,
+                        r.nome,
+                        r.nome_en,
+                        r.sector_codigo,
+                        r.subsector_codigo,
+                        r.categoria_nome,
+                        r.bmp_min,
+                        r.bmp_medio,
+                        r.bmp_max,
+                        r.bmp_unidade,
+                        r.ts_min,
+                        r.ts_medio,
+                        r.ts_max,
+                        r.vs_min,
+                        r.vs_medio,
+                        r.vs_max,
+                        r.chemical_cn_ratio,
+                        r.chemical_ch4_content,
+                        r.fator_realista,
+                        r.icon,
+                        s.nome as sector_nome,
+                        s.emoji as sector_emoji,
+                        ss.nome as subsector_nome
+                    FROM residuos r
+                    JOIN sectors s ON r.sector_codigo = s.codigo
+                    LEFT JOIN subsectors ss ON r.subsector_codigo = ss.codigo
+                    ORDER BY s.ordem, r.nome
+                """)
+
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                residuos_list = []
+                for row in rows:
+                    residuo = dict(zip(columns, row))
+                    # Convert Decimal to float
+                    for key, value in residuo.items():
+                        if hasattr(value, '__float__'):
+                            residuo[key] = float(value)
+                    residuos_list.append(residuo)
+
+                # Organize by sector
+                by_sector = {}
+                for residuo in residuos_list:
+                    sector = residuo["sector_codigo"]
+                    if sector not in by_sector:
+                        by_sector[sector] = {
+                            "nome": residuo["sector_nome"],
+                            "emoji": residuo["sector_emoji"],
+                            "residuos": []
+                        }
+                    by_sector[sector]["residuos"].append(residuo)
+
+                # Get summary statistics
+                total_residuos = len(residuos_list)
+                avg_bmp = sum(r.get("bmp_medio", 0) or 0 for r in residuos_list) / total_residuos if total_residuos > 0 else 0
+
+                cursor.close()
+
+                return {
+                    "total_residuos": total_residuos,
+                    "by_sector": by_sector,
+                    "residuos": residuos_list,
+                    "summary": {
+                        "avg_bmp_medio": round(avg_bmp, 2),
+                        "sectors_count": len(by_sector)
+                    }
+                }
+
+        except Exception as e:
+            logger.error(f"Error fetching residuos for municipalities: {e}")
+            return self._empty_residuos_result()
+
+    def correlate_mapbiomas_residuos(
+        self, land_use_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Correlate MapBiomas land use classes with residuos database.
+
+        Creates a mapping between detected land use and potential biogas sources.
+
+        Args:
+            land_use_data: MapBiomas analysis results with by_class data
+
+        Returns:
+            Dictionary with correlated residuos for each land use class
+        """
+        if not land_use_data or "by_class" not in land_use_data:
+            return {"correlations": [], "total_potential_sources": 0}
+
+        correlations = []
+        by_class = land_use_data.get("by_class", {})
+
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+
+                for class_id_str, class_data in by_class.items():
+                    class_id = int(class_id_str)
+
+                    # Check if we have a mapping for this class
+                    if class_id in MAPBIOMAS_RESIDUOS_MAPPING:
+                        mapping = MAPBIOMAS_RESIDUOS_MAPPING[class_id]
+                        residuo_names = mapping["residuos"]
+
+                        # Query matching residuos from database
+                        if residuo_names:
+                            placeholders = ", ".join(["%s"] * len(residuo_names))
+                            cursor.execute(f"""
+                                SELECT
+                                    r.id,
+                                    r.nome,
+                                    r.bmp_medio,
+                                    r.ts_medio,
+                                    r.vs_medio,
+                                    r.chemical_cn_ratio,
+                                    r.chemical_ch4_content,
+                                    r.bmp_unidade,
+                                    r.sector_codigo,
+                                    s.nome as sector_nome
+                                FROM residuos r
+                                JOIN sectors s ON r.sector_codigo = s.codigo
+                                WHERE r.nome IN ({placeholders})
+                            """, tuple(residuo_names))
+
+                            matched_residuos = []
+                            for row in cursor.fetchall():
+                                columns = [desc[0] for desc in cursor.description]
+                                residuo = dict(zip(columns, row))
+                                # Convert Decimal to float
+                                for key, value in residuo.items():
+                                    if hasattr(value, '__float__'):
+                                        residuo[key] = float(value)
+                                matched_residuos.append(residuo)
+
+                            # Calculate potential biogas from this land use
+                            area_km2 = class_data.get("area_km2", 0)
+                            area_ha = area_km2 * 100  # Convert to hectares
+
+                            production_factor = mapping.get("production_factor")
+                            estimated_residue_tons = None
+                            estimated_biogas_m3 = None
+
+                            if production_factor and matched_residuos:
+                                estimated_residue_tons = area_ha * production_factor
+                                # Use average BMP from matched residuos
+                                avg_bmp = sum(r.get("bmp_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
+                                # BMP is typically in m³/ton VS, adjust for TS and VS
+                                avg_ts = sum(r.get("ts_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
+                                avg_vs = sum(r.get("vs_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
+                                if avg_ts > 0 and avg_vs > 0:
+                                    vs_tons = estimated_residue_tons * (avg_ts / 100) * (avg_vs / 100)
+                                    estimated_biogas_m3 = vs_tons * avg_bmp
+
+                            correlations.append({
+                                "mapbiomas_class_id": class_id,
+                                "mapbiomas_class_name": class_data.get("name", f"Classe {class_id}"),
+                                "area_km2": round(area_km2, 4),
+                                "area_ha": round(area_ha, 2),
+                                "percent_of_buffer": class_data.get("percent", 0),
+                                "color": class_data.get("color", "#808080"),
+                                "description": mapping.get("description", ""),
+                                "subsector_codigo": mapping.get("subsector_codigo"),
+                                "matched_residuos": matched_residuos,
+                                "production_factor": production_factor,
+                                "estimated_residue_tons": round(estimated_residue_tons, 2) if estimated_residue_tons else None,
+                                "estimated_biogas_m3_year": round(estimated_biogas_m3, 2) if estimated_biogas_m3 else None
+                            })
+
+                cursor.close()
+
+        except Exception as e:
+            logger.error(f"Error correlating MapBiomas with residuos: {e}")
+
+        # Sort by area (largest first)
+        correlations.sort(key=lambda x: x.get("area_km2", 0), reverse=True)
+
+        # Calculate totals
+        total_estimated_biogas = sum(
+            c.get("estimated_biogas_m3_year", 0) or 0 for c in correlations
+        )
+
+        return {
+            "correlations": correlations,
+            "total_potential_sources": len(correlations),
+            "total_estimated_biogas_m3_year": round(total_estimated_biogas, 2),
+            "note": "Estimates based on MapBiomas land use areas and residue production factors"
+        }
+
+    def _empty_residuos_result(self) -> Dict[str, Any]:
+        """Return empty residuos result structure"""
+        return {
+            "total_residuos": 0,
+            "by_sector": {},
+            "residuos": [],
+            "summary": {
+                "avg_bmp_medio": 0,
+                "sectors_count": 0
+            }
         }
 
     def find_nearest_infrastructure(

@@ -265,6 +265,20 @@ async def analyze_proximity(request: ProximityAnalysisRequest):
                 lng=request.longitude
             )
 
+        # 5. Correlate MapBiomas land use with residuos database
+        residuos_correlation = None
+        if land_use_result and request.options.include_biogas_potential:
+            residuos_correlation = proximity_service.correlate_mapbiomas_residuos(
+                land_use_data=land_use_result
+            )
+            logger.info(f"Found {residuos_correlation.get('total_potential_sources', 0)} land use to residuos correlations")
+
+        # 6. Get detailed residuos data for analysis context
+        residuos_data = None
+        if municipalities and request.options.include_biogas_potential:
+            muni_names = [m["name"] for m in municipalities]
+            residuos_data = proximity_service.get_residuos_for_municipalities(muni_names)
+
         # Calculate summary statistics
         total_population = sum(
             m.get("population", 0) or 0 for m in municipalities
@@ -289,6 +303,12 @@ async def analyze_proximity(request: ProximityAnalysisRequest):
 
         if infrastructure_result:
             results["infrastructure"] = infrastructure_result
+
+        if residuos_correlation:
+            results["residuos_correlation"] = residuos_correlation
+
+        if residuos_data:
+            results["residuos_data"] = residuos_data
 
         processing_time = int((time.time() - start_time) * 1000)
 

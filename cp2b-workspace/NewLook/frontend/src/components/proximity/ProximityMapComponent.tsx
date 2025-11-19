@@ -44,7 +44,7 @@ export default function ProximityMapComponent({
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const circleRef = useRef<L.Circle | null>(null);
-  const municipalityMarkersRef = useRef<L.Marker[]>([]);
+  const municipalityMarkersRef = useRef<L.CircleMarker[]>([]);
   const [mounted, setMounted] = useState(false);
 
   // Initialize map
