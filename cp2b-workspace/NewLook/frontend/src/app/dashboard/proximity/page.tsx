@@ -37,7 +37,7 @@ const ProximityMap = dynamic(() => import('@/components/map/ProximityMap'), {
   loading: () => (
     <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 text-purple-600 animate-spin mx-auto mb-2" />
+        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin mx-auto mb-2" />
         <p className="text-gray-600">Carregando mapa...</p>
       </div>
     </div>
@@ -266,8 +266,8 @@ function ProximityAnalysisContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with purple gradient */}
-      <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-900 text-white">
+      {/* Header with CP2B green gradient */}
+      <div className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-emerald-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => router.push('/dashboard')}
@@ -278,7 +278,7 @@ function ProximityAnalysisContent() {
           </button>
 
           <h1 className="text-3xl font-bold mb-2">🎯 Análise de Proximidade</h1>
-          <p className="text-lg text-purple-100">
+          <p className="text-lg text-emerald-100">
             Análise espacial de potencial de biogás por raio de captação
           </p>
         </div>
@@ -292,20 +292,20 @@ function ProximityAnalysisContent() {
             {/* Instructions */}
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <Info className="h-5 w-5 mr-2 text-purple-600" />
+                <Info className="h-5 w-5 mr-2 text-emerald-600" />
                 Como usar
               </h3>
               <ol className="text-sm text-gray-600 space-y-2">
                 <li className="flex items-start">
-                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">1</span>
+                  <span className="flex-shrink-0 w-5 h-5 bg-emerald-100 text-emerald-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">1</span>
                   Clique no mapa para selecionar um ponto
                 </li>
                 <li className="flex items-start">
-                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">2</span>
+                  <span className="flex-shrink-0 w-5 h-5 bg-emerald-100 text-emerald-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">2</span>
                   Ajuste o raio de captação
                 </li>
                 <li className="flex items-start">
-                  <span className="flex-shrink-0 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
+                  <span className="flex-shrink-0 w-5 h-5 bg-emerald-100 text-emerald-600 rounded-full text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
                   Clique em &quot;Analisar&quot; para ver os resultados
                 </li>
               </ol>
@@ -314,7 +314,7 @@ function ProximityAnalysisContent() {
             {/* Point Selection */}
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <MapPin className="h-5 w-5 mr-2 text-purple-600" />
+                <MapPin className="h-5 w-5 mr-2 text-emerald-600" />
                 Ponto Selecionado
               </h3>
               {selectedPoint ? (
@@ -338,7 +338,7 @@ function ProximityAnalysisContent() {
             {/* Radius Control */}
             <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <Circle className="h-5 w-5 mr-2 text-purple-600" />
+                <Circle className="h-5 w-5 mr-2 text-emerald-600" />
                 Raio de Captação
               </h3>
               <div className="space-y-3">
@@ -386,7 +386,7 @@ function ProximityAnalysisContent() {
               disabled={!selectedPoint || loading}
               className={`w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
                 selectedPoint && !loading
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                   : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -450,7 +450,7 @@ function ProximityAnalysisContent() {
                 </button>
                 <button
                   onClick={handleExport}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Exportar CSV
@@ -474,7 +474,7 @@ function ProximityAnalysisContent() {
               </div>
               <div className="bg-white rounded-lg shadow-md p-4">
                 <p className="text-sm text-gray-500">Biogás Total</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-2xl font-bold text-emerald-600">
                   {(analysisResult.summary.total_biogas_m3_year / 1000000).toFixed(2)}
                 </p>
                 <p className="text-xs text-gray-500">milhões m³/ano</p>
@@ -545,7 +545,7 @@ function ProximityAnalysisContent() {
                     ))}
                     <div className="pt-2 border-t flex items-center justify-between">
                       <span className="font-semibold text-gray-900">Total</span>
-                      <span className="font-bold text-purple-600">
+                      <span className="font-bold text-emerald-600">
                         {(analysisResult.results.biogas_potential.total_m3_year / 1000000).toFixed(2)} milhões m³/ano
                       </span>
                     </div>
@@ -611,7 +611,7 @@ function ProximityAnalysisContent() {
                             <td className="py-2 text-right text-gray-600">
                               {(mun.population || 0).toLocaleString('pt-BR')}
                             </td>
-                            <td className="py-2 text-right font-medium text-purple-600">
+                            <td className="py-2 text-right font-medium text-emerald-600">
                               {(mun.biogas_m3_year || 0).toLocaleString('pt-BR')}
                             </td>
                           </tr>
@@ -647,7 +647,7 @@ export default function ProximityAnalysisPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Carregando...</p>
         </div>
       </div>
