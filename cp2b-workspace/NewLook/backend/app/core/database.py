@@ -1,16 +1,20 @@
 """
 Database Connection Management
-PostgreSQL + PostGIS connection handling
+PostgreSQL + PostGIS connection handling with Windows encoding fixes
 """
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 import logging
+import os
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# Fix for Windows UTF-8 encoding issues with psycopg2
+os.environ['PYTHONUTF8'] = '1'
 
 
 def get_db_connection():
@@ -34,8 +38,11 @@ def get_db_connection():
             sslmode='require',  # Required for Supabase
             client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
+        # Ensure UTF-8 encoding
+        conn.set_client_encoding('UTF8')
         return conn
     except psycopg2.Error as e:
+        logger.error(f"Database connection error: {e}")
         raise Exception(f"Database connection error: {e}")
 
 
@@ -70,6 +77,8 @@ def get_db():
             sslmode='require',  # Required for Supabase
             client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
+        # Ensure UTF-8 encoding
+        conn.set_client_encoding('UTF8')
         logger.debug(f"Database connection opened to {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}")
         yield conn
     except psycopg2.Error as e:

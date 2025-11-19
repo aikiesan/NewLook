@@ -19,17 +19,17 @@ Check these values match your NEW Supabase project (**zyuxkzfhkueeipokyhgw**):
 SUPABASE_URL=https://zyuxkzfhkueeipokyhgw.supabase.co
 
 # Should be (anon key):
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5dXhremZoa3VlZWlwb2t5aGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDI3OTEsImV4cCI6MjA3ODkxODc5MX0.hDozt0JQVQdXf_QcZabJM_SCf4HbARGIawmgUDquOLA
+SUPABASE_ANON_KEY=<YOUR_SUPABASE_ANON_KEY>
 
 # Should be (service_role key):
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5dXhremZoa3VlZWlwb2t5aGd3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzM0Mjc5MSwiZXhwIjoyMDc4OTE4NzkxfQ.C684xLDDSrrpznNS_UV-UQBVO5BFvuxplKEo8To9ePM
+SUPABASE_SERVICE_ROLE_KEY=<YOUR_SUPABASE_SERVICE_ROLE_KEY>
 
 # Database connection (get from Supabase Settings → Database):
 POSTGRES_HOST=aws-0-us-east-1.pooler.supabase.com  # or similar
 POSTGRES_PORT=5432
 POSTGRES_DB=postgres
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=Bauzi#S#9285
+POSTGRES_PASSWORD=<YOUR_DATABASE_PASSWORD>
 ```
 
 ---
@@ -74,7 +74,7 @@ Railway will automatically redeploy when you change variables. Watch for:
 **Your Supabase Project:**
 - Project ID: `zyuxkzfhkueeipokyhgw`
 - URL: `https://zyuxkzfhkueeipokyhgw.supabase.co`
-- Database Password: `Bauzi#S#9285`
+- Database Password: `<YOUR_DATABASE_PASSWORD>`
 
 **Railway Service:**
 - Project: `newlook-production`

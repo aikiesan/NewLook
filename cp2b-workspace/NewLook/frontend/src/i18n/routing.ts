@@ -7,13 +7,12 @@ export const routing = defineRouting({
   // Default locale (Portuguese)
   defaultLocale: 'pt-BR',
 
-  // URL strategy: as-needed means default locale has no prefix
-  // /dashboard → pt-BR (default)
-  // /en-US/dashboard → en-US
+  // URL strategy: 'as-needed' for Cloudflare Pages compatibility
+  // Default locale routes won't have prefix, non-default will
   localePrefix: 'as-needed',
 
   // Disable automatic locale detection based on browser headers
-  // This ensures PT-BR is always the default
+  // This is CRITICAL for static export - prevents header access during build
   localeDetection: false,
 });
 

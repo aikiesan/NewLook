@@ -28,6 +28,10 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  // Enable static rendering for this locale
+  // This is required for `output: 'export'` in next.config.js
+  setRequestLocale(locale);
+
   // Providing all messages to the client
   const messages = await getMessages({ locale });
 
