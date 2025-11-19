@@ -1,0 +1,94 @@
+{
+  "hero": {
+    "title": "Centro Paulista de Estudos em Biogás e Bioprodutos",
+    "subtitle": "CP2B - NIPE/UNICAMP",
+    "tagline": "Aproveitamento Inteligente de Resíduos para o Desenvolvimento Sustentável",
+    "description": "O CP2B é um centro de excelência em pesquisa, inovação e educação dedicado ao desenvolvimento de soluções transformadoras para a cadeia de biogás no Estado de São Paulo."
+  },
+
+  "sections": {
+    "mission": "Missão e Visão",
+    "potential": "Potencial de São Paulo",
+    "leadership": "Liderança",
+    "axes": "8 Eixos Temáticos",
+    "partners": "Parceiros Estratégicos",
+    "methodology": "Metodologia SAF"
+  },
+
+  "mission": {
+    "title": "Nossa Missão",
+    "text": "Promover o desenvolvimento sustentável do setor de biogás e bioprodutos no Estado de São Paulo através de pesquisa de excelência, formação de recursos humanos qualificados e transferência de conhecimento para a sociedade."
+  },
+
+  "vision": {
+    "title": "Nossa Visão",
+    "text": "Ser referência nacional e internacional em pesquisa e inovação na cadeia de biogás e bioprodutos, contribuindo para a transição energética e a economia circular."
+  },
+
+  "values": {
+    "title": "Nossos Valores",
+    "items": [
+      "Excelência científica",
+      "Sustentabilidade ambiental",
+      "Inovação tecnológica",
+      "Colaboração institucional",
+      "Transferência de conhecimento"
+    ]
+  },
+
+  "coordinator": {
+    "title": "Coordenadora",
+    "name": "Profa. Dra. Bruna de Souza Moraes",
+    "affiliation": "NIPE/UNICAMP",
+    "bio": "Pesquisadora com vasta experiência em biogás e biometano, liderando projetos de grande impacto para o desenvolvimento sustentável."
+  },
+
+  "funding": {
+    "title": "Financiamento",
+    "agency": "FAPESP",
+    "grant": "2025/08745-2",
+    "amount": "R$ 20 milhões",
+    "period": "Fevereiro 2025 - Fevereiro 2030"
+  },
+
+  "axes": {
+    "1": {
+      "title": "Inventário de Resíduos e Mapeamento de Tecnologias",
+      "description": "Levantamento sistemático de fontes de resíduos e tecnologias disponíveis"
+    },
+    "2": {
+      "title": "Integração Regional e Consórcios",
+      "description": "Promoção de parcerias e consórcios intermunicipais"
+    },
+    "3": {
+      "title": "Logística e Transporte de Biometano",
+      "description": "Otimização de rotas e infraestrutura de distribuição"
+    },
+    "4": {
+      "title": "Políticas Públicas e Regulação",
+      "description": "Apoio à formulação de políticas e marco regulatório"
+    },
+    "5": {
+      "title": "Mercado e Análise Econômica",
+      "description": "Estudos de viabilidade e análise de mercado"
+    },
+    "6": {
+      "title": "Sustentabilidade e Análise de Ciclo de Vida",
+      "description": "Avaliação ambiental e de ciclo de vida"
+    },
+    "7": {
+      "title": "Comunicação e Capacitação",
+      "description": "Disseminação de conhecimento e formação profissional"
+    },
+    "8": {
+      "title": "Gestão Administrativa e Financeira",
+      "description": "Coordenação e gestão do centro"
+    }
+  },
+
+  "contact": {
+    "title": "Entre em Contato",
+    "description": "Interessado em saber mais sobre o CP2B ou colaborar conosco?",
+    "cta": "Fale Conosco"
+  }
+}
