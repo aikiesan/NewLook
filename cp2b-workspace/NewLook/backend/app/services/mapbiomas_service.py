@@ -8,7 +8,6 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import numpy as np
 from collections import Counter
-import json
 
 # Optional rasterio import - requires GDAL system dependencies
 try:

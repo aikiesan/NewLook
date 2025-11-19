@@ -11,9 +11,7 @@ Handles:
 
 from typing import Tuple, Optional
 import logging
-from shapely.geometry import Point, Polygon
-from shapely.ops import transform
-import pyproj
+from shapely.geometry import Point
 
 logger = logging.getLogger(__name__)
 

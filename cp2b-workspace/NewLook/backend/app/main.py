@@ -5,11 +5,8 @@ Sprint 4: Performance optimizations, error handling, and production deployment
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
-from pathlib import Path
-import os
 from datetime import datetime, timezone
 
 from app.core.config import settings

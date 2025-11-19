@@ -4,16 +4,14 @@ Provides dynamic tile generation from MapBiomas agricultural land use data
 """
 from __future__ import annotations
 
-import os
 import json
 import math
 import logging
 from pathlib import Path
 from io import BytesIO
-from typing import Dict, Any, TYPE_CHECKING
+from typing import Dict, Any
 
 from fastapi import APIRouter, HTTPException, Response
-from fastapi.responses import StreamingResponse
 
 try:
     import rasterio
@@ -205,7 +203,7 @@ async def get_tile(z: int, x: int, y: int):
     if not RASTER_PATH.exists():
         raise HTTPException(
             status_code=404,
-            detail=f"MapBiomas raster file not found"
+            detail="MapBiomas raster file not found"
         )
 
     # Limit zoom levels for performance

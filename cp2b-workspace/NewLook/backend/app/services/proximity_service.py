@@ -4,13 +4,12 @@ PostGIS-based spatial analysis for biogas potential assessment
 """
 
 import logging
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple
 import json
 import geopandas as gpd
-from shapely.geometry import Point, shape
+from shapely.geometry import Point
 from shapely.ops import transform
 import pyproj
-from functools import partial
 from pathlib import Path
 
 from app.core.database import get_db

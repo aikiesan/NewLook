@@ -22,6 +22,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
+    // Load user from session
+    const loadUser = async () => {
+      try {
+        const {
+          data: { session }
+        } = await supabase.auth.getSession()
+
+        if (session?.user) {
+          await fetchUserProfile(session.user.id, session.access_token)
+        }
+      } catch (error) {
+        logger.error('Error loading user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     loadUser()
 
     // Listen for auth state changes
@@ -40,23 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
     }
   }, [])
-
-  // Load user from session
-  const loadUser = async () => {
-    try {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession()
-
-      if (session?.user) {
-        await fetchUserProfile(session.user.id, session.access_token)
-      }
-    } catch (error) {
-      logger.error('Error loading user:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Fetch user profile from database
   const fetchUserProfile = async (userId: string, accessToken: string) => {

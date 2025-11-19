@@ -8,8 +8,7 @@ This script uses GDAL/OGR to import shapefiles with proper spatial transformatio
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
-import json
+from typing import Dict
 
 # Configuration
 V2_SHAPEFILE_DIR = Path(__file__).parent.parent.parent.parent.parent / "v2-data" / "data" / "shapefile"
