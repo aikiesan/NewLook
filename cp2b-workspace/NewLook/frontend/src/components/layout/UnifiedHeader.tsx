@@ -21,7 +21,8 @@ import {
   Home,
   Info,
   BarChart3,
-  BookOpen
+  BookOpen,
+  Target
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -52,6 +53,11 @@ const publicNavItems: NavItem[] = [
     icon: <Map className="h-4 w-4" />,
   },
   {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: <BarChart3 className="h-4 w-4" />,
+  },
+  {
     href: '/about',
     label: 'Sobre',
     icon: <Info className="h-4 w-4" />,
@@ -62,18 +68,23 @@ const publicNavItems: NavItem[] = [
 const authenticatedNavItems: NavItem[] = [
   {
     href: '/dashboard',
-    label: 'Explorar Dados',
+    label: 'Explorar',
     icon: <Map className="h-4 w-4" />,
   },
   {
     href: '/dashboard/advanced-analysis',
-    label: 'Análises Avançadas',
+    label: 'Análises',
     icon: <BarChart3 className="h-4 w-4" />,
   },
   {
     href: '/dashboard/scientific-database',
-    label: 'Base Científica',
+    label: 'Científica',
     icon: <BookOpen className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/proximity',
+    label: 'Proximidade',
+    icon: <Target className="h-4 w-4" />,
   },
   {
     href: '/dashboard/about',
