@@ -19,7 +19,9 @@ import {
   User,
   ChevronDown,
   Home,
-  Info
+  Info,
+  BarChart3,
+  BookOpen
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -56,8 +58,29 @@ const publicNavItems: NavItem[] = [
   },
 ]
 
-// Navigation items for authenticated users (minimal - dashboard has its own nav)
-const authenticatedNavItems: NavItem[] = []
+// Navigation items for authenticated users (dashboard navigation)
+const authenticatedNavItems: NavItem[] = [
+  {
+    href: '/dashboard',
+    label: 'Explorar Dados',
+    icon: <Map className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/advanced-analysis',
+    label: 'Análises Avançadas',
+    icon: <BarChart3 className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/scientific-database',
+    label: 'Base Científica',
+    icon: <BookOpen className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/about',
+    label: 'Sobre',
+    icon: <Info className="h-4 w-4" />,
+  },
+]
 
 export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) {
   const pathname = usePathname()
@@ -129,7 +152,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link
-              href={isAuthenticated ? '/dashboard' : '/'}
+              href="/"
               className="flex items-center gap-3 group"
               aria-label="CP2B Maps V3 - Home"
             >

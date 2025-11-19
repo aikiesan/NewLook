@@ -48,7 +48,7 @@ export default function FloatingControlPanel({
 
   if (isMinimized) {
     return (
-      <div className="absolute top-4 left-4 z-[400]">
+      <div className="absolute top-20 left-4 z-[400]">
         <button
           onClick={() => setIsMinimized(false)}
           className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg p-3 hover:bg-white transition-colors"
@@ -61,7 +61,7 @@ export default function FloatingControlPanel({
   }
 
   return (
-    <div className="absolute top-4 left-4 z-[400] w-64">
+    <div className="absolute top-20 left-4 z-[400] w-64">
       <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1E5128] to-[#2C6B3A] px-3 py-2 flex items-center justify-between">

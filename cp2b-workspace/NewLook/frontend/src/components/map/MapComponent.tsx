@@ -260,7 +260,7 @@ export default function MapComponent({
       {visibleLayerIds.includes('municipalities') && <MapLegend />}
 
       {/* Municipality Count Badge (Top-Right) */}
-      <div className="absolute top-4 right-4 z-[400] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-md">
+      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-md">
         <p className="text-xs text-gray-700">
           <span className="font-bold text-green-700">{displayData.features.length}</span>
           <span className="text-gray-500"> / {data.features.length} municípios</span>

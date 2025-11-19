@@ -1,9 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { ComparisonProvider } from '@/contexts/ComparisonContext'
-import { ThemeProvider } from '@/contexts/ThemeContext'
-import ComparisonBar from '@/components/comparison/ComparisonBar'
 
 export const metadata: Metadata = {
   title: 'CP2B Maps V3 - Plataforma de Análise de Potencial de Biogás',
@@ -35,16 +31,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>
-          <AuthProvider>
-            <ComparisonProvider>
-              <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
-                {children}
-              </div>
-              <ComparisonBar />
-            </ComparisonProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
+          {children}
+        </div>
       </body>
     </html>
   )
