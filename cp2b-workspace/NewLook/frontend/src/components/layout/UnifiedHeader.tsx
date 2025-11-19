@@ -82,6 +82,9 @@ const authenticatedNavItems: NavItem[] = [
   },
 ]
 
+// Navigation items for authenticated users (minimal - dashboard has its own nav)
+const authenticatedNavItems: NavItem[] = []
+
 export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) {
   const pathname = usePathname()
   const { user, logout, isAuthenticated } = useAuth()
