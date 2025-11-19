@@ -6,7 +6,7 @@
  */
 
 import React, { ReactNode } from 'react'
-import TopNavigation from './TopNavigation'
+import UnifiedHeader from './UnifiedHeader'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -14,9 +14,9 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navigation */}
-      <TopNavigation />
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
+      {/* Unified Navigation Header */}
+      <UnifiedHeader variant="authenticated" />
 
       {/* Main Content Area - Full Height */}
       <main className="flex-1 relative">
