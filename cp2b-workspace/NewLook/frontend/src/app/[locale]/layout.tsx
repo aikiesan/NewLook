@@ -20,6 +20,9 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
+  // Enable static rendering for next-intl
+  setRequestLocale(locale);
+
   // Validate locale
   if (!routing.locales.includes(locale as any)) {
     notFound();
@@ -30,7 +33,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   // Providing all messages to the client
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <NextIntlClientProvider messages={messages}>
