@@ -235,6 +235,7 @@ SELECT
     s.codigo,
     s.nome,
     s.emoji,
+    s.ordem,
     COUNT(r.id) as num_residuos,
     ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
     ROUND(AVG(r.ts_medio)::numeric, 2) as avg_ts,
@@ -243,7 +244,7 @@ SELECT
     ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content
 FROM sectors s
 LEFT JOIN residuos r ON s.codigo = r.sector_codigo
-GROUP BY s.codigo, s.nome, s.emoji
+GROUP BY s.codigo, s.nome, s.emoji, s.ordem
 ORDER BY s.ordem;
 
 -- ============================================================================
