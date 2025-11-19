@@ -30,7 +30,9 @@ def get_db_connection():
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,  # Return rows as dictionaries
             connect_timeout=10,
-            options='-c statement_timeout=30000'
+            options='-c statement_timeout=30000',
+            sslmode='require',  # Required for Supabase
+            client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
         return conn
     except psycopg2.Error as e:
@@ -64,7 +66,9 @@ def get_db():
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,
             connect_timeout=10,
-            options='-c statement_timeout=30000'  # 30 second query timeout
+            options='-c statement_timeout=30000',  # 30 second query timeout
+            sslmode='require',  # Required for Supabase
+            client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
         logger.debug(f"Database connection opened to {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}")
         yield conn
