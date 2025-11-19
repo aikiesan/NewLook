@@ -6,10 +6,10 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
+import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import {
   ArrowRight,
   Play,
-  LogOut,
   Map,
   MapPin,
   BarChart3,
@@ -20,8 +20,6 @@ import {
   Lock,
   UserPlus,
   ExternalLink,
-  Menu,
-  X,
   ChevronLeft,
   ChevronRight,
   Github,
@@ -371,19 +369,9 @@ const screenshots = [
 ]
 
 export default function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
-  const { user, logout, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
   const t = useTranslations('landing')
-  const tNav = useTranslations('nav')
-
-  const handleLogout = async () => {
-    try {
-      await logout()
-    } catch (error) {
-      logger.error('Logout error:', error)
-    }
-  }
 
   // Auto-advance carousel
   useEffect(() => {
@@ -412,150 +400,8 @@ export default function HomePage() {
         {t('accessibility.skipToContent')}
       </a>
 
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo with Beta Badge */}
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2 group">
-                <Image
-                  src="/images/logotipo-full-black.png"
-                  alt="CP2B - Centro Paulista de Estudos em Biogás"
-                  width={140}
-                  height={48}
-                  className="transition-transform group-hover:scale-105"
-                  priority
-                />
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cp2b-lime-light text-cp2b-dark-green">
-                  Beta
-                </span>
-              </Link>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav
-              className="hidden md:flex items-center gap-8"
-              aria-label="Navegação principal"
-            >
-              <Link
-                href="/"
-                className="text-sm font-medium text-cp2b-gray-900 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
-              >
-                {tNav('home')}
-              </Link>
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
-              >
-                {tNav('dashboard')}
-              </Link>
-              <Link
-                href="/analysis"
-                className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
-              >
-                {tNav('analysis')}
-              </Link>
-              <Link
-                href="/about"
-                className="text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors focus:outline-none focus:ring-2 focus:ring-cp2b-lime rounded-sm px-2 py-1"
-              >
-                {tNav('about')}
-              </Link>
-            </nav>
-
-            {/* Auth-Aware User Menu */}
-            {isAuthenticated ? (
-              <div className="hidden md:flex items-center gap-4">
-                <span className="text-sm text-cp2b-gray-600">{user?.full_name}</span>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:text-cp2b-green transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {tNav('user.logout')}
-                </button>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
-              >
-                {t('header.login')}
-              </Link>
-            )}
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 rounded-md text-cp2b-gray-600 hover:text-cp2b-green hover:bg-gray-100"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-expanded={mobileMenuOpen}
-              aria-label="Menu de navegação"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200">
-              <nav className="flex flex-col gap-2">
-                <Link
-                  href="/"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-900 hover:bg-gray-50 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {tNav('home')}
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {tNav('dashboard')}
-                </Link>
-                <Link
-                  href="/analysis"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {tNav('analysis')}
-                </Link>
-                <Link
-                  href="/about"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {tNav('about')}
-                </Link>
-                {isAuthenticated ? (
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md text-left"
-                  >
-                    {tNav('user.logout')}
-                  </button>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="px-4 py-2 text-sm font-medium text-white bg-cp2b-green rounded-md"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {t('header.login')}
-                  </Link>
-                )}
-              </nav>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Unified Navigation Header */}
+      <UnifiedHeader />
 
       {/* Hero Section */}
       <section

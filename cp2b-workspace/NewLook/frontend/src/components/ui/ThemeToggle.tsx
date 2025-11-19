@@ -4,12 +4,28 @@ import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Moon, Sun, Monitor } from 'lucide-react';
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  variant?: 'light' | 'dark';
+}
+
+export function ThemeToggle({ variant = 'dark' }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
+
+  const baseClass = variant === 'light'
+    ? 'bg-gray-100'
+    : 'bg-white/10 backdrop-blur-sm';
+
+  const activeClass = variant === 'light'
+    ? 'bg-gray-300 text-gray-900 shadow-sm'
+    : 'bg-white/20 text-white shadow-sm';
+
+  const inactiveClass = variant === 'light'
+    ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+    : 'text-white/70 hover:text-white hover:bg-white/10';
 
   return (
     <div
-      className="flex items-center gap-1 p-1 rounded-lg bg-white/10 backdrop-blur-sm"
+      className={`flex items-center gap-1 p-1 rounded-lg ${baseClass}`}
       role="group"
       aria-label="Theme selection"
     >
@@ -18,10 +34,7 @@ export function ThemeToggle() {
         onClick={() => setTheme('light')}
         className={`
           p-2 rounded-md transition-all duration-150
-          ${theme === 'light'
-            ? 'bg-white/20 text-white shadow-sm'
-            : 'text-white/70 hover:text-white hover:bg-white/10'
-          }
+          ${theme === 'light' ? activeClass : inactiveClass}
         `}
         aria-label="Light mode"
         aria-pressed={theme === 'light'}
@@ -35,10 +48,7 @@ export function ThemeToggle() {
         onClick={() => setTheme('system')}
         className={`
           p-2 rounded-md transition-all duration-150
-          ${theme === 'system'
-            ? 'bg-white/20 text-white shadow-sm'
-            : 'text-white/70 hover:text-white hover:bg-white/10'
-          }
+          ${theme === 'system' ? activeClass : inactiveClass}
         `}
         aria-label="System mode"
         aria-pressed={theme === 'system'}
@@ -52,10 +62,7 @@ export function ThemeToggle() {
         onClick={() => setTheme('dark')}
         className={`
           p-2 rounded-md transition-all duration-150
-          ${theme === 'dark'
-            ? 'bg-white/20 text-white shadow-sm'
-            : 'text-white/70 hover:text-white hover:bg-white/10'
-          }
+          ${theme === 'dark' ? activeClass : inactiveClass}
         `}
         aria-label="Dark mode"
         aria-pressed={theme === 'dark'}
