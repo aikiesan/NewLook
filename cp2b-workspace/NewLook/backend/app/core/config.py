@@ -35,7 +35,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3004",
     ]
     # Production origins - comma-separated, includes main and preview deployments
-    PRODUCTION_ORIGINS: str = "https://new-look-nu.vercel.app,https://new-look-ouz6xcmpk-lucas-nakamura-cerejos-projects.vercel.app,https://newlook.vercel.app"
+    # Includes Vercel and Cloudflare Pages domains
+    PRODUCTION_ORIGINS: str = "https://new-look-nu.vercel.app,https://new-look-ouz6xcmpk-lucas-nakamura-cerejos-projects.vercel.app,https://newlook.vercel.app,https://cp2bmaps.pages.dev,https://3065bf6c.cp2bmaps.pages.dev"
     ALLOWED_HOSTS: List[str] = [
         "localhost",
         "127.0.0.1",
