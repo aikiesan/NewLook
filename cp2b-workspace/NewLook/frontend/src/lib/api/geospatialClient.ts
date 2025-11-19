@@ -129,10 +129,34 @@ class GeospatialClient {
 
   /**
    * Get all municipalities as GeoJSON FeatureCollection
-   * Uses /municipalities/polygons endpoint which loads boundaries from shapefile
+   * ALWAYS uses FastAPI backend which loads polygon boundaries from shapefile
+   * Supabase doesn't have polygon geometries, only tabular data
    */
   async getMunicipalitiesGeoJSON(): Promise<MunicipalityCollection> {
-    return this.fetchJSON<MunicipalityCollection>('/municipalities/polygons');
+    // Always use FastAPI for polygon data - Supabase doesn't have geometries
+    const url = `${this.baseUrl}/api/v1/geospatial/municipalities/polygons`;
+
+    try {
+      logger.info('🗺️ Fetching polygon data from FastAPI backend');
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      logger.info(`✅ Loaded ${data.features?.length || 0} municipalities with polygon geometries`);
+      return data;
+    } catch (error) {
+      logger.warn(`Failed to fetch polygons from FastAPI: ${error}`);
+      // Fallback to mock data with polygons
+      const { mockMunicipalitiesGeoJSON } = require('@/lib/mockData');
+      return mockMunicipalitiesGeoJSON as MunicipalityCollection;
+    }
   }
 
   /**
