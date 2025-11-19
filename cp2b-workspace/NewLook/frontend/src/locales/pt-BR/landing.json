@@ -1,0 +1,106 @@
+{
+  "header": {
+    "login": "Entrar",
+    "register": "Registrar",
+    "dashboard": "Dashboard"
+  },
+  "hero": {
+    "badge": "Versão 3.0 – Totalmente redesenhado",
+    "title": "Análise de Potencial de",
+    "titleHighlight": "Biogás",
+    "subtitle": "Explore o potencial de biogás de 645 municípios paulistas com dados MCDA integrados e análises avançadas",
+    "ctaPrimary": "Acessar Dashboard",
+    "ctaSecondary": "Saiba mais",
+    "watchVideo": "Assistir vídeo"
+  },
+  "stats": {
+    "municipalities": "Municípios",
+    "municipalitiesDesc": "do estado de São Paulo",
+    "biogasPotential": "Potencial de Biogás",
+    "biogasPotentialDesc": "estimativa anual",
+    "bioelectricity": "Bioeletricidade",
+    "bioelectricityDesc": "geração potencial",
+    "biomethane": "Biometano",
+    "biomethaneDesc": "produção diária"
+  },
+  "features": {
+    "sectionTitle": "Recursos da Plataforma",
+    "sectionSubtitle": "Ferramentas poderosas para análise completa de biogás",
+    "interactiveMap": {
+      "title": "Mapa Interativo",
+      "description": "Visualize e analise o potencial de biogás dos municípios paulistas em tempo real com camadas de dados customizáveis.",
+      "features": [
+        "Mapa coroplético com dados de potencial",
+        "Filtros por tipo de resíduo e região",
+        "Exportação de dados em múltiplos formatos",
+        "Comparação entre municípios"
+      ],
+      "cta": "Explorar Mapa"
+    },
+    "dataAnalysis": {
+      "title": "Análise de Dados",
+      "description": "Acesse análises MCDA detalhadas e estatísticas sobre potencial de produção de biogás.",
+      "features": [
+        "Análise Multicritério (MCDA)",
+        "Estatísticas por setor e região",
+        "Gráficos interativos",
+        "Relatórios exportáveis"
+      ],
+      "cta": "Ver Análises"
+    },
+    "scientificDatabase": {
+      "title": "Base Científica",
+      "description": "Acesse a base de dados com referências científicas e metodologias utilizadas.",
+      "features": [
+        "Referências científicas",
+        "Metodologias de cálculo",
+        "Dados validados",
+        "Documentação técnica"
+      ],
+      "cta": "Consultar Base"
+    }
+  },
+  "research": {
+    "sectionTitle": "Pesquisa CP2B",
+    "sectionSubtitle": "Centro de Pesquisa em Potencial de Biogás e Biometano",
+    "description": "O CP2B é um projeto de pesquisa dedicado à análise do potencial de produção de biogás e biometano a partir de resíduos orgânicos no estado de São Paulo.",
+    "methodology": {
+      "title": "Metodologia",
+      "description": "Utilizamos análise multicritério (MCDA) combinada com dados geoespaciais para avaliar o potencial de biogás de cada município."
+    },
+    "themes": {
+      "title": "8 Eixos Temáticos",
+      "sugarcane": "Cana-de-açúcar",
+      "citrus": "Citricultura",
+      "grains": "Grãos (Soja e Milho)",
+      "livestock": "Pecuária",
+      "swine": "Suinocultura",
+      "poultry": "Avicultura",
+      "urban": "Resíduos Urbanos",
+      "sewage": "Esgoto Sanitário"
+    }
+  },
+  "cta": {
+    "title": "Pronto para explorar?",
+    "subtitle": "Acesse a plataforma e descubra o potencial de biogás da sua região",
+    "button": "Começar Agora"
+  },
+  "footer": {
+    "description": "Plataforma de análise de potencial de biogás para o estado de São Paulo",
+    "platform": "Plataforma",
+    "resources": "Recursos",
+    "contact": "Contato",
+    "documentation": "Documentação",
+    "api": "API",
+    "changelog": "Changelog",
+    "copyright": "CP2B Maps V3. Todos os direitos reservados.",
+    "backToTop": "Voltar ao topo"
+  },
+  "accessibility": {
+    "skipToContent": "Pular para o conteúdo",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "previousSlide": "Slide anterior",
+    "nextSlide": "Próximo slide"
+  }
+}

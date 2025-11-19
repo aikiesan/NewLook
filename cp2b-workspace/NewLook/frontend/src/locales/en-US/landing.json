@@ -1,0 +1,106 @@
+{
+  "header": {
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard"
+  },
+  "hero": {
+    "badge": "Version 3.0 – Completely redesigned",
+    "title": "Analysis of",
+    "titleHighlight": "Biogas Potential",
+    "subtitle": "Explore the biogas potential of 645 municipalities in São Paulo with integrated MCDA data and advanced analytics",
+    "ctaPrimary": "Access Dashboard",
+    "ctaSecondary": "Learn more",
+    "watchVideo": "Watch video"
+  },
+  "stats": {
+    "municipalities": "Municipalities",
+    "municipalitiesDesc": "in São Paulo state",
+    "biogasPotential": "Biogas Potential",
+    "biogasPotentialDesc": "annual estimate",
+    "bioelectricity": "Bioelectricity",
+    "bioelectricityDesc": "potential generation",
+    "biomethane": "Biomethane",
+    "biomethaneDesc": "daily production"
+  },
+  "features": {
+    "sectionTitle": "Platform Features",
+    "sectionSubtitle": "Powerful tools for complete biogas analysis",
+    "interactiveMap": {
+      "title": "Interactive Map",
+      "description": "Visualize and analyze the biogas potential of São Paulo municipalities in real-time with customizable data layers.",
+      "features": [
+        "Choropleth map with potential data",
+        "Filters by residue type and region",
+        "Data export in multiple formats",
+        "Municipality comparison"
+      ],
+      "cta": "Explore Map"
+    },
+    "dataAnalysis": {
+      "title": "Data Analysis",
+      "description": "Access detailed MCDA analyses and statistics on biogas production potential.",
+      "features": [
+        "Multi-Criteria Analysis (MCDA)",
+        "Statistics by sector and region",
+        "Interactive charts",
+        "Exportable reports"
+      ],
+      "cta": "View Analyses"
+    },
+    "scientificDatabase": {
+      "title": "Scientific Database",
+      "description": "Access the database with scientific references and methodologies used.",
+      "features": [
+        "Scientific references",
+        "Calculation methodologies",
+        "Validated data",
+        "Technical documentation"
+      ],
+      "cta": "Query Database"
+    }
+  },
+  "research": {
+    "sectionTitle": "CP2B Research",
+    "sectionSubtitle": "Research Center for Biogas and Biomethane Potential",
+    "description": "CP2B is a research project dedicated to analyzing the potential for biogas and biomethane production from organic waste in São Paulo state.",
+    "methodology": {
+      "title": "Methodology",
+      "description": "We use multi-criteria analysis (MCDA) combined with geospatial data to evaluate the biogas potential of each municipality."
+    },
+    "themes": {
+      "title": "8 Thematic Axis",
+      "sugarcane": "Sugarcane",
+      "citrus": "Citrus",
+      "grains": "Grains (Soy and Corn)",
+      "livestock": "Cattle",
+      "swine": "Swine",
+      "poultry": "Poultry",
+      "urban": "Urban Waste",
+      "sewage": "Sewage"
+    }
+  },
+  "cta": {
+    "title": "Ready to explore?",
+    "subtitle": "Access the platform and discover the biogas potential in your region",
+    "button": "Get Started"
+  },
+  "footer": {
+    "description": "Platform for biogas potential analysis in São Paulo state",
+    "platform": "Platform",
+    "resources": "Resources",
+    "contact": "Contact",
+    "documentation": "Documentation",
+    "api": "API",
+    "changelog": "Changelog",
+    "copyright": "CP2B Maps V3. All rights reserved.",
+    "backToTop": "Back to top"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide"
+  }
+}

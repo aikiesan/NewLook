@@ -16,6 +16,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const dashboard = (await import(`@/locales/${locale}/dashboard.json`)).default;
   const about = (await import(`@/locales/${locale}/about.json`)).default;
   const settings = (await import(`@/locales/${locale}/settings.json`)).default;
+  const landing = (await import(`@/locales/${locale}/landing.json`)).default;
 
   return {
     locale,
@@ -25,6 +26,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       dashboard,
       about,
       settings,
+      landing,
     },
     // Time zone for date formatting
     timeZone: 'America/Sao_Paulo',
