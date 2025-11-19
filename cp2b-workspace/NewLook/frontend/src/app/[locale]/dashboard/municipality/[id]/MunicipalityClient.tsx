@@ -70,7 +70,7 @@ export default function MunicipalityClient() {
       try {
         setLoading(true);
 
-        // Use environment variable with Railway fallback
+        // Determine API URL based on environment
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://newlook-production.up.railway.app';
 
         const response = await fetch(`${apiUrl}/api/v1/geospatial/municipalities/${params.id}`);
@@ -111,7 +111,7 @@ export default function MunicipalityClient() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando dados do municipio...</p>
+          <p className="text-gray-600">Carregando dados do município...</p>
         </div>
       </div>
     );
@@ -121,7 +121,7 @@ export default function MunicipalityClient() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Municipio nao encontrado'}</p>
+          <p className="text-red-600 mb-4">{error || 'Município não encontrado'}</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
@@ -175,9 +175,9 @@ export default function MunicipalityClient() {
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-gray-600">Potencial Total de Biogas</p>
+              <p className="text-sm text-gray-600">Potencial Total de Biogás</p>
               <p className="text-2xl font-bold text-green-600">
-                {formatNumber(municipality.total_biogas_m3_year)} m3/ano
+                {formatNumber(municipality.total_biogas_m3_year)} m³/ano
               </p>
 
               <button
@@ -189,7 +189,7 @@ export default function MunicipalityClient() {
                 }`}
               >
                 <GitCompare className="h-4 w-4" />
-                {municipalityInComparison ? 'Na Comparacao' : 'Adicionar a Comparacao'}
+                {municipalityInComparison ? 'Na Comparação' : 'Adicionar à Comparação'}
               </button>
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function MunicipalityClient() {
             <div className="flex items-center justify-between mb-4">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Populacao</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">População</h3>
             <p className="text-2xl font-bold text-gray-900">{formatNumber(municipality.population)}</p>
             <div className="mt-2 text-sm text-gray-600">
               <p>Urbana: {formatNumber(municipality.urban_population)}</p>
@@ -217,7 +217,7 @@ export default function MunicipalityClient() {
             <div className="flex items-center justify-between mb-4">
               <Factory className="h-8 w-8 text-yellow-600" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Potencial Energetico</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">Potencial Energético</h3>
             <p className="text-2xl font-bold text-gray-900">
               {formatNumber(municipality.energy_potential_mwh_year)}
             </p>
@@ -229,7 +229,7 @@ export default function MunicipalityClient() {
             <div className="flex items-center justify-between mb-4">
               <Leaf className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Reducao de CO2</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">Redução de CO₂</h3>
             <p className="text-2xl font-bold text-gray-900">
               {formatNumber(municipality.co2_reduction_tons_year)}
             </p>
@@ -241,25 +241,25 @@ export default function MunicipalityClient() {
             <div className="flex items-center justify-between mb-4">
               <MapPin className="h-8 w-8 text-teal-600" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Area e Densidade</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">Área e Densidade</h3>
             <p className="text-2xl font-bold text-gray-900">
-              {formatDecimal(municipality.area_km2, 0)} km2
+              {formatDecimal(municipality.area_km2, 0)} km²
             </p>
             <p className="text-sm text-gray-600 mt-2">
-              Densidade: {formatDecimal(municipality.population_density, 1)} hab/km2
+              Densidade: {formatDecimal(municipality.population_density, 1)} hab/km²
             </p>
           </div>
         </div>
 
         {/* Sector Breakdown */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Distribuicao por Setor</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Distribuição por Setor</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Agricultural */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium text-gray-700">Agricola</h3>
+                <h3 className="font-medium text-gray-700">Agrícola</h3>
                 <span className="text-sm text-gray-600">{formatDecimal(agriculturalPercent, 1)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -269,14 +269,14 @@ export default function MunicipalityClient() {
                 ></div>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {formatNumber(municipality.agricultural_biogas_m3_year)} m3/ano
+                {formatNumber(municipality.agricultural_biogas_m3_year)} m³/ano
               </p>
             </div>
 
             {/* Livestock */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium text-gray-700">Pecuaria</h3>
+                <h3 className="font-medium text-gray-700">Pecuária</h3>
                 <span className="text-sm text-gray-600">{formatDecimal(livestockPercent, 1)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -286,7 +286,7 @@ export default function MunicipalityClient() {
                 ></div>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {formatNumber(municipality.livestock_biogas_m3_year)} m3/ano
+                {formatNumber(municipality.livestock_biogas_m3_year)} m³/ano
               </p>
             </div>
 
@@ -303,7 +303,7 @@ export default function MunicipalityClient() {
                 ></div>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {formatNumber(municipality.urban_biogas_m3_year)} m3/ano
+                {formatNumber(municipality.urban_biogas_m3_year)} m³/ano
               </p>
             </div>
           </div>
@@ -315,13 +315,13 @@ export default function MunicipalityClient() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <Leaf className="h-6 w-6 mr-2 text-green-600" />
-              Substratos Agricolas
+              Substratos Agrícolas
             </h2>
             <div className="space-y-3">
-              <SubstrateRow label="Cana-de-acucar" value={municipality.sugarcane_biogas_m3_year} formatNumber={formatNumber} />
+              <SubstrateRow label="Cana-de-açúcar" value={municipality.sugarcane_biogas_m3_year} formatNumber={formatNumber} />
               <SubstrateRow label="Soja" value={municipality.soybean_biogas_m3_year} formatNumber={formatNumber} />
               <SubstrateRow label="Milho" value={municipality.corn_biogas_m3_year} formatNumber={formatNumber} />
-              <SubstrateRow label="Cafe" value={municipality.coffee_biogas_m3_year} formatNumber={formatNumber} />
+              <SubstrateRow label="Café" value={municipality.coffee_biogas_m3_year} formatNumber={formatNumber} />
               <SubstrateRow label="Citrus" value={municipality.citrus_biogas_m3_year} formatNumber={formatNumber} />
             </div>
           </div>
@@ -330,11 +330,11 @@ export default function MunicipalityClient() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <Factory className="h-6 w-6 mr-2 text-amber-600" />
-              Substratos Pecuarios
+              Substratos Pecuários
             </h2>
             <div className="space-y-3">
               <SubstrateRow label="Gado" value={municipality.cattle_biogas_m3_year} formatNumber={formatNumber} />
-              <SubstrateRow label="Suinos" value={municipality.swine_biogas_m3_year} formatNumber={formatNumber} />
+              <SubstrateRow label="Suínos" value={municipality.swine_biogas_m3_year} formatNumber={formatNumber} />
               <SubstrateRow label="Aves" value={municipality.poultry_biogas_m3_year} formatNumber={formatNumber} />
               <SubstrateRow label="Aquacultura" value={municipality.aquaculture_biogas_m3_year} formatNumber={formatNumber} />
             </div>
@@ -345,11 +345,11 @@ export default function MunicipalityClient() {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <TrendingUp className="h-6 w-6 mr-2 text-blue-600" />
-            Residuos Urbanos
+            Resíduos Urbanos
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SubstrateRow label="RSU (Residuos Solidos Urbanos)" value={municipality.rsu_biogas_m3_year} formatNumber={formatNumber} />
-            <SubstrateRow label="RPO (Residuos Organicos)" value={municipality.rpo_biogas_m3_year} formatNumber={formatNumber} />
+            <SubstrateRow label="RSU (Resíduos Sólidos Urbanos)" value={municipality.rsu_biogas_m3_year} formatNumber={formatNumber} />
+            <SubstrateRow label="RPO (Resíduos Orgânicos)" value={municipality.rpo_biogas_m3_year} formatNumber={formatNumber} />
           </div>
         </div>
 
@@ -358,7 +358,7 @@ export default function MunicipalityClient() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <DollarSign className="h-6 w-6 mr-2 text-green-600" />
-              Dados Economicos
+              Dados Econômicos
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {municipality.gdp_total && (
@@ -394,7 +394,8 @@ function SubstrateRow({ label, value, formatNumber }: SubstrateRowProps) {
   return (
     <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
       <span className="text-gray-700">{label}</span>
-      <span className="font-semibold text-gray-900">{formatNumber(value)} m3/ano</span>
+      <span className="font-semibold text-gray-900">{formatNumber(value)} m³/ano</span>
     </div>
   );
 }
+

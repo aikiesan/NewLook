@@ -1,44 +1,50 @@
 import MunicipalityClient from './MunicipalityClient';
 
-// Force static rendering
-export const dynamic = 'force-static';
-
+// Generate static params for all municipalities at build time
 export async function generateStaticParams() {
-  // FALLBACK IDs to ensure build passes even if API fails
-  // We include a few real IDs and a dummy one
-  const fallbackIds = [
-    { id: '1' }, { id: '2' }, { id: '3' }, { id: '54' }
-  ];
-
   try {
     console.log('Starting static generation for municipalities...');
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://newlook-production.up.railway.app';
-
-    // Short timeout (5s) to fail fast and use fallback
+    
+    // Add timeout to fetch to prevent hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(`${apiUrl}/api/v1/geospatial/municipalities?limit=100`, {
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(`${apiUrl}/api/v1/geospatial/municipalities?limit=1000`, {
       cache: 'force-cache',
+      next: { revalidate: 86400 },
       signal: controller.signal
     });
-
+    
     clearTimeout(timeoutId);
-
-    if (!response.ok) throw new Error(`API status: ${response.status}`);
-
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch municipalities: ${response.status}`);
+      throw new Error(`API responded with ${response.status}`);
+    }
+    
     const municipalities = await response.json();
-    console.log(`Fetched ${municipalities.length} municipalities for static generation`);
-
+    console.log(`✓ Successfully fetched ${municipalities.length} municipalities`);
+    
     return municipalities.map((muni: any) => ({
       id: muni.id.toString(),
     }));
   } catch (error) {
-    console.error('API Fetch failed, using fallback IDs:', error);
-    return fallbackIds;
+    console.error('Error generating municipality static params:', error);
+    
+    // FALLBACK: Return a few known IDs so the build doesn't fail completely
+    // This allows testing the deployment even if the full list fails
+    console.log('⚠️ Using fallback ID list for build');
+    return [
+      { id: '54' }, // Barretos (from test)
+      { id: '1' },
+      { id: '2' },
+      { id: '3' }
+    ];
   }
 }
 
+// Server component wrapper
 export default function MunicipalityPage() {
   return <MunicipalityClient />;
 }
