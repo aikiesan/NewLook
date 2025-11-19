@@ -2,8 +2,8 @@
 
 /**
  * Dashboard About Page for CP2B Maps V3
- * Comprehensive information about the project, methodology, team, and resources
- * Modern design following academic/institutional patterns
+ * Comprehensive information about the Centro Paulista de Estudos em Biogás e Bioprodutos
+ * Updated with validated research from NIPE/UNICAMP and FAPESP sources
  */
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -39,7 +39,15 @@ import {
   Download,
   Github,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  FlaskConical,
+  Settings,
+  Megaphone,
+  Scale,
+  Factory,
+  Lightbulb,
+  TrendingUp,
+  Calendar
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -47,6 +55,7 @@ export default function AboutPage() {
   const router = useRouter()
   const { user, loading, isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState('mission')
+  const [activeAxisTab, setActiveAxisTab] = useState(0)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -59,7 +68,7 @@ export default function AboutPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto" role="status" aria-label="Carregando"></div>
           <p className="mt-4 text-gray-600">Carregando...</p>
         </div>
       </div>
@@ -69,6 +78,78 @@ export default function AboutPage() {
   if (!user) {
     return null
   }
+
+  // 8 Thematic Axes data
+  const thematicAxes = [
+    {
+      number: 1,
+      title: 'Inventário de Resíduos e Mapeamento de Tecnologias',
+      description: 'Levantamento sistemático de fontes de resíduos e mapeamento das tecnologias disponíveis para produção de biogás no Estado de São Paulo.',
+      icon: Database,
+      color: 'emerald'
+    },
+    {
+      number: 2,
+      title: 'Ciência e Tecnologia de Base',
+      description: 'Pesquisa fundamental em digestão anaeróbia, microbiologia e processos bioquímicos. Coordenado pelo Prof. Lucas Tadeu Fuess.',
+      icon: FlaskConical,
+      color: 'blue'
+    },
+    {
+      number: 3,
+      title: 'Engenharia de Processos e Bioprocessos',
+      description: 'Desenvolvimento e otimização de biodigestores, scale-up de processos e integração de sistemas de produção.',
+      icon: Settings,
+      color: 'amber'
+    },
+    {
+      number: 4,
+      title: 'Avaliação Integrada Socioeconômica, Ambiental e Energética',
+      description: 'Análise de ciclo de vida, viabilidade econômica, impactos sociais e balanço energético dos projetos de biogás.',
+      icon: BarChart3,
+      color: 'teal'
+    },
+    {
+      number: 5,
+      title: 'Inovação em Bioprodutos',
+      description: 'Desenvolvimento de biohidrogênio, biofertilizantes, bio-CO₂ e outros bioprodutos de alto valor agregado.',
+      icon: Lightbulb,
+      color: 'rose'
+    },
+    {
+      number: 6,
+      title: 'Educação e Capacitação',
+      description: 'Formação de recursos humanos qualificados através de cursos, workshops e programas de pós-graduação.',
+      icon: GraduationCap,
+      color: 'indigo'
+    },
+    {
+      number: 7,
+      title: 'Difusão Científica e Comunicação',
+      description: 'Disseminação do conhecimento científico para sociedade, mídia e tomadores de decisão.',
+      icon: Megaphone,
+      color: 'orange'
+    },
+    {
+      number: 8,
+      title: 'Políticas Públicas e Inovação Regulatória',
+      description: 'Apoio à formulação de políticas públicas e marcos regulatórios para o setor de biogás.',
+      icon: Scale,
+      color: 'cyan'
+    }
+  ]
+
+  // Strategic partnerships
+  const partnerships = [
+    { name: 'Aalborg University', country: 'Dinamarca', type: 'Internacional', contact: 'Prof. Jens Bo Holm-Nielsen' },
+    { name: 'CIBiogás', country: 'Brasil', type: 'Nacional', contact: '10+ anos de parceria' },
+    { name: 'LABIOEN/UNICAMP', country: 'Brasil', type: 'Institucional', contact: 'Laboratório de Bioenergia' },
+    { name: 'USP-RCGI', country: 'Brasil', type: 'Pesquisa', contact: 'Research Centre for Greenhouse Gas Innovation' },
+    { name: 'UNESP', country: 'Brasil', type: 'Acadêmico', contact: 'Doutorado em Bioenergia' },
+    { name: 'UNICA', country: 'Brasil', type: 'Indústria', contact: 'União da Indústria de Cana-de-Açúcar' },
+    { name: 'Abiogás', country: 'Brasil', type: 'Associação', contact: 'Associação Brasileira de Biogás' },
+    { name: 'ABREMA', country: 'Brasil', type: 'Associação', contact: 'Associação Brasileira de Resíduos' }
+  ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -85,70 +166,71 @@ export default function AboutPage() {
           <button
             onClick={() => router.push('/dashboard')}
             className="inline-flex items-center text-green-200 hover:text-white mb-8 transition-colors group"
+            aria-label="Voltar ao Dashboard"
           >
-            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
             Voltar ao Dashboard
           </button>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-flex items-center px-4 py-2 bg-green-700/50 rounded-full text-green-100 text-sm mb-6">
-                <Award className="h-4 w-4 mr-2" />
-                FAPESP 2024/01112-1
+                <Award className="h-4 w-4 mr-2" aria-hidden="true" />
+                FAPESP 2025/08745-2
               </div>
 
               <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                CP2B Maps
-                <span className="block text-green-300">Plataforma de Análise de Potencial de Biogás</span>
+                CP2B
+                <span className="block text-green-300">Centro Paulista de Estudos em Biogás e Bioprodutos</span>
               </h1>
 
               <p className="text-lg text-green-100 mb-8 leading-relaxed">
-                Centro Paulista de Estudos em Biogás e Bioprodutos - Uma plataforma de pesquisa
-                para análise geoespacial do potencial de biogás no Estado de São Paulo.
+                Centro de Excelência vinculado ao NIPE/UNICAMP, dedicado à pesquisa e inovação
+                em biogás e bioprodutos para o desenvolvimento sustentável do Estado de São Paulo.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="#como-usar"
+                  href="#eixos"
                   className="inline-flex items-center px-6 py-3 bg-white text-green-900 rounded-lg font-semibold hover:bg-green-50 transition-colors"
                 >
-                  Como Usar
-                  <ChevronRight className="h-5 w-5 ml-2" />
+                  8 Eixos Temáticos
+                  <ChevronRight className="h-5 w-5 ml-2" aria-hidden="true" />
                 </a>
                 <a
                   href="#metodologia"
                   className="inline-flex items-center px-6 py-3 border-2 border-green-300 text-green-100 rounded-lg font-semibold hover:bg-green-800/50 transition-colors"
                 >
-                  Metodologia
+                  Metodologia SAF
                 </a>
               </div>
             </div>
 
-            {/* Hero Image/Visual */}
+            {/* Hero Stats */}
             <div className="hidden lg:block">
               <div className="relative">
                 <div className="absolute -inset-4 bg-green-500/20 rounded-2xl blur-2xl"></div>
                 <div className="relative bg-green-800/50 backdrop-blur rounded-2xl p-8 border border-green-700/50">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
-                      <MapPin className="h-8 w-8 text-green-300 mx-auto mb-2" />
+                      <Factory className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
+                      <div className="text-2xl font-bold text-white">4,6 bi</div>
+                      <div className="text-xs text-green-300 uppercase tracking-wide">m³ biogás/ano</div>
+                    </div>
+                    <div className="bg-green-900/50 rounded-lg p-4 text-center">
+                      <TrendingUp className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
+                      <div className="text-2xl font-bold text-white">R$ 20M</div>
+                      <div className="text-xs text-green-300 uppercase tracking-wide">Investimento</div>
+                    </div>
+                    <div className="bg-green-900/50 rounded-lg p-4 text-center">
+                      <MapPin className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
                       <div className="text-2xl font-bold text-white">645</div>
                       <div className="text-xs text-green-300 uppercase tracking-wide">Municípios</div>
                     </div>
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
-                      <Database className="h-8 w-8 text-green-300 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white">15+</div>
-                      <div className="text-xs text-green-300 uppercase tracking-wide">Substratos</div>
-                    </div>
-                    <div className="bg-green-900/50 rounded-lg p-4 text-center">
-                      <Beaker className="h-8 w-8 text-green-300 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white">50+</div>
-                      <div className="text-xs text-green-300 uppercase tracking-wide">Referências</div>
-                    </div>
-                    <div className="bg-green-900/50 rounded-lg p-4 text-center">
-                      <Globe className="h-8 w-8 text-green-300 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white">100%</div>
-                      <div className="text-xs text-green-300 uppercase tracking-wide">Open Source</div>
+                      <Layers className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
+                      <div className="text-2xl font-bold text-white">8</div>
+                      <div className="text-xs text-green-300 uppercase tracking-wide">Eixos Temáticos</div>
                     </div>
                   </div>
                 </div>
@@ -159,7 +241,7 @@ export default function AboutPage() {
 
         {/* Wave Divider */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
           </svg>
         </div>
@@ -170,26 +252,89 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-700">4,6 bi</div>
+              <div className="text-xs text-gray-600 uppercase tracking-wide">m³/ano</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-700">R$ 20M</div>
+              <div className="text-xs text-gray-600 uppercase tracking-wide">Investimento</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-700">645</div>
               <div className="text-xs text-gray-600 uppercase tracking-wide">Municípios</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">15+</div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide">Substratos</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">50+</div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide">Referências</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">100%</div>
-              <div className="text-xs text-gray-600 uppercase tracking-wide">Open Source</div>
+              <div className="text-2xl font-bold text-green-700">8</div>
+              <div className="text-xs text-gray-600 uppercase tracking-wide">Eixos</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* About the Project */}
+      {/* Coordinator Section */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Coordenação
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Liderança científica do Centro de Excelência em Biogás
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="md:flex">
+                <div className="md:w-1/3 bg-gradient-to-br from-green-600 to-emerald-700 p-8 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <GraduationCap className="h-16 w-16 text-white" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Profa. Dra.</h3>
+                    <p className="text-green-100">Bruna de Souza Moraes</p>
+                  </div>
+                </div>
+                <div className="md:w-2/3 p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    Coordenadora Geral do CP2B
+                  </h3>
+                  <div className="space-y-3 text-gray-600 mb-6">
+                    <p className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                      Pesquisadora Permanente do NIPE/UNICAMP
+                    </p>
+                    <p className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                      Professora Colaboradora PSE/FEM/UNICAMP
+                    </p>
+                    <p className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                      15+ anos de experiência em bioenergia
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Formação Acadêmica</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Doutorado em Engenharia - USP (2012)</li>
+                      <li>• Mestrado em Engenharia - USP (2009)</li>
+                      <li>• Engenharia de Alimentos - USP (2007)</li>
+                      <li>• Pós-doc: LNBR + University of Southern Denmark</li>
+                    </ul>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">Digestão Anaeróbia</span>
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">Biorrefinarias</span>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">Biohidrogênio</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission/Vision/Values */}
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -197,14 +342,13 @@ export default function AboutPage() {
               Sobre o Projeto
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Conheça a missão, visão e valores que orientam o desenvolvimento
-              da plataforma CP2B Maps.
+              Missão, visão e valores que orientam o Centro Paulista de Estudos em Biogás e Bioprodutos.
             </p>
           </div>
 
           {/* Tab Navigation */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex bg-gray-100 rounded-lg p-1">
+            <div className="inline-flex bg-gray-100 rounded-lg p-1" role="tablist">
               <button
                 onClick={() => setActiveTab('mission')}
                 className={`px-6 py-3 rounded-lg text-sm font-medium transition-all ${
@@ -212,8 +356,11 @@ export default function AboutPage() {
                     ? 'bg-white text-green-700 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={activeTab === 'mission'}
+                aria-controls="mission-panel"
               >
-                <Target className="h-4 w-4 inline mr-2" />
+                <Target className="h-4 w-4 inline mr-2" aria-hidden="true" />
                 Missão
               </button>
               <button
@@ -223,8 +370,11 @@ export default function AboutPage() {
                     ? 'bg-white text-green-700 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={activeTab === 'vision'}
+                aria-controls="vision-panel"
               >
-                <Eye className="h-4 w-4 inline mr-2" />
+                <Eye className="h-4 w-4 inline mr-2" aria-hidden="true" />
                 Visão
               </button>
               <button
@@ -234,8 +384,11 @@ export default function AboutPage() {
                     ? 'bg-white text-green-700 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                role="tab"
+                aria-selected={activeTab === 'values'}
+                aria-controls="values-panel"
               >
-                <Heart className="h-4 w-4 inline mr-2" />
+                <Heart className="h-4 w-4 inline mr-2" aria-hidden="true" />
                 Valores
               </button>
             </div>
@@ -244,10 +397,10 @@ export default function AboutPage() {
           {/* Tab Content */}
           <div className="max-w-4xl mx-auto">
             {activeTab === 'mission' && (
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 lg:p-12 border border-green-100">
+              <div id="mission-panel" role="tabpanel" className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 lg:p-12 border border-green-100">
                 <div className="flex items-center mb-6">
                   <div className="h-12 w-12 bg-green-600 rounded-xl flex items-center justify-center mr-4">
-                    <Target className="h-6 w-6 text-white" />
+                    <Target className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">Nossa Missão</h3>
                 </div>
@@ -256,14 +409,19 @@ export default function AboutPage() {
                   ambiental e social, promovendo o aproveitamento inteligente de resíduos para o desenvolvimento
                   sustentável do Estado de São Paulo e contribuindo para a transição energética brasileira.
                 </p>
+                <div className="mt-6 p-4 bg-white/50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    <strong>Modelo:</strong> Laboratório vivo integrando Academia, Indústria, Governo e Sociedade
+                  </p>
+                </div>
               </div>
             )}
 
             {activeTab === 'vision' && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 lg:p-12 border border-blue-100">
+              <div id="vision-panel" role="tabpanel" className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 lg:p-12 border border-blue-100">
                 <div className="flex items-center mb-6">
                   <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
-                    <Eye className="h-6 w-6 text-white" />
+                    <Eye className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">Nossa Visão</h3>
                 </div>
@@ -272,14 +430,19 @@ export default function AboutPage() {
                   agropecuários, transformando o Estado de São Paulo em vitrine de soluções inteligentes em biogás
                   e contribuindo para a consolidação da bioeconomia circular no Brasil.
                 </p>
+                <div className="mt-6 p-4 bg-white/50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    <strong>Vigência:</strong> Fevereiro 2025 - Fevereiro 2030 (5 anos)
+                  </p>
+                </div>
               </div>
             )}
 
             {activeTab === 'values' && (
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 lg:p-12 border border-amber-100">
+              <div id="values-panel" role="tabpanel" className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 lg:p-12 border border-amber-100">
                 <div className="flex items-center mb-6">
                   <div className="h-12 w-12 bg-amber-600 rounded-xl flex items-center justify-center mr-4">
-                    <Heart className="h-6 w-6 text-white" />
+                    <Heart className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">Nossos Valores</h3>
                 </div>
@@ -292,7 +455,7 @@ export default function AboutPage() {
                     'Desenvolvimento de projetos com abordagem local e replicação'
                   ].map((value, index) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircle2 className="h-6 w-6 text-amber-600 mr-3 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-6 w-6 text-amber-600 mr-3 flex-shrink-0 mt-0.5" aria-hidden="true" />
                       <span className="text-lg text-gray-700">{value}</span>
                     </li>
                   ))}
@@ -303,442 +466,248 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Methodology Section */}
-      <section id="metodologia" className="py-16 lg:py-24 bg-gray-50">
+      {/* 8 Thematic Axes */}
+      <section id="eixos" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Metodologia de Cálculo
+              8 Eixos Temáticos Integrados
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Nossos cálculos seguem metodologias internacionalmente reconhecidas e
-              fundamentadas em literatura científica revisada por pares.
+              Estrutura multidisciplinar que abrange toda a cadeia de valor do biogás e bioprodutos.
             </p>
           </div>
 
-          {/* Methodology Steps */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
-                <Database className="h-6 w-6 text-amber-600" />
-              </div>
-              <div className="text-sm font-semibold text-amber-600 uppercase tracking-wide mb-2">Etapa 1</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Produção de Resíduos</h3>
-              <p className="text-gray-600 text-sm">
-                Dados oficiais do IBGE sobre produção agrícola, pecuária e resíduos sólidos urbanos.
-              </p>
-            </div>
+            {thematicAxes.map((axis) => {
+              const IconComponent = axis.icon
+              const colorClasses: Record<string, string> = {
+                emerald: 'bg-emerald-100 text-emerald-600 border-emerald-200',
+                blue: 'bg-blue-100 text-blue-600 border-blue-200',
+                amber: 'bg-amber-100 text-amber-600 border-amber-200',
+                teal: 'bg-teal-100 text-teal-600 border-teal-200',
+                rose: 'bg-rose-100 text-rose-600 border-rose-200',
+                indigo: 'bg-indigo-100 text-indigo-600 border-indigo-200',
+                orange: 'bg-orange-100 text-orange-600 border-orange-200',
+                cyan: 'bg-cyan-100 text-cyan-600 border-cyan-200'
+              }
 
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <Beaker className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">Etapa 2</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Fatores de Conversão</h3>
-              <p className="text-gray-600 text-sm">
-                Parâmetros de literatura científica para conversão de resíduos em substrato.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                <Leaf className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="text-sm font-semibold text-green-600 uppercase tracking-wide mb-2">Etapa 3</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Potencial de Metano</h3>
-              <p className="text-gray-600 text-sm">
-                Cálculo do potencial de produção de metano em m³ CH₄/ton de resíduo (base seca).
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
-                <Zap className="h-6 w-6 text-teal-600" />
-              </div>
-              <div className="text-sm font-semibold text-teal-600 uppercase tracking-wide mb-2">Etapa 4</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Energia Total</h3>
-              <p className="text-gray-600 text-sm">
-                Conversão para MWh/ano e equivalentes energéticos para análise comparativa.
-              </p>
-            </div>
-          </div>
-
-          {/* Data Sources */}
-          <div className="mt-12 bg-white rounded-xl p-8 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-green-600" />
-              Fontes de Dados
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex items-start">
-                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <Building2 className="h-5 w-5 text-gray-600" />
+              return (
+                <div
+                  key={axis.number}
+                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${colorClasses[axis.color]}`}>
+                      <IconComponent className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <span className="text-sm font-bold text-gray-500">Eixo {axis.number}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{axis.title}</h3>
+                  <p className="text-sm text-gray-600">{axis.description}</p>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">IBGE</h4>
-                  <p className="text-sm text-gray-600">Produção agrícola, pecuária e dados demográficos</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <Globe className="h-5 w-5 text-gray-600" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">MapBiomas</h4>
-                  <p className="text-sm text-gray-600">Uso e cobertura do solo</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <GraduationCap className="h-5 w-5 text-gray-600" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Literatura Científica</h4>
-                  <p className="text-sm text-gray-600">50+ artigos revisados por pares</p>
-                </div>
-              </div>
-            </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Funcionalidades da Plataforma
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Ferramentas avançadas de análise geoespacial para apoio à tomada de decisão
-              no setor de biogás.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 hover:border-green-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <MapPin className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Mapeamento Interativo</h3>
-                <p className="text-gray-600 mb-4">
-                  Visualização de mapas com camadas de infraestrutura, gasodutos, ferrovias e dados de biogás.
-                </p>
-                <Link href="/dashboard" className="inline-flex items-center text-green-600 font-medium hover:text-green-700">
-                  Explorar
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:border-blue-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <BarChart3 className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Análise de Dados</h3>
-                <p className="text-gray-600 mb-4">
-                  Exploração detalhada por tipo de resíduo com gráficos e estatísticas avançadas.
-                </p>
-                <Link href="/dashboard/advanced-analysis" className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700">
-                  Analisar
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-100 hover:border-teal-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Search className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Análise de Proximidade</h3>
-                <p className="text-gray-600 mb-4">
-                  Análise espacial com raios de captação e integração com dados de uso do solo.
-                </p>
-                <Link href="/dashboard/proximity" className="inline-flex items-center text-teal-600 font-medium hover:text-teal-700">
-                  Configurar
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100 hover:border-amber-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Layers className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Comparação de Municípios</h3>
-                <p className="text-gray-600 mb-4">
-                  Compare o potencial de biogás entre diferentes municípios do Estado de São Paulo.
-                </p>
-                <Link href="/dashboard/compare" className="inline-flex items-center text-amber-600 font-medium hover:text-amber-700">
-                  Comparar
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-100 hover:border-teal-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Base Científica</h3>
-                <p className="text-gray-600 mb-4">
-                  Acesso a referências científicas e parâmetros de cálculo utilizados na plataforma.
-                </p>
-                <Link href="/dashboard/scientific-database" className="inline-flex items-center text-teal-600 font-medium hover:text-teal-700">
-                  Consultar
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="group">
-              <div className="bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-6 border border-rose-100 hover:border-rose-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-rose-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Download className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Exportação de Dados</h3>
-                <p className="text-gray-600 mb-4">
-                  Exporte dados e análises em diversos formatos para uso em outros sistemas.
-                </p>
-                <span className="inline-flex items-center text-gray-400 font-medium">
-                  Em breve
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How to Use Section */}
-      <section id="como-usar" className="py-16 lg:py-24 bg-green-900 text-white">
+      {/* São Paulo Potential */}
+      <section className="py-16 lg:py-24 bg-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Como Usar a Plataforma
+              Potencial de São Paulo
             </h2>
             <p className="text-lg text-green-200 max-w-3xl mx-auto">
-              Guia rápido para começar a utilizar as funcionalidades do CP2B Maps.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="relative">
-              <div className="absolute -left-4 top-0 h-full w-0.5 bg-green-700 md:block hidden"></div>
-              <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 relative">
-                <div className="absolute -left-8 top-6 h-8 w-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold md:block hidden">
-                  1
-                </div>
-                <h3 className="text-xl font-bold mb-3 flex items-center">
-                  <span className="md:hidden mr-2 h-6 w-6 bg-green-600 rounded-full flex items-center justify-center text-sm">1</span>
-                  Explorar o Mapa
-                </h3>
-                <p className="text-green-200">
-                  Navegue pelo mapa interativo, ative camadas de infraestrutura e visualize
-                  o potencial de biogás por município usando as cores do mapa.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute -left-4 top-0 h-full w-0.5 bg-green-700 md:block hidden"></div>
-              <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 relative">
-                <div className="absolute -left-8 top-6 h-8 w-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold md:block hidden">
-                  2
-                </div>
-                <h3 className="text-xl font-bold mb-3 flex items-center">
-                  <span className="md:hidden mr-2 h-6 w-6 bg-green-600 rounded-full flex items-center justify-center text-sm">2</span>
-                  Analisar Dados
-                </h3>
-                <p className="text-green-200">
-                  Use as ferramentas de análise avançada para filtrar por tipo de resíduo,
-                  visualizar rankings e comparar municípios.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 relative">
-                <div className="absolute -left-8 top-6 h-8 w-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold md:block hidden">
-                  3
-                </div>
-                <h3 className="text-xl font-bold mb-3 flex items-center">
-                  <span className="md:hidden mr-2 h-6 w-6 bg-green-600 rounded-full flex items-center justify-center text-sm">3</span>
-                  Gerar Relatórios
-                </h3>
-                <p className="text-green-200">
-                  Exporte os resultados das suas análises e utilize os dados para
-                  tomada de decisão e planejamento.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center px-8 py-4 bg-white text-green-900 rounded-lg font-semibold hover:bg-green-50 transition-colors"
-            >
-              Acessar Dashboard
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Technology Stack */}
-      <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Tecnologia
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Construído com tecnologias modernas para performance, escalabilidade e acessibilidade.
+              O Estado de São Paulo concentra mais de 50% do potencial de biogás do Brasil.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: 'Next.js 15', desc: 'Framework React para frontend', icon: Cpu },
-              { name: 'FastAPI', desc: 'API backend de alta performance', icon: Zap },
-              { name: 'PostgreSQL + PostGIS', desc: 'Banco de dados geoespacial', icon: Database },
-              { name: 'React Leaflet', desc: 'Mapas interativos', icon: MapPin },
-              { name: 'Tailwind CSS', desc: 'Estilização moderna', icon: Layers },
-              { name: 'Supabase', desc: 'Autenticação e backend', icon: Shield }
-            ].map((tech, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 border border-gray-200 flex items-center">
-                <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                  <tech.icon className="h-6 w-6 text-gray-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">{tech.name}</h3>
-                  <p className="text-sm text-gray-600">{tech.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">4,6 bi</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">m³ biogás/ano</div>
+              <p className="text-green-200 text-sm mt-2">Potencial total estimado</p>
+            </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              TypeScript | Python | WCAG 2.1 AA | SOLID Principles | Open Source
-            </p>
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">6,4 M</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">m³ biometano/dia</div>
+              <p className="text-green-200 text-sm mt-2">32% do consumo de gás natural</p>
+            </div>
+
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">20 mil</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">Empregos</div>
+              <p className="text-green-200 text-sm mt-2">Diretos e indiretos</p>
+            </div>
+
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">181</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">Plantas de biogás</div>
+              <p className="text-green-200 text-sm mt-2">84% sucroenergético</p>
+            </div>
+
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">5,5 M</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">Hectares de cana</div>
+              <p className="text-green-200 text-sm mt-2">50% produção nacional</p>
+            </div>
+
+            <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center">
+              <div className="text-4xl font-bold text-white mb-2">16%</div>
+              <div className="text-green-300 uppercase text-sm tracking-wide">Redução GEE</div>
+              <p className="text-green-200 text-sm mt-2">Meta climática estadual</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Resources Section */}
-      <section className="py-16 lg:py-24 bg-white">
+      {/* SAF Methodology */}
+      <section id="metodologia" className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Recursos e Ajuda
+              Metodologia SAF
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Documentação, tutoriais e suporte para aproveitar ao máximo a plataforma.
+              Fator de Disponibilidade Excedentária - quantifica o cenário REAL de disponibilidade de resíduos.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Documentation */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <FileText className="h-6 w-6 text-blue-600" />
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-200">
+              <div className="text-center mb-8">
+                <div className="inline-block bg-gray-900 text-white px-6 py-4 rounded-lg font-mono text-xl">
+                  SAF = FC × (1 - FCp) × FS × FL
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Documentação</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Documentação técnica completa da plataforma
-              </p>
-              <Link
-                href="/docs"
-                className="inline-flex items-center text-blue-600 font-medium text-sm hover:text-blue-700"
-              >
-                Acessar
-                <ExternalLink className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
 
-            {/* FAQ */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-green-300 hover:shadow-md transition-all">
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <HelpCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Perguntas Frequentes</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Respostas para as dúvidas mais comuns
-              </p>
-              <span className="inline-flex items-center text-gray-400 font-medium text-sm">
-                Em breve
-              </span>
-            </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-bold text-green-600">FC</span>
+                    <span className="text-gray-600">Fator de Coleta</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Eficiência técnica de coleta</p>
+                  <div className="mt-2 text-xs text-gray-500 font-mono">0.55 - 0.95</div>
+                </div>
 
-            {/* Support */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all">
-              <div className="h-12 w-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
-                <MessageCircle className="h-6 w-6 text-teal-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Suporte</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Entre em contato com nossa equipe
-              </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center text-teal-600 font-medium text-sm hover:text-teal-700"
-              >
-                Contato
-                <ExternalLink className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-bold text-blue-600">FCp</span>
+                    <span className="text-gray-600">Fator de Competição</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Usos alternativos prioritários</p>
+                  <div className="mt-2 text-xs text-gray-500 font-mono">0.67 - 1.0</div>
+                </div>
 
-            {/* GitHub */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-400 hover:shadow-md transition-all">
-              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                <Github className="h-6 w-6 text-gray-900" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Código Aberto</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Contribua com o projeto no GitHub
-              </p>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-gray-700 font-medium text-sm hover:text-gray-900"
-              >
-                Ver código
-                <ExternalLink className="h-4 w-4 ml-1" />
-              </a>
-            </div>
-          </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-bold text-amber-600">FS</span>
+                    <span className="text-gray-600">Fator Sazonal</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Variação temporal de disponibilidade</p>
+                  <div className="mt-2 text-xs text-gray-500 font-mono">0.70 - 1.00</div>
+                </div>
 
-          {/* System Info */}
-          <div className="mt-12 bg-gray-50 rounded-xl p-6 border border-gray-200">
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Versão</p>
-                <p className="text-lg font-bold text-gray-900">CP2B Maps V3.0.0</p>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-bold text-teal-600">FL</span>
+                    <span className="text-gray-600">Fator Logístico</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Viabilidade de transporte (10-50km)</p>
+                  <div className="mt-2 text-xs text-gray-500 font-mono">0.65 - 1.00</div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Última Atualização</p>
-                <p className="text-lg font-bold text-gray-900">Novembro 2025</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</p>
-                <p className="text-lg font-bold text-green-600 flex items-center justify-center">
-                  <span className="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
-                  Operacional
+
+              <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-800 mb-2">Exemplo: Torta de Filtro</h4>
+                <p className="text-sm text-green-700 font-mono">
+                  SAF = 0.95 × (1 - 0.67) × 0.80 × 1.00 = <strong>25.2%</strong> disponível para biogás
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Strategic Partnerships */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Parcerias Estratégicas
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Rede de colaboração nacional e internacional para pesquisa e inovação.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {partnerships.map((partner, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-gray-900 text-sm">{partner.name}</h3>
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    partner.type === 'Internacional' ? 'bg-blue-100 text-blue-700' :
+                    partner.type === 'Nacional' ? 'bg-green-100 text-green-700' :
+                    partner.type === 'Institucional' ? 'bg-amber-100 text-amber-700' :
+                    partner.type === 'Associação' ? 'bg-teal-100 text-teal-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {partner.type}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">{partner.contact}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NIPE History */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center px-4 py-2 bg-green-100 rounded-full text-green-700 text-sm mb-6">
+                <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
+                Desde 1992
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+                NIPE/UNICAMP
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                O Núcleo Interdisciplinar de Planejamento Energético é um centro de pesquisa da UNICAMP
+                dedicado ao estudo integrado de questões energéticas, ambientais e de desenvolvimento sustentável.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-gray-600">30+ anos de excelência em pesquisa energética</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-gray-600">Equipe multidisciplinar de pesquisadores</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-gray-600">Projetos de impacto nacional e internacional</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-gray-100 rounded-2xl p-8 text-center">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-green-600 rounded-full mb-6">
+                <Building2 className="h-12 w-12 text-white" aria-hidden="true" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Localização</h3>
+              <p className="text-gray-600">
+                Universidade Estadual de Campinas<br />
+                Cidade Universitária Zeferino Vaz<br />
+                Campinas, SP - Brasil
+              </p>
             </div>
           </div>
         </div>
@@ -747,20 +716,19 @@ export default function AboutPage() {
       {/* CTA / Contact Section */}
       <section className="py-16 lg:py-24 bg-gradient-to-br from-green-800 to-emerald-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Mail className="h-12 w-12 mx-auto mb-6 text-green-300" />
+          <Mail className="h-12 w-12 mx-auto mb-6 text-green-300" aria-hidden="true" />
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
             Entre em Contato
           </h2>
           <p className="text-lg text-green-200 mb-8 max-w-2xl mx-auto">
-            Tem dúvidas sobre o projeto ou deseja colaborar? Nossa equipe está disponível
-            para ajudar.
+            Interessado em parcerias, bolsas ou colaborações? Nossa equipe está disponível para ajudar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
               className="inline-flex items-center justify-center px-8 py-4 bg-white text-green-900 rounded-lg font-semibold hover:bg-green-50 transition-colors"
             >
-              <Mail className="h-5 w-5 mr-2" />
+              <Mail className="h-5 w-5 mr-2" aria-hidden="true" />
               Enviar Mensagem
             </Link>
             <Link
@@ -768,7 +736,7 @@ export default function AboutPage() {
               className="inline-flex items-center justify-center px-8 py-4 border-2 border-green-300 text-green-100 rounded-lg font-semibold hover:bg-green-800/50 transition-colors"
             >
               Explorar Plataforma
-              <ArrowRight className="h-5 w-5 ml-2" />
+              <ArrowRight className="h-5 w-5 ml-2" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -782,7 +750,7 @@ export default function AboutPage() {
               <h3 className="font-bold text-lg mb-4">CP2B Maps</h3>
               <p className="text-gray-400 text-sm">
                 Centro Paulista de Estudos em Biogás e Bioprodutos - Plataforma de análise
-                de potencial de biogás.
+                de potencial de biogás do Estado de São Paulo.
               </p>
             </div>
             <div>
@@ -791,25 +759,28 @@ export default function AboutPage() {
                 <li><Link href="/dashboard" className="text-gray-400 hover:text-white">Dashboard</Link></li>
                 <li><Link href="/dashboard/advanced-analysis" className="text-gray-400 hover:text-white">Análises</Link></li>
                 <li><Link href="/dashboard/proximity" className="text-gray-400 hover:text-white">Proximidade</Link></li>
-                <li><Link href="/contact" className="text-gray-400 hover:text-white">Contato</Link></li>
+                <li><Link href="/dashboard/scientific-database" className="text-gray-400 hover:text-white">Base Científica</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4">Financiamento</h3>
               <div className="flex items-center">
-                <Award className="h-8 w-8 text-green-400 mr-3" />
+                <Award className="h-8 w-8 text-green-400 mr-3" aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium">FAPESP</p>
-                  <p className="text-xs text-gray-400">2024/01112-1</p>
+                  <p className="text-xs text-gray-400">2025/08745-2</p>
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-4">
+                Vigência: Fev/2025 - Fev/2030
+              </p>
             </div>
           </div>
 
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-500">
               © 2025 CP2B Maps V3 - Centro Paulista de Estudos em Biogás e Bioprodutos.
-              Desenvolvido com tecnologia moderna para o futuro sustentável.
+              NIPE/UNICAMP. Desenvolvido com tecnologia moderna para o futuro sustentável.
             </p>
           </div>
         </div>
