@@ -7,9 +7,9 @@ export const routing = defineRouting({
   // Default locale (Portuguese)
   defaultLocale: 'pt-BR',
 
-  // URL strategy: 'as-needed' for Cloudflare Pages compatibility
-  // Default locale routes won't have prefix, non-default will
-  localePrefix: 'as-needed',
+  // URL strategy: 'always' for Cloudflare Pages static export
+  // All routes will have locale prefix for consistent URL structure
+  localePrefix: 'always',
 
   // Disable automatic locale detection based on browser headers
   // This is CRITICAL for static export - prevents header access during build
