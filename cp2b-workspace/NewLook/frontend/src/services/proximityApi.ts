@@ -39,9 +39,12 @@ export interface MunicipalityData {
 
 export interface InfrastructureItem {
   type: string;
-  name: string;
+  name: string | null;
   distance_km: number;
-  coordinates: {
+  found: boolean;
+  note?: string;
+  properties?: Record<string, any>;
+  coordinates?: {
     latitude: number;
     longitude: number;
   };
@@ -285,7 +288,7 @@ export function exportAnalysisToCSV(analysis: ProximityAnalysisResponse): void {
   // Create land use CSV
   const landUseCSV = [
     ['Classe de Uso', 'Porcentagem (%)', 'Área (km²)'],
-    ...analysis.land_use.breakdown.map(lu => [
+    ...(analysis.land_use.breakdown || []).map(lu => [
       lu.class_name,
       lu.percentage.toFixed(2),
       lu.area_km2.toFixed(2)
@@ -297,10 +300,10 @@ export function exportAnalysisToCSV(analysis: ProximityAnalysisResponse): void {
     ['Tipo', 'Nome', 'Distância (km)', 'Latitude', 'Longitude'],
     ...analysis.infrastructure.map(inf => [
       inf.type,
-      inf.name,
+      inf.name || '',
       inf.distance_km.toFixed(2),
-      inf.coordinates.latitude.toFixed(6),
-      inf.coordinates.longitude.toFixed(6)
+      inf.coordinates?.latitude?.toFixed(6) || '',
+      inf.coordinates?.longitude?.toFixed(6) || ''
     ])
   ].map(row => row.join(',')).join('\n');
 
