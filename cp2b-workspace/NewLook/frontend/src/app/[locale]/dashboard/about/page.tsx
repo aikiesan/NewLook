@@ -6,8 +6,7 @@
  * Updated with validated research from NIPE/UNICAMP and FAPESP sources
  */
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link, useRouter } from '@/i18n/navigation'
 import {
   ArrowLeft,
   Target,

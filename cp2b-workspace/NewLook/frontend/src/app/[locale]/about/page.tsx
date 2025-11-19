@@ -6,7 +6,7 @@
  * Public version matching the dashboard Sobre page content
  */
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import {
   ArrowLeft,
