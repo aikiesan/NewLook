@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Globe, Check } from 'lucide-react';
-
-// Temporary implementation until next-intl is set up
-// This will be replaced with proper i18n routing
 
 type Locale = 'pt-BR' | 'en-US';
 
@@ -20,23 +18,43 @@ const languages: Language[] = [
 ];
 
 export function LanguageToggle() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [locale, setLocale] = useState<Locale>('pt-BR');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Load saved locale on mount
+  // Detect current locale from URL or localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('cp2b-locale') as Locale;
-    if (saved && ['pt-BR', 'en-US'].includes(saved)) {
-      setLocale(saved);
+    // Check URL first
+    if (pathname.startsWith('/en-US')) {
+      setLocale('en-US');
+    } else {
+      // Then check localStorage
+      const saved = localStorage.getItem('cp2b-locale') as Locale;
+      if (saved && ['pt-BR', 'en-US'].includes(saved)) {
+        setLocale(saved);
+      }
     }
-  }, []);
+  }, [pathname]);
 
   const handleLanguageChange = (newLocale: Locale) => {
     setLocale(newLocale);
     localStorage.setItem('cp2b-locale', newLocale);
     setIsOpen(false);
-    // When next-intl is configured, this will trigger a route change
-    // For now, just save preference
+
+    // Get current path without locale prefix
+    let currentPath = pathname;
+    if (currentPath.startsWith('/en-US')) {
+      currentPath = currentPath.substring(6) || '/';
+    }
+
+    // Navigate to new locale path
+    if (newLocale === 'en-US') {
+      router.push(`/en-US${currentPath}`);
+    } else {
+      // Default locale (pt-BR) doesn't need prefix
+      router.push(currentPath);
+    }
   };
 
   const currentLanguage = languages.find((lang) => lang.code === locale);
