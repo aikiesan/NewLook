@@ -32,10 +32,12 @@ app = FastAPI(
 # 1. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 2. CORS middleware - NO WILDCARDS
+# 2. CORS middleware - Allow Vercel production + preview deployments
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_all_origins(),  # Includes both default and production origins
+    allow_origins=settings.get_all_origins(),  # Includes localhost origins
+    # Allow all Vercel preview deployments for this project
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
     allow_headers=["*"],  # Allow all headers for preflight compatibility
