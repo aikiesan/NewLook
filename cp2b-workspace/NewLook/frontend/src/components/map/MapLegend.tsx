@@ -23,7 +23,7 @@ export default function MapLegend() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="absolute bottom-4 right-4 z-[1000]">
+    <div className="absolute bottom-4 right-4 z-[400]">
       <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden w-44">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">

@@ -23,7 +23,7 @@ export default function FloatingStatsPanel({ visible = true }: FloatingStatsPane
     return (
       <button
         onClick={() => setIsHidden(false)}
-        className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm shadow-lg rounded-lg px-3 py-2 text-xs text-gray-600 hover:bg-white transition-colors"
+        className="absolute bottom-4 left-4 z-[400] bg-white/95 backdrop-blur-sm shadow-lg rounded-lg px-3 py-2 text-xs text-gray-600 hover:bg-white transition-colors"
       >
         Mostrar Estatísticas
       </button>
@@ -32,7 +32,7 @@ export default function FloatingStatsPanel({ visible = true }: FloatingStatsPane
 
   if (loading) {
     return (
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm shadow-lg rounded-lg p-3">
+      <div className="absolute bottom-4 left-4 z-[400] bg-white/95 backdrop-blur-sm shadow-lg rounded-lg p-3">
         <div className="animate-pulse space-y-2">
           <div className="h-3 bg-gray-200 rounded w-24"></div>
           <div className="h-3 bg-gray-200 rounded w-20"></div>
@@ -46,7 +46,7 @@ export default function FloatingStatsPanel({ visible = true }: FloatingStatsPane
   }
 
   return (
-    <div className="absolute bottom-4 left-4 z-[1000] w-56">
+    <div className="absolute bottom-4 left-4 z-[400] w-56">
       <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
         {/* Header */}
         <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">

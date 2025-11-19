@@ -102,7 +102,7 @@ export default function PublicMapPage() {
         <MapComponent />
 
         {/* Call-to-Action Overlay */}
-        <div className="absolute top-4 right-4 z-[1000] max-w-sm">
+        <div className="absolute top-4 right-4 z-[400] max-w-sm">
           <div className="bg-white rounded-lg shadow-xl p-4 border-2 border-[#1E5128]">
             <div className="flex items-start gap-3">
               <div className="bg-[#1E5128] rounded-full p-2">
