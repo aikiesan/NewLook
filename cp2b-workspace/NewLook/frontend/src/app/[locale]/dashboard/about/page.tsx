@@ -189,21 +189,6 @@ export default function AboutPage() {
                 em biogás e bioprodutos para o desenvolvimento sustentável do Estado de São Paulo.
               </p>
 
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="#eixos"
-                  className="inline-flex items-center px-6 py-3 bg-white text-green-900 rounded-lg font-semibold hover:bg-green-50 transition-colors"
-                >
-                  8 Eixos Temáticos
-                  <ChevronRight className="h-5 w-5 ml-2" aria-hidden="true" />
-                </a>
-                <a
-                  href="#metodologia"
-                  className="inline-flex items-center px-6 py-3 border-2 border-green-300 text-green-100 rounded-lg font-semibold hover:bg-green-800/50 transition-colors"
-                >
-                  Metodologia SAF
-                </a>
-              </div>
             </div>
 
             {/* Hero Stats */}
@@ -288,8 +273,12 @@ export default function AboutPage() {
               <div className="md:flex">
                 <div className="md:w-1/3 bg-gradient-to-br from-green-600 to-emerald-700 p-8 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <GraduationCap className="h-16 w-16 text-white" aria-hidden="true" />
+                    <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-white/30">
+                      <img
+                        src="/images/team/bruna-moraes.jpg"
+                        alt="Profa. Dra. Bruna de Souza Moraes"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <h3 className="text-xl font-bold text-white">Profa. Dra.</h3>
                     <p className="text-green-100">Bruna de Souza Moraes</p>
@@ -559,75 +548,6 @@ export default function AboutPage() {
               <div className="text-4xl font-bold text-white mb-2">16%</div>
               <div className="text-green-300 uppercase text-sm tracking-wide">Redução GEE</div>
               <p className="text-green-200 text-sm mt-2">Meta climática estadual</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SAF Methodology */}
-      <section id="metodologia" className="py-16 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Metodologia SAF
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Fator de Disponibilidade Excedentária - quantifica o cenário REAL de disponibilidade de resíduos.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-200">
-              <div className="text-center mb-8">
-                <div className="inline-block bg-gray-900 text-white px-6 py-4 rounded-lg font-mono text-xl">
-                  SAF = FC × (1 - FCp) × FS × FL
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-bold text-green-600">FC</span>
-                    <span className="text-gray-600">Fator de Coleta</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Eficiência técnica de coleta</p>
-                  <div className="mt-2 text-xs text-gray-500 font-mono">0.55 - 0.95</div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-bold text-blue-600">FCp</span>
-                    <span className="text-gray-600">Fator de Competição</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Usos alternativos prioritários</p>
-                  <div className="mt-2 text-xs text-gray-500 font-mono">0.67 - 1.0</div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-bold text-amber-600">FS</span>
-                    <span className="text-gray-600">Fator Sazonal</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Variação temporal de disponibilidade</p>
-                  <div className="mt-2 text-xs text-gray-500 font-mono">0.70 - 1.00</div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-bold text-teal-600">FL</span>
-                    <span className="text-gray-600">Fator Logístico</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Viabilidade de transporte (10-50km)</p>
-                  <div className="mt-2 text-xs text-gray-500 font-mono">0.65 - 1.00</div>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-800 mb-2">Exemplo: Torta de Filtro</h4>
-                <p className="text-sm text-green-700 font-mono">
-                  SAF = 0.95 × (1 - 0.67) × 0.80 × 1.00 = <strong>25.2%</strong> disponível para biogás
-                </p>
-              </div>
             </div>
           </div>
         </div>

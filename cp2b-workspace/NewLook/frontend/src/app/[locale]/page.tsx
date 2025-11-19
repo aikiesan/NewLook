@@ -335,38 +335,31 @@ const AnimatedMapBackground = () => {
 const screenshots = [
   {
     id: 1,
-    image: '/screenshots/dashboard-overview.png',
-    alt: 'Dashboard principal mostrando mapa coropletico de São Paulo com potencial de biogás por município',
-    caption: 'Dashboard Interativo',
-    description: 'Visualização geoespacial com 645 municípios classificados por potencial de biogás em escala de cores verde',
+    image: '/screenshots/interactive-map.png',
+    alt: 'Mapa interativo de São Paulo com camadas de infraestrutura e potencial de biogás',
+    caption: 'Mapa Interativo',
+    description: 'Visualização geoespacial com camadas de infraestrutura, plantas de biogás e municípios de São Paulo',
   },
   {
     id: 2,
-    image: '/screenshots/mcda-analysis.png',
-    alt: 'Interface de análise MCDA com sliders de pesos e ranking de municípios',
-    caption: 'Análise Multicritério (MCDA)',
-    description: 'Configure pesos personalizados para 8 critérios e gere ranking automatizado de localizações ótimas',
+    image: '/screenshots/data-analysis.png',
+    alt: 'Dashboard de análise de dados com gráficos e estatísticas municipais',
+    caption: 'Análise de Dados',
+    description: 'Explore dados detalhados de biomassa, produção agrícola e potencial energético por município',
   },
   {
     id: 3,
-    image: '/screenshots/biomass-distribution.png',
-    alt: 'Gráfico de distribuição de biomassa por setor: agrícola, pecuária e urbano',
-    caption: 'Distribuição de Biomassa',
-    description: 'Visualização detalhada da contribuição de cada setor (cana, citros, pecuária, RSU) por município',
+    image: '/screenshots/proximity-analysis.png',
+    alt: 'Análise de proximidade com raios de coleta e infraestrutura',
+    caption: 'Análise de Proximidade',
+    description: 'Simulação logística com raios de coleta e análise de proximidade a infraestrutura existente',
   },
   {
     id: 4,
-    image: '/screenshots/collection-radius.png',
-    alt: 'Mapa com círculos de raio de coleta sobrepondo municípios',
-    caption: 'Análise de Raio de Coleta',
-    description: 'Simulação logística com raios de 10-50km para otimização de localização de plantas',
-  },
-  {
-    id: 5,
-    image: '/screenshots/ai-assistant.png',
-    alt: 'Interface de chat com assistente Bagacinho respondendo perguntas sobre metodologia',
-    caption: 'Assistente AI "Bagacinho"',
-    description: 'RAG-powered chatbot com conhecimento de 58 papers científicos sobre biogás e metodologia SAF',
+    image: '/screenshots/scientific-basis.png',
+    alt: 'Base científica com referências e metodologia SAF',
+    caption: 'Base Científica',
+    description: 'Acesse a metodologia SAF e referências científicas que fundamentam as análises da plataforma',
   },
 ]
 
@@ -642,15 +635,12 @@ export default function HomePage() {
                             : 'opacity-0 scale-95'
                         }`}
                       >
-                        {/* Placeholder for screenshots */}
-                        <div className="w-full h-full bg-gradient-to-br from-cp2b-green/20 to-cp2b-lime/20 flex items-center justify-center">
-                          <div className="text-center p-8">
-                            <Map className="w-16 h-16 text-cp2b-green/50 mx-auto mb-4 animate-pulse" />
-                            <p className="text-cp2b-gray-600 text-sm">
-                              {screenshot.alt}
-                            </p>
-                          </div>
-                        </div>
+                        {/* Screenshot image */}
+                        <img
+                          src={screenshot.image}
+                          alt={screenshot.alt}
+                          className="w-full h-full object-cover"
+                        />
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                           <h4 className="text-lg font-bold text-white mb-1">
                             {screenshot.caption}
