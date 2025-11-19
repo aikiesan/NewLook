@@ -104,16 +104,16 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gray-50">
+      <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gray-50 dark:bg-slate-900 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Settings className="h-8 w-8 text-emerald-600" aria-hidden="true" />
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-3">
+                <Settings className="h-8 w-8 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 Configurações
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 dark:text-gray-400 dark:text-gray-400">
                 Gerencie suas preferências e configurações de conta
               </p>
             </div>
@@ -145,14 +145,14 @@ export default function SettingsPage() {
           {/* Settings Sections */}
           <div className="space-y-6">
             {/* Profile Section */}
-            <section className="bg-white rounded-lg border border-gray-200 overflow-hidden" aria-labelledby="profile-heading">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <section className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden" aria-labelledby="profile-heading">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
                     <User className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 id="profile-heading" className="font-semibold text-gray-900">
+                    <h2 id="profile-heading" className="font-semibold text-gray-900 dark:text-gray-100">
                       Perfil
                     </h2>
                     <p className="text-sm text-gray-500">
@@ -165,29 +165,29 @@ export default function SettingsPage() {
                 <dl className="space-y-4">
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Nome</dt>
-                    <dd className="text-sm font-medium text-gray-900">{user.full_name || 'Não definido'}</dd>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.full_name || 'Não definido'}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Email</dt>
-                    <dd className="text-sm font-medium text-gray-900">{user.email || 'Não definido'}</dd>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email || 'Não definido'}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Função</dt>
-                    <dd className="text-sm font-medium text-gray-900">{user.role === 'admin' ? 'Administrador' : 'Usuário'}</dd>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.role === 'admin' ? 'Administrador' : 'Usuário'}</dd>
                   </div>
                 </dl>
               </div>
             </section>
 
             {/* Notifications Section */}
-            <section className="bg-white rounded-lg border border-gray-200 overflow-hidden" aria-labelledby="notifications-heading">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <section className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden" aria-labelledby="notifications-heading">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                     <Bell className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 id="notifications-heading" className="font-semibold text-gray-900">
+                    <h2 id="notifications-heading" className="font-semibold text-gray-900 dark:text-gray-100">
                       Notificações
                     </h2>
                     <p className="text-sm text-gray-500">
@@ -292,14 +292,14 @@ export default function SettingsPage() {
             </section>
 
             {/* Appearance Section */}
-            <section className="bg-white rounded-lg border border-gray-200 overflow-hidden" aria-labelledby="appearance-heading">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <section className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden" aria-labelledby="appearance-heading">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
                     <Palette className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 id="appearance-heading" className="font-semibold text-gray-900">
+                    <h2 id="appearance-heading" className="font-semibold text-gray-900 dark:text-gray-100">
                       Aparência
                     </h2>
                     <p className="text-sm text-gray-500">
@@ -375,14 +375,14 @@ export default function SettingsPage() {
             </section>
 
             {/* Security Section */}
-            <section className="bg-white rounded-lg border border-gray-200 overflow-hidden" aria-labelledby="security-heading">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <section className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden" aria-labelledby="security-heading">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-red-100 rounded-lg text-red-600">
                     <Shield className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 id="security-heading" className="font-semibold text-gray-900">
+                    <h2 id="security-heading" className="font-semibold text-gray-900 dark:text-gray-100">
                       Segurança
                     </h2>
                     <p className="text-sm text-gray-500">
