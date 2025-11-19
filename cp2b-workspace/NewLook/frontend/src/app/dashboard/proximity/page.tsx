@@ -35,10 +35,10 @@ import {
 const ProximityMap = dynamic(() => import('@/components/map/ProximityMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+    <div className="w-full h-[500px] bg-gray-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin mx-auto mb-2" />
-        <p className="text-gray-600">Carregando mapa...</p>
+        <Loader2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-spin mx-auto mb-2" />
+        <p className="text-gray-600 dark:text-gray-400">Carregando mapa...</p>
       </div>
     </div>
   )
