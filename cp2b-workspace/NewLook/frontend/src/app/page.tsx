@@ -18,10 +18,6 @@ import {
   Check,
   Lock,
   UserPlus,
-  Truck,
-  Recycle,
-  Calendar,
-  FileText,
   ExternalLink,
   Menu,
   X,
@@ -43,15 +39,6 @@ const AccessibilityIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-// Beaker icon component
-const BeakerIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4.5 3h15" />
-    <path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3" />
-    <path d="M6 14h12" />
-  </svg>
-)
-
 // StatCard Component
 const StatCard = ({
   number,
@@ -64,7 +51,7 @@ const StatCard = ({
   description: string
   icon: React.ReactNode
 }) => (
-  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-cp2b-lime hover:shadow-lg transition-all duration-300">
+  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cp2b-lime/30 hover:border-cp2b-lime hover:shadow-lg transition-all duration-300">
     <div className="flex justify-center mb-3">
       {icon}
     </div>
@@ -100,7 +87,7 @@ const FeatureCard = ({
   ctaText: string
   ctaLink: string
 }) => (
-  <article className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-200 hover:border-cp2b-lime">
+  <article className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-cp2b-lime/20 hover:border-cp2b-lime">
     {/* Icon */}
     <div className={`inline-flex p-4 rounded-xl ${iconBg} mb-6`}>
       <div className={iconColor}>
@@ -148,27 +135,6 @@ const FeatureCard = ({
       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
     </Link>
   </article>
-)
-
-// MethodologyItem Component
-const MethodologyItem = ({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-}) => (
-  <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-cp2b-lime transition-colors">
-    <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-cp2b-lime-light flex items-center justify-center text-cp2b-green">
-      {icon}
-    </div>
-    <div>
-      <h4 className="font-semibold text-cp2b-gray-900 mb-1">{title}</h4>
-      <p className="text-sm text-cp2b-gray-600 leading-relaxed">{description}</p>
-    </div>
-  </div>
 )
 
 // FooterLink Component
@@ -242,7 +208,7 @@ const AnimatedMapBackground = () => {
 
       // Draw SP state outline (simplified)
       ctx.beginPath()
-      ctx.strokeStyle = 'rgba(47, 125, 50, 0.1)'
+      ctx.strokeStyle = 'rgba(47, 125, 50, 0.15)'
       ctx.lineWidth = 2
 
       // Simplified São Paulo outline
@@ -303,35 +269,35 @@ const screenshots = [
     image: '/screenshots/dashboard-overview.png',
     alt: 'Dashboard principal mostrando mapa coropletico de São Paulo com potencial de biogás por município',
     caption: 'Dashboard Interativo',
-    description: 'Visualização geoespacial com 645 municípios classificados por potencial de biogás em escala de cores verde',
+    description: 'Visualização geoespacial com 645 municípios classificados por potencial de biogás',
   },
   {
     id: 2,
     image: '/screenshots/mcda-analysis.png',
     alt: 'Interface de análise MCDA com sliders de pesos e ranking de municípios',
     caption: 'Análise Multicritério (MCDA)',
-    description: 'Configure pesos personalizados para 8 critérios e gere ranking automatizado de localizações ótimas',
+    description: 'Configure pesos personalizados para 8 critérios e gere ranking automatizado',
   },
   {
     id: 3,
     image: '/screenshots/biomass-distribution.png',
     alt: 'Gráfico de distribuição de biomassa por setor: agrícola, pecuária e urbano',
     caption: 'Distribuição de Biomassa',
-    description: 'Visualização detalhada da contribuição de cada setor (cana, citros, pecuária, RSU) por município',
+    description: 'Visualização detalhada da contribuição de cada setor por município',
   },
   {
     id: 4,
     image: '/screenshots/collection-radius.png',
     alt: 'Mapa com círculos de raio de coleta sobrepondo municípios',
     caption: 'Análise de Raio de Coleta',
-    description: 'Simulação logística com raios de 10-50km para otimização de localização de plantas',
+    description: 'Simulação logística com raios de 10-50km para otimização',
   },
   {
     id: 5,
     image: '/screenshots/ai-assistant.png',
     alt: 'Interface de chat com assistente Bagacinho respondendo perguntas sobre metodologia',
     caption: 'Assistente AI "Bagacinho"',
-    description: 'RAG-powered chatbot com conhecimento de 58 papers científicos sobre biogás e metodologia SAF',
+    description: 'Chatbot com conhecimento de 58 papers científicos sobre biogás',
   },
 ]
 
@@ -365,7 +331,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-cp2b-gray-50 via-white to-cp2b-lime-light/20">
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
@@ -376,7 +342,7 @@ export default function HomePage() {
       </a>
 
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-cp2b-lime/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo with Beta Badge */}
@@ -451,7 +417,7 @@ export default function HomePage() {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-md text-cp2b-gray-600 hover:text-cp2b-green hover:bg-gray-100"
+              className="md:hidden p-2 rounded-md text-cp2b-gray-600 hover:text-cp2b-green hover:bg-cp2b-lime-light/50"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-label="Menu de navegação"
@@ -466,32 +432,32 @@ export default function HomePage() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200">
+            <div className="md:hidden py-4 border-t border-cp2b-lime/20">
               <nav className="flex flex-col gap-2">
                 <Link
                   href="/"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-900 hover:bg-gray-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-900 hover:bg-cp2b-lime-light/50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Início
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-cp2b-lime-light/50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/analysis"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-cp2b-lime-light/50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Análises
                 </Link>
                 <Link
                   href="/about"
-                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-cp2b-lime-light/50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sobre
@@ -502,7 +468,7 @@ export default function HomePage() {
                       handleLogout()
                       setMobileMenuOpen(false)
                     }}
-                    className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-gray-50 rounded-md text-left"
+                    className="px-4 py-2 text-sm font-medium text-cp2b-gray-600 hover:bg-cp2b-lime-light/50 rounded-md text-left"
                   >
                     Sair
                   </button>
@@ -524,19 +490,19 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         id="main-content"
-        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
         aria-labelledby="hero-heading"
       >
         {/* Animated Background */}
         <div className="absolute inset-0 z-0">
           <AnimatedMapBackground />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white/95" />
+          <div className="absolute inset-0 bg-gradient-to-b from-cp2b-gray-50/80 via-white/70 to-cp2b-lime-light/30" />
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cp2b-lime-light/50 border border-cp2b-lime text-cp2b-dark-green text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-cp2b-lime text-cp2b-dark-green text-sm font-medium mb-6 shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cp2b-green opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cp2b-green"></span>
@@ -562,8 +528,78 @@ export default function HomePage() {
             Metodologia SAF validada com dados georreferenciados MapBiomas 10m×10m.
           </p>
 
+          {/* Platform Preview - Screenshots Carousel */}
+          <div className="max-w-4xl mx-auto mb-10">
+            <h2 className="text-lg font-semibold text-cp2b-gray-900 mb-4">
+              Veja a plataforma em ação
+            </h2>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-cp2b-gray-900">
+              {/* Slides */}
+              <div className="relative aspect-video">
+                {screenshots.map((screenshot, index) => (
+                  <div
+                    key={screenshot.id}
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      index === currentSlide ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    {/* Placeholder for screenshots - replace with actual images */}
+                    <div className="w-full h-full bg-gradient-to-br from-cp2b-green/30 to-cp2b-lime/30 flex items-center justify-center">
+                      <div className="text-center p-8">
+                        <Map className="w-16 h-16 text-cp2b-green/60 mx-auto mb-4" />
+                        <p className="text-white/80 text-sm max-w-md">
+                          {screenshot.alt}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
+                      <h4 className="text-lg font-bold text-white mb-1">
+                        {screenshot.caption}
+                      </h4>
+                      <p className="text-sm text-white/80">
+                        {screenshot.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={prevSlide}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="w-5 h-5 text-cp2b-gray-900" />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
+                aria-label="Próximo"
+              >
+                <ChevronRight className="w-5 h-5 text-cp2b-gray-900" />
+              </button>
+
+              {/* Dots */}
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
+                {screenshots.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentSlide
+                        ? 'bg-white w-6'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`Ir para slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link
               href="/map"
               className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
@@ -573,7 +609,7 @@ export default function HomePage() {
             </Link>
 
             <button
-              className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white border-2 border-cp2b-green hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
+              className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white/90 backdrop-blur-sm border-2 border-cp2b-green hover:bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
               aria-label="Assistir demonstração em vídeo da plataforma"
             >
               <Play className="w-5 h-5 fill-current" />
@@ -582,7 +618,7 @@ export default function HomePage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
             <StatCard
               number="645"
               label="Municípios"
@@ -616,7 +652,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <section
-        className="py-20 bg-gradient-to-b from-white to-gray-50"
+        className="py-20 bg-gradient-to-b from-cp2b-lime-light/20 to-cp2b-gray-50"
         aria-labelledby="features-heading"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -726,226 +762,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Platform Screenshots Showcase */}
-      <section className="py-20 bg-white" aria-labelledby="showcase-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2
-              id="showcase-heading"
-              className="text-3xl sm:text-4xl font-bold text-cp2b-gray-900 mb-4"
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-cp2b-green to-cp2b-lime">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Lock className="w-12 h-12 mx-auto mb-4 text-white/90" />
+          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+            Pronto para explorar todos os recursos?
+          </h3>
+          <p className="text-lg mb-8 text-white/90 max-w-2xl mx-auto">
+            Crie uma conta gratuita para acessar análises completas, exportar
+            dados e colaborar com a comunidade CP2B.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white hover:bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Veja a plataforma em ação
-            </h2>
-            <p className="text-lg text-cp2b-gray-600 max-w-2xl mx-auto">
-              Explore exemplos reais de análises geoespaciais e relatórios
-              gerados pela plataforma CP2B Maps V3.
-            </p>
-          </div>
-
-          {/* Screenshot Carousel */}
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-cp2b-gray-900">
-              {/* Slides */}
-              <div className="relative aspect-video">
-                {screenshots.map((screenshot, index) => (
-                  <div
-                    key={screenshot.id}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      index === currentSlide ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
-                    {/* Placeholder for screenshots - replace with actual images */}
-                    <div className="w-full h-full bg-gradient-to-br from-cp2b-green/20 to-cp2b-lime/20 flex items-center justify-center">
-                      <div className="text-center p-8">
-                        <Map className="w-16 h-16 text-cp2b-green/50 mx-auto mb-4" />
-                        <p className="text-cp2b-gray-600 text-sm">
-                          {screenshot.alt}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8">
-                      <h4 className="text-xl font-bold text-white mb-2">
-                        {screenshot.caption}
-                      </h4>
-                      <p className="text-sm text-white/90 max-w-3xl">
-                        {screenshot.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
-                aria-label="Anterior"
-              >
-                <ChevronLeft className="w-6 h-6 text-cp2b-gray-900" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
-                aria-label="Próximo"
-              >
-                <ChevronRight className="w-6 h-6 text-cp2b-gray-900" />
-              </button>
-
-              {/* Dots */}
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2">
-                {screenshots.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      index === currentSlide
-                        ? 'bg-white w-6'
-                        : 'bg-white/50 hover:bg-white/75'
-                    }`}
-                    aria-label={`Ir para slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Box */}
-          <div className="max-w-3xl mx-auto bg-gradient-to-r from-cp2b-green to-cp2b-lime rounded-2xl p-8 text-center text-white shadow-xl">
-            <Lock className="w-12 h-12 mx-auto mb-4 opacity-90" />
-            <h3 className="text-2xl font-bold mb-3">
-              Pronto para explorar todos os recursos?
-            </h3>
-            <p className="text-lg mb-6 text-white/90">
-              Crie uma conta gratuita para acessar análises completas, exportar
-              dados e colaborar com a comunidade CP2B.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white hover:bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Criar Conta Gratuita
-                <UserPlus className="w-5 h-5" />
-              </Link>
-              <Link
-                href="/about"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-cp2b-dark-green/30 hover:bg-cp2b-dark-green/50 border-2 border-white rounded-xl transition-all duration-300"
-              >
-                Saiba Mais
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Methodology Teaser Section */}
-      <section
-        className="py-20 bg-gray-50"
-        aria-labelledby="methodology-heading"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Content */}
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium text-cp2b-green mb-6">
-                <BeakerIcon className="w-4 h-4" />
-                Metodologia Científica
-              </div>
-
-              <h2
-                id="methodology-heading"
-                className="text-3xl sm:text-4xl font-bold text-cp2b-gray-900 mb-6"
-              >
-                Baseado no Surplus Availability Factor (SAF)
-              </h2>
-
-              <p className="text-lg text-cp2b-gray-600 mb-6 leading-relaxed">
-                Nossa metodologia integra quatro fatores de correção fundamentais
-                para estimar o potencial REAL (não teórico) de disponibilidade de
-                resíduos para biogás:
-              </p>
-
-              <div className="space-y-4 mb-8">
-                <MethodologyItem
-                  icon={<Truck className="w-6 h-6" />}
-                  title="FC - Fator de Coleta"
-                  description="Viabilidade técnica e econômica da coleta baseada em literatura e validação de campo"
-                />
-
-                <MethodologyItem
-                  icon={<Recycle className="w-6 h-6" />}
-                  title="FCp - Fator de Competição"
-                  description="Usos alternativos prioritários (crítico para bagaço e palha de cana)"
-                />
-
-                <MethodologyItem
-                  icon={<Calendar className="w-6 h-6" />}
-                  title="FS - Fator Sazonal"
-                  description="Sazonalidade de geração por cultura e região"
-                />
-
-                <MethodologyItem
-                  icon={<MapPin className="w-6 h-6" />}
-                  title="FL - Fator Logístico"
-                  description="Distância econômica de transporte (10-50km)"
-                />
-              </div>
-
-              <Link
-                href="/methodology"
-                className="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-lg transition-colors"
-              >
-                Documentação Completa
-                <FileText className="w-5 h-5" />
-              </Link>
-            </div>
-
-            {/* Right: Visual/Formula */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-              <div className="text-center mb-6">
-                <span className="inline-block px-4 py-2 bg-cp2b-lime-light rounded-lg text-sm font-mono text-cp2b-dark-green mb-4">
-                  Fórmula SAF
-                </span>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-6 mb-6 font-mono text-center">
-                <div className="text-2xl text-cp2b-gray-900 mb-4">
-                  SAF = FC × FCp × FS × FL
-                </div>
-                <div className="text-sm text-cp2b-gray-600">
-                  Surplus Availability Factor
-                </div>
-              </div>
-
-              <div className="space-y-3 text-sm text-cp2b-gray-600">
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 rounded-full bg-cp2b-lime-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3 h-3 text-cp2b-dark-green" />
-                  </div>
-                  <span>Validado com dados SIDRA/IBGE 2018-2024</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 rounded-full bg-cp2b-lime-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3 h-3 text-cp2b-dark-green" />
-                  </div>
-                  <span>Integração MapBiomas resolução 10m×10m</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 rounded-full bg-cp2b-lime-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3 h-3 text-cp2b-dark-green" />
-                  </div>
-                  <span>Dados georreferenciados suinocultura e avicultura SP</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-5 h-5 rounded-full bg-cp2b-lime-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3 h-3 text-cp2b-dark-green" />
-                  </div>
-                  <span>Análise calibrada de RSU com potencial metanogênico</span>
-                </div>
-              </div>
-            </div>
+              Criar Conta Gratuita
+              <UserPlus className="w-5 h-5" />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-white/20 hover:bg-white/30 border-2 border-white rounded-xl transition-all duration-300"
+            >
+              Saiba Mais
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
