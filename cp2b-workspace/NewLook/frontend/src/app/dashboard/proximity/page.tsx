@@ -209,13 +209,44 @@ function ProximityAnalysisContent() {
   const getRadiusColor = (km: number) => {
     if (km <= 20) return 'text-green-600'
     if (km <= 30) return 'text-yellow-600'
+    if (km <= 50) return 'text-orange-600'
     return 'text-red-600'
   }
 
   const getRadiusLabel = (km: number) => {
     if (km <= 20) return 'Ótimo'
     if (km <= 30) return 'Aceitável'
+    if (km <= 50) return 'Limite'
     return 'Excessivo'
+  }
+
+  const getRadiusBadge = (km: number) => {
+    if (km <= 20) {
+      return {
+        color: 'bg-green-100 text-green-700',
+        icon: '✓',
+        text: 'Logística ideal',
+      }
+    }
+    if (km <= 30) {
+      return {
+        color: 'bg-yellow-100 text-yellow-700',
+        icon: '⚠',
+        text: 'Custos moderados',
+      }
+    }
+    if (km <= 50) {
+      return {
+        color: 'bg-orange-100 text-orange-700',
+        icon: '⚠',
+        text: 'Custos elevados',
+      }
+    }
+    return {
+      color: 'bg-red-100 text-red-700',
+      icon: '✗',
+      text: 'Inviável economicamente',
+    }
   }
 
   if (authLoading) {
@@ -321,14 +352,30 @@ function ProximityAnalysisContent() {
                   type="range"
                   min="10"
                   max="100"
+                  step="5"
                   value={radius}
                   onChange={(e) => setRadius(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                  className="w-full h-2 bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right,
+                      #22c55e 0%, #22c55e 10%,
+                      #eab308 20%, #eab308 30%,
+                      #f97316 40%, #f97316 50%,
+                      #ef4444 60%, #ef4444 100%)`
+                  }}
                 />
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>10 km</span>
+                  <span className="text-green-600 font-medium">20 km</span>
                   <span>50 km</span>
                   <span>100 km</span>
+                </div>
+                {/* Recommendation Badge */}
+                <div className="mt-2">
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getRadiusBadge(radius).color}`}>
+                    <span>{getRadiusBadge(radius).icon}</span>
+                    {getRadiusBadge(radius).text}
+                  </span>
                 </div>
               </div>
             </div>
@@ -440,6 +487,39 @@ function ProximityAnalysisContent() {
                 <p className="text-xs text-gray-500">GWh/ano</p>
               </div>
             </div>
+
+            {/* Warning for low/zero results */}
+            {analysisResult.summary.total_municipalities === 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">
+                      Nenhum município encontrado neste raio
+                    </p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Tente aumentar o raio de captação ou selecionar um ponto em área mais urbanizada.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {analysisResult.summary.total_municipalities > 0 && analysisResult.summary.total_biogas_m3_year === 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <Info className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">
+                      Dados de biogás não disponíveis para estes municípios
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Os municípios foram encontrados, mas os dados de potencial de biogás ainda estão sendo processados.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Detailed Results */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

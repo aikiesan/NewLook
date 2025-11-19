@@ -2,10 +2,13 @@
  * Proximity Analysis API service for CP2B Maps V3
  * Handles spatial analysis with MapBiomas integration
  * Sprint 4: Added retry logic, timeout handling, and better error messages
+ * Enhanced: Added frontend caching and request queue integration
  */
 
 import { retryOperation, measurePerformance } from '@/lib/performance';
 import { logger } from '@/lib/logger';
+import { getFromCache, setInCache, generateCacheKey, CACHE_DURATION } from '@/lib/apiCache';
+import { fetchWithQueue } from '@/lib/apiQueue';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const REQUEST_TIMEOUT = 30000; // 30 seconds (Sprint 4 requirement)
@@ -92,10 +95,24 @@ export interface InfrastructureType {
 /**
  * Perform proximity analysis for a given point and radius
  * Sprint 4: Added timeout, retry logic, and performance measurement
+ * Enhanced: Added frontend caching to reduce API calls
  */
 export async function analyzeProximity(
   request: ProximityAnalysisRequest
 ): Promise<ProximityAnalysisResponse> {
+  // Check frontend cache first
+  const cacheKey = generateCacheKey('proximity-analysis', {
+    lat: request.latitude.toFixed(4),
+    lng: request.longitude.toFixed(4),
+    radius: request.radius_km.toString(),
+  });
+
+  const cached = getFromCache<ProximityAnalysisResponse>(cacheKey);
+  if (cached) {
+    logger.info('🚀 Frontend cache hit - instant response');
+    return cached;
+  }
+
   return measurePerformance('Proximity Analysis', async () => {
     return retryOperation(async () => {
       // Create abort controller for timeout
@@ -103,6 +120,13 @@ export async function analyzeProximity(
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
       try {
+        // Log request for debugging
+        logger.info('📍 Proximity Analysis Request:', {
+          latitude: request.latitude,
+          longitude: request.longitude,
+          radius_km: request.radius_km,
+        });
+
         const response = await fetch(`${API_BASE_URL}/api/v1/proximity/analyze`, {
           method: 'POST',
           headers: {
@@ -117,10 +141,12 @@ export async function analyzeProximity(
         if (!response.ok) {
           // Handle rate limiting (429)
           if (response.status === 429) {
-            const data = await response.json();
-            throw new Error(
-              `❌ Taxa de requisições excedida\n💡 Aguarde ${data.retry_after} segundos e tente novamente.`
-            );
+            const data = await response.json().catch(() => ({ retry_after: 60 }));
+            const error = new Error(
+              `❌ Taxa de requisições excedida\n💡 Aguarde ${data.retry_after || 60} segundos e tente novamente.`
+            ) as any;
+            error.status = 429;
+            throw error;
           }
 
           // Handle other errors
@@ -131,30 +157,43 @@ export async function analyzeProximity(
         }
 
         const result = await response.json();
-        
-        // Log cache hits (performance monitoring)
+
+        // Log response for debugging
+        logger.info('✅ API Response received:', {
+          municipalities: result.results?.municipalities?.length || 0,
+          totalBiogas: result.summary?.total_biogas_m3_year || 0,
+          processingTime: result.metadata?.processing_time_ms || 0,
+        });
+
+        // Log cache hits from backend
         if (result.from_cache) {
-          logger.info('✅ Resultado obtido do cache (resposta instantânea)');
+          logger.info('✅ Backend cache hit (resposta instantânea)');
         }
-        
+
+        // Store in frontend cache
+        setInCache(cacheKey, result, CACHE_DURATION.analysis);
+
         return result;
       } catch (error: any) {
         clearTimeout(timeoutId);
-        
+
         // Handle timeout
         if (error.name === 'AbortError') {
           throw new Error(
             '❌ Tempo limite excedido\n💡 A análise está demorando muito. Tente novamente com um raio menor.'
           );
         }
-        
+
         // Handle network errors
-        if (error.message.includes('fetch')) {
+        if (error.message && error.message.includes('fetch')) {
           throw new Error(
             '❌ Erro de conexão\n💡 Verifique sua conexão com a internet e tente novamente.'
           );
         }
-        
+
+        // Log error details
+        logger.error('❌ Proximity analysis failed:', error);
+
         throw error;
       }
     }, 2, 1000); // Max 2 retries, 1 second initial delay
