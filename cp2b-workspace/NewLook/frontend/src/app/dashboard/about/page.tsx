@@ -276,9 +276,9 @@ export default function AboutPage() {
             )}
 
             {activeTab === 'values' && (
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 lg:p-12 border border-purple-100">
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 lg:p-12 border border-amber-100">
                 <div className="flex items-center mb-6">
-                  <div className="h-12 w-12 bg-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <div className="h-12 w-12 bg-amber-600 rounded-xl flex items-center justify-center mr-4">
                     <Heart className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">Nossos Valores</h3>
@@ -292,7 +292,7 @@ export default function AboutPage() {
                     'Desenvolvimento de projetos com abordagem local e replicação'
                   ].map((value, index) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircle2 className="h-6 w-6 text-purple-600 mr-3 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-6 w-6 text-amber-600 mr-3 flex-shrink-0 mt-0.5" />
                       <span className="text-lg text-gray-700">{value}</span>
                     </li>
                   ))}
@@ -352,10 +352,10 @@ export default function AboutPage() {
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <Zap className="h-6 w-6 text-purple-600" />
+              <div className="h-12 w-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
+                <Zap className="h-6 w-6 text-teal-600" />
               </div>
-              <div className="text-sm font-semibold text-purple-600 uppercase tracking-wide mb-2">Etapa 4</div>
+              <div className="text-sm font-semibold text-teal-600 uppercase tracking-wide mb-2">Etapa 4</div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Energia Total</h3>
               <p className="text-gray-600 text-sm">
                 Conversão para MWh/ano e equivalentes energéticos para análise comparativa.
@@ -452,15 +452,15 @@ export default function AboutPage() {
 
             {/* Feature 3 */}
             <div className="group">
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100 hover:border-purple-200 transition-all hover:shadow-lg">
-                <div className="h-14 w-14 bg-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-100 hover:border-teal-200 transition-all hover:shadow-lg">
+                <div className="h-14 w-14 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Search className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Análise de Proximidade</h3>
                 <p className="text-gray-600 mb-4">
                   Análise espacial com raios de captação e integração com dados de uso do solo.
                 </p>
-                <Link href="/dashboard/proximity" className="inline-flex items-center text-purple-600 font-medium hover:text-purple-700">
+                <Link href="/dashboard/proximity" className="inline-flex items-center text-teal-600 font-medium hover:text-teal-700">
                   Configurar
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
@@ -683,9 +683,9 @@ export default function AboutPage() {
             </div>
 
             {/* Support */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all">
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <MessageCircle className="h-6 w-6 text-purple-600" />
+            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all">
+              <div className="h-12 w-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
+                <MessageCircle className="h-6 w-6 text-teal-600" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Suporte</h3>
               <p className="text-gray-600 text-sm mb-4">
@@ -693,7 +693,7 @@ export default function AboutPage() {
               </p>
               <Link
                 href="/contact"
-                className="inline-flex items-center text-purple-600 font-medium text-sm hover:text-purple-700"
+                className="inline-flex items-center text-teal-600 font-medium text-sm hover:text-teal-700"
               >
                 Contato
                 <ExternalLink className="h-4 w-4 ml-1" />

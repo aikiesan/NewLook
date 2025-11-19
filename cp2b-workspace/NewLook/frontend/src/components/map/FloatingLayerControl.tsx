@@ -35,7 +35,7 @@ export default function FloatingLayerControl({
   const categories = {
     base: { name: 'Camadas Base', icon: '🗺️', color: 'blue' },
     infrastructure: { name: 'Infraestrutura', icon: '🏭', color: 'orange' },
-    administrative: { name: 'Administrativas', icon: '📍', color: 'purple' },
+    administrative: { name: 'Administrativas', icon: '📍', color: 'teal' },
     environmental: { name: 'Ambientais', icon: '🌳', color: 'green' }
   };
 

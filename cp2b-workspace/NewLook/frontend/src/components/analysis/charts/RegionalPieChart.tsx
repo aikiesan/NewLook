@@ -146,7 +146,7 @@ export default function RegionalPieChart({
     return (
       <div className="bg-white rounded-xl shadow-md p-6 h-[450px] flex items-center justify-center border border-gray-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-gray-600 font-medium">Carregando dados...</span>
         </div>
       </div>

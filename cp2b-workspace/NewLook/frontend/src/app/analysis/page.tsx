@@ -46,7 +46,7 @@ export default function AnalysisPage() {
       description: 'Visualize tendências temporais de potencial de biogás por região',
       icon: <TrendingUp className="h-8 w-8" />,
       status: 'Em breve',
-      color: 'bg-purple-50 text-purple-700 border-purple-200'
+      color: 'bg-amber-50 text-amber-700 border-amber-200'
     },
     {
       title: 'Calculadora de Potencial',

@@ -37,7 +37,7 @@ const selectedPointIcon = new L.DivIcon({
     <div style="
       width: 24px;
       height: 24px;
-      background: #7c3aed;
+      background: #059669;
       border: 3px solid white;
       border-radius: 50%;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -117,9 +117,9 @@ export default function ProximityMap({
 
   // Style for buffer geometry from analysis results
   const bufferStyle = {
-    fillColor: '#7c3aed',
+    fillColor: '#059669',
     fillOpacity: 0.1,
-    color: '#7c3aed',
+    color: '#059669',
     weight: 2,
     dashArray: '5, 5'
   };
@@ -182,8 +182,8 @@ export default function ProximityMap({
               center={[selectedPoint.lat, selectedPoint.lng]}
               radius={radius * 1000} // Convert km to meters
               pathOptions={{
-                color: '#7c3aed',
-                fillColor: '#7c3aed',
+                color: '#059669',
+                fillColor: '#059669',
                 fillOpacity: 0.15,
                 weight: 2,
               }}
@@ -201,7 +201,7 @@ export default function ProximityMap({
                     Lat: {selectedPoint.lat.toFixed(6)}<br />
                     Lng: {selectedPoint.lng.toFixed(6)}
                   </p>
-                  <p className="text-purple-600 mt-1">
+                  <p className="text-emerald-600 mt-1">
                     Raio: {radius} km
                   </p>
                 </div>
@@ -264,7 +264,7 @@ export default function ProximityMap({
                     <p>Distância: <span className="font-medium">{mun.distance_km?.toFixed(1) || '0'} km</span></p>
                     <p>População: <span className="font-medium">{(mun.population || 0).toLocaleString('pt-BR')}</span></p>
                   </div>
-                  <p className="mt-1 text-purple-600 font-medium">
+                  <p className="mt-1 text-emerald-600 font-medium">
                     Biogás: {((biogas) / 1000000).toFixed(2)} mi m³/ano
                   </p>
                 </div>
@@ -289,7 +289,7 @@ export default function ProximityMap({
           <span className="font-semibold">São Paulo</span> - Estado
         </p>
         {selectedPoint && (
-          <p className="text-xs text-purple-600 mt-1">
+          <p className="text-xs text-emerald-600 mt-1">
             {selectedPoint.lat.toFixed(4)}, {selectedPoint.lng.toFixed(4)}
           </p>
         )}

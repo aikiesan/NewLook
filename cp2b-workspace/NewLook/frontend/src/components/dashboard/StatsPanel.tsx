@@ -56,12 +56,12 @@ export default function StatsPanel() {
         </div>
 
         {/* Average */}
-        <div className="bg-purple-50 rounded p-2">
-          <div className="flex items-center gap-1 text-purple-700 mb-0.5">
+        <div className="bg-emerald-50 rounded p-2">
+          <div className="flex items-center gap-1 text-emerald-700 mb-0.5">
             <Trophy className="w-3 h-3" />
             <span className="text-[10px] font-medium">Média</span>
           </div>
-          <p className="text-sm font-bold text-purple-900">
+          <p className="text-sm font-bold text-emerald-900">
             {formatBiogasShort(data.average_biogas_m3_year)}
           </p>
         </div>
