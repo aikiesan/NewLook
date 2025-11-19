@@ -34,8 +34,9 @@ def get_db_connection():
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,  # Return rows as dictionaries
             connect_timeout=10,
-            options='-c statement_timeout=30000 -c client_encoding=UTF8',
-            sslmode='require'  # Required for Supabase
+            options='-c statement_timeout=30000',
+            sslmode='require',  # Required for Supabase
+            client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
         # Ensure UTF-8 encoding
         conn.set_client_encoding('UTF8')
@@ -72,8 +73,9 @@ def get_db():
             port=settings.POSTGRES_PORT,
             cursor_factory=RealDictCursor,
             connect_timeout=10,
-            options='-c statement_timeout=30000 -c client_encoding=UTF8',
-            sslmode='require'  # Required for Supabase
+            options='-c statement_timeout=30000',  # 30 second query timeout
+            sslmode='require',  # Required for Supabase
+            client_encoding='utf8'  # Explicitly set UTF-8 encoding
         )
         # Ensure UTF-8 encoding
         conn.set_client_encoding('UTF8')
