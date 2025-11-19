@@ -11,6 +11,10 @@ export const routing = defineRouting({
   // /dashboard → pt-BR (default)
   // /en-US/dashboard → en-US
   localePrefix: 'as-needed',
+
+  // Disable automatic locale detection based on browser headers
+  // This ensures PT-BR is always the default
+  localeDetection: false,
 });
 
 export type Locale = (typeof routing.locales)[number];
