@@ -490,7 +490,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         id="main-content"
-        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
+        className="relative flex items-center justify-center overflow-hidden"
         aria-labelledby="hero-heading"
       >
         {/* Animated Background */}
@@ -500,7 +500,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-cp2b-lime text-cp2b-dark-green text-sm font-medium mb-6 shadow-sm">
             <span className="relative flex h-2 w-2">
@@ -513,7 +513,7 @@ export default function HomePage() {
           {/* Main Headline */}
           <h1
             id="hero-heading"
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-cp2b-gray-900 mb-6 leading-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-cp2b-gray-900 mb-8 leading-tight"
           >
             Mapeamento do Potencial de{' '}
             <span className="bg-gradient-to-r from-cp2b-green to-cp2b-lime bg-clip-text text-transparent">
@@ -521,15 +521,8 @@ export default function HomePage() {
             </span>
           </h1>
 
-          {/* Tagline */}
-          <p className="text-lg sm:text-xl text-cp2b-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Análise multicritério (MCDA) de 645 municípios paulistas para
-            identificação de localizações ótimas para plantas de biogás.
-            Metodologia SAF validada com dados georreferenciados MapBiomas 10m×10m.
-          </p>
-
           {/* Platform Preview - Screenshots Carousel */}
-          <div className="max-w-4xl mx-auto mb-10">
+          <div className="max-w-4xl mx-auto mb-8">
             <h2 className="text-lg font-semibold text-cp2b-gray-900 mb-4">
               Veja a plataforma em ação
             </h2>
@@ -599,7 +592,7 @@ export default function HomePage() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Link
               href="/map"
               className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
@@ -618,7 +611,7 @@ export default function HomePage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
             <StatCard
               number="645"
               label="Municípios"
