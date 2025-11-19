@@ -3,7 +3,7 @@ Main API router for CP2B Maps V3
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity
+from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity, residuos
 
 api_router = APIRouter()
 
@@ -63,4 +63,11 @@ api_router.include_router(
     proximity.router,
     prefix="/proximity",
     tags=["proximity", "spatial-analysis", "geospatial"]
+)
+
+# Residuos (residues) with chemical parameters and scientific references
+api_router.include_router(
+    residuos.router,
+    prefix="/residuos",
+    tags=["residuos", "chemical-parameters", "scientific-references"]
 )
