@@ -90,7 +90,7 @@ export default function ScenarioComparator({
           name: 'Personalizado',
           fde: currentResult.percentage,
           available: currentResult.available / 1e6,
-          color: '#8B5CF6'
+          color: '#059669'
         })
       }
     }
@@ -293,10 +293,10 @@ export default function ScenarioComparator({
             {currentResult && !scenarioResults.some(s =>
               Math.abs(s.fde - currentResult.fde) < 0.001
             ) && (
-              <tr className="bg-purple-50">
+              <tr className="bg-emerald-50">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-purple-500" />
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="font-medium text-gray-900">Personalizado</span>
                   </div>
                 </td>
@@ -313,7 +313,7 @@ export default function ScenarioComparator({
                   {currentFactors ? (currentFactors.fl * 100).toFixed(0) : '-'}%
                 </td>
                 <td className="text-center py-3 px-4">
-                  <span className="font-mono font-bold text-purple-600">
+                  <span className="font-mono font-bold text-emerald-600">
                     {currentResult.percentage.toFixed(1)}%
                   </span>
                 </td>

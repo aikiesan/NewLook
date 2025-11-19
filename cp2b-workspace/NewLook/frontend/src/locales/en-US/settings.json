@@ -1,0 +1,51 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your preferences and account settings",
+
+  "profile": {
+    "title": "Profile",
+    "name": "Full name",
+    "email": "Email",
+    "organization": "Organization",
+    "role": "Role"
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Manage how you receive updates",
+    "email": "Email notifications",
+    "browser": "Browser notifications",
+    "dataUpdates": "Data updates",
+    "weeklyReport": "Weekly report"
+  },
+
+  "appearance": {
+    "title": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeAuto": "Automatic",
+    "language": "Language",
+    "compactMode": "Compact mode"
+  },
+
+  "security": {
+    "title": "Security",
+    "twoFactor": "Two-factor authentication",
+    "sessionTimeout": "Session timeout (minutes)",
+    "changePassword": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password"
+  },
+
+  "data": {
+    "title": "Data",
+    "exportData": "Export my data",
+    "deleteAccount": "Delete account"
+  },
+
+  "save": "Save Settings",
+  "saveSuccess": "Settings saved successfully!",
+  "saveError": "Error saving settings"
+}

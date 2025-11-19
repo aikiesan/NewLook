@@ -19,7 +19,25 @@ class AuthService:
     """Authentication service using Supabase"""
 
     def __init__(self):
-        self.supabase = get_supabase_client()
+        self._supabase = None
+        self._initialization_error = None
+
+    @property
+    def supabase(self):
+        """Lazy initialization of Supabase client"""
+        if self._supabase is None and self._initialization_error is None:
+            try:
+                self._supabase = get_supabase_client()
+            except Exception as e:
+                self._initialization_error = str(e)
+
+        if self._initialization_error:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Supabase not configured: {self._initialization_error}"
+            )
+
+        return self._supabase
 
     async def register_user(self, registration: UserRegistration) -> AuthResponse:
         """

@@ -1,0 +1,60 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Overview of biogas potential in São Paulo",
+  "welcome": "Welcome to CP2B",
+  "loadingMap": "Loading map...",
+
+  "stats": {
+    "municipalities": "Municipalities",
+    "totalPotential": "Total Potential",
+    "avgPotential": "Average Potential",
+    "topProducers": "Top Producers",
+    "potential": "Potential",
+    "biogasUnit": "m³ CH₄/year",
+    "biomethaneUnit": "Nm³/day"
+  },
+
+  "charts": {
+    "topMunicipalities": "Top 10 Municipalities by Potential",
+    "residueTypes": "Distribution by Residue Type",
+    "regionalDistribution": "Regional Distribution",
+    "monthlyProduction": "Estimated Monthly Production"
+  },
+
+  "filters": {
+    "title": "Filters",
+    "region": "Region",
+    "allRegions": "All Regions",
+    "residueType": "Residue Type",
+    "allTypes": "All Types",
+    "minPotential": "Minimum Potential",
+    "maxDistance": "Maximum Distance (km)",
+    "apply": "Apply Filters",
+    "clear": "Clear Filters"
+  },
+
+  "residues": {
+    "sugarcane": "Sugarcane",
+    "citrus": "Citrus",
+    "corn": "Corn",
+    "soy": "Soy",
+    "swine": "Swine",
+    "poultry": "Poultry",
+    "urban": "Urban (MSW)",
+    "sewage": "Sewage"
+  },
+
+  "actions": {
+    "viewDetails": "View Details",
+    "compare": "Compare",
+    "exportData": "Export Data",
+    "generateReport": "Generate Report"
+  },
+
+  "layers": {
+    "title": "Layers",
+    "biomassTypes": "Biomass Types",
+    "infrastructure": "Infrastructure",
+    "administrative": "Administrative"
+  }
+}

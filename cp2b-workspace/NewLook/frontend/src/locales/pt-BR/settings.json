@@ -1,0 +1,51 @@
+{
+  "title": "Configurações",
+  "subtitle": "Gerencie suas preferências e configurações de conta",
+
+  "profile": {
+    "title": "Perfil",
+    "name": "Nome completo",
+    "email": "E-mail",
+    "organization": "Organização",
+    "role": "Função"
+  },
+
+  "notifications": {
+    "title": "Notificações",
+    "subtitle": "Gerencie como você recebe atualizações",
+    "email": "Notificações por e-mail",
+    "browser": "Notificações do navegador",
+    "dataUpdates": "Atualizações de dados",
+    "weeklyReport": "Relatório semanal"
+  },
+
+  "appearance": {
+    "title": "Aparência",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "themeAuto": "Automático",
+    "language": "Idioma",
+    "compactMode": "Modo compacto"
+  },
+
+  "security": {
+    "title": "Segurança",
+    "twoFactor": "Autenticação de dois fatores",
+    "sessionTimeout": "Tempo limite de sessão (minutos)",
+    "changePassword": "Alterar Senha",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar nova senha"
+  },
+
+  "data": {
+    "title": "Dados",
+    "exportData": "Exportar meus dados",
+    "deleteAccount": "Excluir conta"
+  },
+
+  "save": "Salvar Configurações",
+  "saveSuccess": "Configurações salvas com sucesso!",
+  "saveError": "Erro ao salvar configurações"
+}

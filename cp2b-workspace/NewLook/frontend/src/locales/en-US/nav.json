@@ -1,0 +1,28 @@
+{
+  "logo": "CP2B Maps",
+  "home": "Home",
+  "dashboard": "Dashboard",
+  "map": "Map",
+  "analysis": "Analysis",
+  "data": "Data",
+  "database": "Scientific Database",
+  "about": "About",
+  "settings": "Settings",
+  "compare": "Compare",
+  "proximity": "Proximity",
+  "advancedAnalysis": "Advanced Analysis",
+  "municipalityDetail": "Municipality Details",
+  "user": {
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "myAccount": "My Account"
+  },
+  "descriptions": {
+    "map": "Interactive map",
+    "analysis": "MCDA and statistics",
+    "compare": "Compare municipalities",
+    "data": "Explore data"
+  }
+}
