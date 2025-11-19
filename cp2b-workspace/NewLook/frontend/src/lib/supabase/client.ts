@@ -6,6 +6,16 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+// Debug: Log env var status (only in browser)
+if (typeof window !== 'undefined') {
+  console.log('[Supabase] URL configured:', !!supabaseUrl)
+  console.log('[Supabase] Key configured:', !!supabaseAnonKey)
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[Supabase] Missing environment variables. Check Cloudflare Pages build settings.')
+    console.error('[Supabase] Expected: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  }
+}
+
 // Create a type-safe supabase client
 let supabase: SupabaseClient
 
@@ -21,12 +31,12 @@ if (supabaseUrl && supabaseAnonKey) {
   // During build time or when env vars are missing, create a dummy client
   // This allows static page generation to succeed
   if (typeof window !== 'undefined') {
-    console.warn('Supabase environment variables not configured. Some features may not work.')
+    console.warn('Supabase environment variables not configured. Authentication will not work.')
   }
-  // Create a placeholder client that will fail gracefully
+  // Create a placeholder client - auth operations will fail with clear errors
   supabase = createClient(
-    'https://placeholder.supabase.co',
-    'placeholder-key',
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder-key',
     {
       auth: {
         persistSession: false,
