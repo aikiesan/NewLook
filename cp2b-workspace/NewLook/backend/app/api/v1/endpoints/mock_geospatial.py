@@ -6,7 +6,7 @@ Serves sample data (16 municipalities) for dashboard development
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 router = APIRouter()
 

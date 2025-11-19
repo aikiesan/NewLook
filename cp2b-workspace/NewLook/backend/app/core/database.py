@@ -3,8 +3,6 @@ Database Connection Management
 PostgreSQL + PostGIS connection handling
 """
 
-import os
-from typing import Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
@@ -132,7 +130,7 @@ def test_db_connection() -> bool:
 
             cursor.close()
 
-            logger.info(f"✓ Database connected successfully")
+            logger.info("✓ Database connected successfully")
             logger.info(f"✓ PostGIS version: {version[0] if version else 'Unknown'}")
 
             return result is not None

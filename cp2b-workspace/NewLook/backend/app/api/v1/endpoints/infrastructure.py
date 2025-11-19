@@ -3,7 +3,7 @@ CP2B Maps V3 - Infrastructure Endpoints
 Provides GeoJSON data for infrastructure layers from real shapefiles
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from typing import Dict, Any
 import logging
 from app.utils.shapefile_loader import get_shapefile_loader

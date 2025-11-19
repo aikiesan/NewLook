@@ -10,7 +10,6 @@ import psycopg2
 from psycopg2.extras import execute_batch
 import json
 from pathlib import Path
-from typing import Optional, Dict, Any
 import sys
 import os
 from dotenv import load_dotenv
@@ -380,12 +379,12 @@ def main():
     # 1. Check command line arguments
     if len(sys.argv) > 1:
         conn_string = sys.argv[1]
-        print(f"\n[OK] Using connection string from command line")
+        print("\n[OK] Using connection string from command line")
 
     # 2. Check environment variable
     elif os.getenv('DATABASE_URL'):
         conn_string = os.getenv('DATABASE_URL')
-        print(f"\n[OK] Using DATABASE_URL from environment")
+        print("\n[OK] Using DATABASE_URL from environment")
 
     # 3. Prompt user
     else:

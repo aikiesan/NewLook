@@ -132,6 +132,7 @@ export default function MapSearchBox({ data }: MapSearchBoxProps) {
         </div>
         <input
           type="text"
+          role="combobox"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);

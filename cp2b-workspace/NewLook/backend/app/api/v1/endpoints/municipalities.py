@@ -2,8 +2,7 @@
 Municipalities API endpoints
 """
 from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
-import json
+from typing import Optional
 
 router = APIRouter()
 

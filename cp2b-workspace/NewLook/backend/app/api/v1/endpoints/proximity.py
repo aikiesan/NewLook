@@ -5,7 +5,7 @@ Comprehensive spatial analysis for biogas potential assessment
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
 import uuid
 import logging
@@ -15,9 +15,7 @@ from app.services.proximity_service import ProximityService
 from app.services.mapbiomas_service import MapBiomasService
 from app.services.cache_service import (
     proximity_cache,
-    get_proximity_cache_key,
-    get_mapbiomas_cache_key,
-    mapbiomas_cache
+    get_proximity_cache_key
 )
 from app.services.validation_service import ValidationService, ValidationError
 

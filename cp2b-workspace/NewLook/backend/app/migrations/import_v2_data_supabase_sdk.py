@@ -9,7 +9,6 @@ to avoid IPv6/DNS resolution issues.
 import sqlite3
 import json
 from pathlib import Path
-from typing import Optional, Dict, Any, List
 import sys
 import os
 from dotenv import load_dotenv
@@ -149,7 +148,7 @@ class SupabaseMigrator:
                 print(f"  Inserting batch {i // batch_size + 1}/{(len(data_to_insert) + batch_size - 1) // batch_size}...")
 
                 try:
-                    response = self.supabase.table("municipalities").insert(batch).execute()
+                    self.supabase.table("municipalities").insert(batch).execute()
                     total_inserted += len(batch)
                     print(f"    [OK] Inserted {len(batch)} records")
                 except Exception as e:
@@ -216,7 +215,7 @@ class SupabaseMigrator:
                 print(f"  Inserting batch {i // batch_size + 1}/{(len(data_to_insert) + batch_size - 1) // batch_size}...")
 
                 try:
-                    response = self.supabase.table("scientific_references").insert(batch).execute()
+                    self.supabase.table("scientific_references").insert(batch).execute()
                     total_inserted += len(batch)
                     print(f"    [OK] Inserted {len(batch)} records")
                 except Exception as e:

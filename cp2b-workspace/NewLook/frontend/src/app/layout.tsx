@@ -5,7 +5,11 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ComparisonProvider } from '@/contexts/ComparisonContext'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['system-ui', 'Arial', 'sans-serif'],
+})
 
 export const metadata: Metadata = {
   title: 'CP2B Maps V3 - Plataforma de Análise de Potencial de Biogás',

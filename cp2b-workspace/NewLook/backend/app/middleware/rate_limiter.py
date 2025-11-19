@@ -4,7 +4,7 @@ Prevents spam and abuse - max 10 analyses per user per minute
 Sprint 4: Task 4.1 - Performance Optimization
 """
 
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from collections import defaultdict
 from datetime import datetime, timedelta

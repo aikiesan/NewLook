@@ -2,7 +2,7 @@
 Authentication API endpoints
 Handles user registration, login, logout, and profile management
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.models.auth import (

@@ -2,7 +2,7 @@
 Authentication service for CP2B Maps V3
 Handles user registration, login, logout, and profile management using Supabase
 """
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict
 from fastapi import HTTPException, status
 from datetime import datetime
 

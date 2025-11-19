@@ -6,12 +6,11 @@ Serve PostGIS data for interactive maps and spatial analysis
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
-import json
 import logging
 import psycopg2
 
 from app.core.database import get_db
-from app.middleware.auth import get_current_user, optional_auth
+from app.middleware.auth import optional_auth
 from app.models.auth import UserProfile
 from app.utils.shapefile_loader import get_shapefile_loader
 
