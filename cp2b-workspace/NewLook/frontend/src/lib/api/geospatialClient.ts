@@ -149,14 +149,127 @@ class GeospatialClient {
       }
 
       const data = await response.json();
+
+      // Check if we got actual features (shapefile might not be deployed)
+      if (!data.features || data.features.length === 0) {
+        logger.warn('FastAPI returned empty features, trying IBGE API fallback');
+        return this.getFromIBGEWithBiogasData();
+      }
+
       logger.info(`✅ Loaded ${data.features?.length || 0} municipalities with polygon geometries`);
       return data;
     } catch (error) {
       logger.warn(`Failed to fetch polygons from FastAPI: ${error}`);
-      // Fallback to mock data with polygons
-      const { mockMunicipalitiesGeoJSON } = require('@/lib/mockData');
-      return mockMunicipalitiesGeoJSON as MunicipalityCollection;
+      // Try IBGE API as fallback
+      try {
+        logger.info('🗺️ Trying IBGE GeoJSON API fallback');
+        return await this.getFromIBGEWithBiogasData();
+      } catch (ibgeError) {
+        logger.warn(`IBGE fallback failed: ${ibgeError}`);
+        // Final fallback to mock data
+        const { mockMunicipalitiesGeoJSON } = require('@/lib/mockData');
+        return mockMunicipalitiesGeoJSON as MunicipalityCollection;
+      }
     }
+  }
+
+  /**
+   * Fetch municipality polygons from IBGE API and merge with biogas data from Supabase
+   */
+  private async getFromIBGEWithBiogasData(): Promise<MunicipalityCollection> {
+    // Fetch São Paulo state municipalities from IBGE API
+    // Code 35 = São Paulo state
+    const ibgeUrl = 'https://servicodados.ibge.gov.br/api/v3/malhas/estados/35?formato=application/vnd.geo+json&qualidade=minima&intrarregiao=municipio';
+
+    const response = await fetch(ibgeUrl);
+    if (!response.ok) {
+      throw new Error(`IBGE API error: ${response.status}`);
+    }
+
+    const ibgeData = await response.json();
+    logger.info(`📍 Fetched ${ibgeData.features?.length || 0} municipalities from IBGE`);
+
+    // Get biogas data from Supabase
+    let biogasDataByCode: Record<string, any> = {};
+    try {
+      const summaryData = await supabaseGeospatialClient.getMunicipalitiesGeoJSON();
+      summaryData.features.forEach((feature) => {
+        const ibgeCode = feature.properties.ibge_code?.toString() || '';
+        if (ibgeCode) {
+          biogasDataByCode[ibgeCode] = feature.properties;
+        }
+      });
+      logger.info(`📊 Loaded biogas data for ${Object.keys(biogasDataByCode).length} municipalities from Supabase`);
+    } catch (error) {
+      logger.warn(`Failed to load biogas data from Supabase: ${error}`);
+    }
+
+    // Merge IBGE geometries with biogas data
+    const enrichedFeatures = ibgeData.features.map((feature: any) => {
+      const ibgeCode = feature.properties?.codarea || feature.properties?.CD_MUN || '';
+      const biogasData = biogasDataByCode[ibgeCode];
+
+      const properties = {
+        id: ibgeCode,
+        name: feature.properties?.name || feature.properties?.NM_MUN || 'Unknown',
+        ibge_code: ibgeCode,
+        area_km2: 0,
+        population: biogasData?.population || 0,
+        population_density: 0,
+        immediate_region: biogasData?.immediate_region || '',
+        intermediate_region: biogasData?.intermediate_region || '',
+        immediate_region_code: '',
+        intermediate_region_code: '',
+        total_biogas_m3_year: biogasData?.total_biogas_m3_year || 0,
+        agricultural_biogas_m3_year: biogasData?.agricultural_biogas_m3_year || 0,
+        livestock_biogas_m3_year: biogasData?.livestock_biogas_m3_year || 0,
+        urban_biogas_m3_year: biogasData?.urban_biogas_m3_year || 0,
+        sugarcane_biogas_m3_year: biogasData?.sugarcane_biogas_m3_year || 0,
+        soybean_biogas_m3_year: biogasData?.soybean_biogas_m3_year || 0,
+        corn_biogas_m3_year: biogasData?.corn_biogas_m3_year || 0,
+        coffee_biogas_m3_year: biogasData?.coffee_biogas_m3_year || 0,
+        citrus_biogas_m3_year: biogasData?.citrus_biogas_m3_year || 0,
+        cattle_biogas_m3_year: biogasData?.cattle_biogas_m3_year || 0,
+        swine_biogas_m3_year: biogasData?.swine_biogas_m3_year || 0,
+        poultry_biogas_m3_year: biogasData?.poultry_biogas_m3_year || 0,
+        aquaculture_biogas_m3_year: biogasData?.aquaculture_biogas_m3_year || 0,
+        forestry_biogas_m3_year: 0,
+        rsu_biogas_m3_year: biogasData?.rsu_biogas_m3_year || 0,
+        rpo_biogas_m3_year: biogasData?.rpo_biogas_m3_year || 0,
+        sugarcane_residues_tons_year: 0,
+        soybean_residues_tons_year: 0,
+        corn_residues_tons_year: 0,
+        potential_category: this.getPotentialCategory(biogasData?.total_biogas_m3_year || 0),
+      };
+
+      return {
+        type: 'Feature' as const,
+        geometry: feature.geometry,
+        properties,
+      };
+    });
+
+    logger.info(`✅ Merged IBGE geometries with biogas data: ${enrichedFeatures.length} municipalities`);
+
+    return {
+      type: 'FeatureCollection',
+      features: enrichedFeatures,
+      metadata: {
+        total_municipalities: enrichedFeatures.length,
+        source: 'IBGE API + Supabase',
+        note: `${enrichedFeatures.length} municípios de São Paulo com geometrias do IBGE e dados de biogás do Supabase`,
+      },
+    };
+  }
+
+  /**
+   * Get potential category based on biogas value
+   */
+  private getPotentialCategory(totalBiogas: number): string {
+    if (totalBiogas > 100000000) return 'ALTO';
+    if (totalBiogas > 10000000) return 'MEDIO';
+    if (totalBiogas > 0) return 'BAIXO';
+    return 'SEM DADOS';
   }
 
   /**
