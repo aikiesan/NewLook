@@ -61,9 +61,24 @@ export interface ProximityAnalysisResponse {
   };
   radius_km: number;
   land_use: {
-    agricultural_percentage: number;
     total_area_km2: number;
-    breakdown: LandUseData[];
+    by_class: Record<string, {
+      class_id: number;
+      name: string;
+      color: string;
+      category: string;
+      pixel_count: number;
+      area_km2: number;
+      percent: number;
+    }>;
+    dominant_class: string;
+    agricultural_percent: number;
+    total_pixels?: number;
+    pixel_resolution_m?: number;
+    error?: string;
+    // Legacy support
+    agricultural_percentage?: number;
+    breakdown?: LandUseData[];
   };
   municipalities: MunicipalityData[];
   biogas_potential: BiogasBreakdown;
@@ -302,7 +317,7 @@ export function exportAnalysisToCSV(analysis: ProximityAnalysisResponse): void {
     ['Potencial Agrícola (m³/ano)', analysis.biogas_potential.agricultural.toFixed(2)],
     ['Potencial Pecuário (m³/ano)', analysis.biogas_potential.livestock.toFixed(2)],
     ['Potencial Urbano (m³/ano)', analysis.biogas_potential.urban.toFixed(2)],
-    ['Uso Agrícola do Solo (%)', analysis.land_use.agricultural_percentage.toFixed(2)],
+    ['Uso Agrícola do Solo (%)', (analysis.land_use.agricultural_percent || 0).toFixed(2)],
     ['Tempo de Processamento (s)', analysis.processing_time_seconds.toFixed(2)]
   ].map(row => row.join(',')).join('\n');
 
