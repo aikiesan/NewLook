@@ -285,7 +285,7 @@ export function exportAnalysisToCSV(analysis: ProximityAnalysisResponse): void {
   // Create land use CSV
   const landUseCSV = [
     ['Classe de Uso', 'Porcentagem (%)', 'Área (km²)'],
-    ...analysis.land_use.breakdown.map(lu => [
+    ...(analysis.land_use.breakdown || []).map(lu => [
       lu.class_name,
       lu.percentage.toFixed(2),
       lu.area_km2.toFixed(2)

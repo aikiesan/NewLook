@@ -492,12 +492,13 @@ function InfrastructureCard({ results }: { results: ProximityAnalysisResponse })
         <div className="space-y-3">
           {infrastructure.map((infra, idx) => {
             const iconData = infraIcons[infra.type] || { icon: '🏭', label: infra.type };
+            const isFound = infra.distance_km !== undefined && infra.distance_km !== null;
             
             return (
               <div
                 key={idx}
                 className={`p-3 rounded-lg border-2 ${
-                  infra.found 
+                  isFound 
                     ? 'bg-green-50 border-green-200' 
                     : 'bg-gray-50 border-gray-200'
                 }`}
@@ -510,7 +511,7 @@ function InfrastructureCard({ results }: { results: ProximityAnalysisResponse })
                         {typeof iconData.label === 'string' ? iconData.label : infra.type}
                       </span>
                     </div>
-                    {infra.found ? (
+                    {isFound ? (
                       <>
                         {infra.name && (
                           <div className="text-sm text-gray-600">{infra.name}</div>
@@ -521,7 +522,7 @@ function InfrastructureCard({ results }: { results: ProximityAnalysisResponse })
                       </>
                     ) : (
                       <div className="text-xs text-gray-500 mt-1">
-                        {infra.note || 'Não encontrado no raio'}
+                        Não encontrado no raio especificado
                       </div>
                     )}
                   </div>
