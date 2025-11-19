@@ -168,9 +168,9 @@ export default function DistributionHistogram({
               {(statistics.mean / 1000000).toFixed(2)}M
             </span>
           </div>
-          <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg p-3 border border-purple-100">
+          <div className="bg-gradient-to-br from-teal-50 to-white rounded-lg p-3 border border-teal-100">
             <span className="text-gray-600 block mb-1">Mediana</span>
-            <span className="font-bold text-purple-900 text-base">
+            <span className="font-bold text-teal-900 text-base">
               {(statistics.median / 1000000).toFixed(2)}M
             </span>
           </div>

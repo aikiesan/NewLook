@@ -376,8 +376,8 @@ export default function ScientificDatabasePage() {
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-medium text-gray-600">Parametros</div>
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <TestTube2 className="h-5 w-5 text-purple-600" />
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <TestTube2 className="h-5 w-5 text-amber-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{summary.total_parameters}</div>
@@ -780,7 +780,7 @@ export default function ScientificDatabasePage() {
                           </span>
                         ))}
                         {ref.parameters_measured.slice(0, 2).map(param => (
-                          <span key={param} className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">
+                          <span key={param} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
                             {PARAMETER_LABELS[param]}
                           </span>
                         ))}
