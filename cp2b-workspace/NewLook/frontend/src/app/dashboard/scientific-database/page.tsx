@@ -69,15 +69,19 @@ import {
   getReferences,
   getCoDigestionRecommendations,
   getResidueList,
-  getScientificSummary
+  getScientificSummary,
+  getRealResiduos,
+  getRealSectorSummary,
+  getRealResiduoWithReferences,
+  getRealConversionFactors
 } from '@/services/scientificApi'
 
 export default function ScientificDatabasePage() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
-  // View mode state
-  const [viewMode, setViewMode] = useState<ScientificViewMode>('kinetics')
+  // View mode state - extended with residuosDb
+  const [viewMode, setViewMode] = useState<ScientificViewMode | 'residuosDb'>('kinetics')
 
   // Data states
   const [kineticsData, setKineticsData] = useState<KineticData[]>([])
@@ -91,6 +95,14 @@ export default function ScientificDatabasePage() {
     fde_validated_pct: number
     sector_breakdown: Record<string, number>
   } | null>(null)
+
+  // Real residuos data from Panorama_CP2B
+  const [realResiduos, setRealResiduos] = useState<any[]>([])
+  const [sectorSummary, setSectorSummary] = useState<any[]>([])
+  const [selectedResiduoId, setSelectedResiduoId] = useState<number | null>(null)
+  const [residuoDetails, setResiduoDetails] = useState<any | null>(null)
+  const [activeSector, setActiveSector] = useState<string>('AG_AGRICULTURA')
+  const [conversionFactors, setConversionFactors] = useState<any[]>([])
 
   // Selection states
   const [selectedResidues, setSelectedResidues] = useState<string[]>([])
@@ -136,11 +148,55 @@ export default function ScientificDatabasePage() {
       setReferences(refsRes.data)
       setResidueList(residues)
       setSummary(summaryData)
+
+      // Also fetch real residuos data from Panorama_CP2B
+      const [realRes, sectorSum, factors] = await Promise.all([
+        getRealResiduos(),
+        getRealSectorSummary(),
+        getRealConversionFactors()
+      ])
+
+      setRealResiduos(realRes.residuos || [])
+      setSectorSummary(sectorSum.summary || [])
+      setConversionFactors(factors.factors || [])
+
+      // Update summary with real data counts
+      if (sectorSum.summary) {
+        const totalRefs = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
+        const totalResidues = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
+        setSummary(prev => prev ? {
+          ...prev,
+          total_references: totalRefs || prev.total_references,
+          total_residues: totalResidues || prev.total_residues
+        } : prev)
+      }
     } catch (err) {
       console.error('Error fetching data:', err)
       setError('Erro ao carregar dados científicos')
     } finally {
       setLoading(false)
+    }
+  }, [])
+
+  // Fetch residuo details when selected
+  const fetchResiduoDetails = useCallback(async (residuoId: number) => {
+    try {
+      const result = await getRealResiduoWithReferences(residuoId)
+      if (result?.residuo) {
+        setResiduoDetails(result.residuo)
+      }
+    } catch (err) {
+      console.error('Error fetching residuo details:', err)
+    }
+  }, [])
+
+  // Fetch residuos by sector
+  const fetchResiduosBySector = useCallback(async (sectorCode: string) => {
+    try {
+      const result = await getRealResiduos(sectorCode)
+      setRealResiduos(result.residuos || [])
+    } catch (err) {
+      console.error('Error fetching residuos by sector:', err)
     }
   }, [])
 
@@ -401,6 +457,7 @@ export default function ScientificDatabasePage() {
         <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
           <div className="flex flex-wrap gap-2">
             {[
+              { id: 'residuosDb', label: 'Base de Residuos', icon: FlaskConical },
               { id: 'kinetics', label: 'Cinetica de Degradacao', icon: TestTube2 },
               { id: 'chemical', label: 'Caracterizacao Quimica', icon: FlaskConical },
               { id: 'references', label: 'Referencias Cientificas', icon: BookOpen },
@@ -425,6 +482,251 @@ export default function ScientificDatabasePage() {
 
         {/* Tab Content */}
         <div className="space-y-6">
+          {/* Residuos Database Tab - Real data from Panorama_CP2B */}
+          {viewMode === 'residuosDb' && (
+            <>
+              {/* Sector Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {sectorSummary.map((sector: any) => (
+                  <button
+                    key={sector.codigo}
+                    onClick={() => {
+                      setActiveSector(sector.codigo)
+                      fetchResiduosBySector(sector.codigo)
+                    }}
+                    className={`bg-white rounded-xl shadow-md p-5 border transition-all text-left hover:shadow-lg ${
+                      activeSector === sector.codigo
+                        ? 'border-green-500 ring-2 ring-green-200'
+                        : 'border-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl">{sector.emoji}</span>
+                      <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                        {sector.num_residuos} residuos
+                      </span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1">{sector.nome}</h4>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div>BMP medio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
+                      <div>Referencias: {sector.total_references || 0}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Residues List */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left: Residue cards */}
+                <div className="lg:col-span-2 space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Residuos - {sectorSummary.find((s: any) => s.codigo === activeSector)?.nome || 'Todos'}
+                  </h3>
+
+                  {realResiduos.filter((r: any) => r.sector_codigo === activeSector).map((residuo: any) => (
+                    <div
+                      key={residuo.id}
+                      onClick={() => {
+                        setSelectedResiduoId(residuo.id)
+                        fetchResiduoDetails(residuo.id)
+                      }}
+                      className={`bg-white rounded-xl shadow-md p-5 border cursor-pointer transition-all hover:shadow-lg ${
+                        selectedResiduoId === residuo.id
+                          ? 'border-green-500 ring-2 ring-green-200'
+                          : 'border-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{residuo.nome}</h4>
+                          <span className="text-xs text-gray-500">
+                            {residuo.subsector_nome || residuo.sector_nome}
+                          </span>
+                        </div>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                          {residuo.reference_count || 0} refs
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="font-semibold text-gray-900">
+                            {residuo.bmp_medio?.toFixed(0) || 'N/A'}
+                          </div>
+                          <div className="text-gray-500">BMP</div>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="font-semibold text-gray-900">
+                            {residuo.ts_medio?.toFixed(1) || 'N/A'}%
+                          </div>
+                          <div className="text-gray-500">ST</div>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 rounded">
+                          <div className="font-semibold text-gray-900">
+                            {residuo.vs_medio?.toFixed(1) || 'N/A'}%
+                          </div>
+                          <div className="text-gray-500">SV</div>
+                        </div>
+                      </div>
+
+                      {residuo.chemical_cn_ratio && (
+                        <div className="mt-3 flex justify-between items-center text-sm">
+                          <span className="text-gray-600">Relacao C:N</span>
+                          <span className={`font-mono font-semibold ${
+                            residuo.chemical_cn_ratio >= 20 && residuo.chemical_cn_ratio <= 30
+                              ? 'text-green-600'
+                              : residuo.chemical_cn_ratio < 20
+                              ? 'text-yellow-600'
+                              : 'text-orange-600'
+                          }`}>
+                            {residuo.chemical_cn_ratio?.toFixed(1)}:1
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {realResiduos.filter((r: any) => r.sector_codigo === activeSector).length === 0 && (
+                    <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
+                      <FlaskConical className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-gray-500">Nenhum residuo encontrado para este setor</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: Selected residue details with references */}
+                <div className="lg:col-span-1">
+                  {residuoDetails ? (
+                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 sticky top-4">
+                      <h3 className="font-semibold text-gray-900 mb-4 text-lg">
+                        {residuoDetails.nome}
+                      </h3>
+
+                      {/* Chemical parameters */}
+                      <div className="space-y-3 mb-6">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">BMP</span>
+                          <span className="font-mono font-semibold">
+                            {residuoDetails.bmp_medio} L CH4/kg SV
+                          </span>
+                        </div>
+                        {residuoDetails.ts_medio && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Solidos Totais</span>
+                            <span className="font-mono">{residuoDetails.ts_medio}%</span>
+                          </div>
+                        )}
+                        {residuoDetails.vs_medio && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Solidos Volateis</span>
+                            <span className="font-mono">{residuoDetails.vs_medio}%</span>
+                          </div>
+                        )}
+                        {residuoDetails.chemical_cn_ratio && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">C:N</span>
+                            <span className="font-mono">{residuoDetails.chemical_cn_ratio}:1</span>
+                          </div>
+                        )}
+                        {residuoDetails.chemical_ch4_content && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Teor CH4</span>
+                            <span className="font-mono">{residuoDetails.chemical_ch4_content}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Scientific References */}
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Referencias Cientificas ({residuoDetails.total_references || 0})
+                        </h4>
+
+                        {residuoDetails.references_by_type && Object.entries(residuoDetails.references_by_type).map(([paramType, refs]: [string, any]) => (
+                          <div key={paramType} className="mb-4">
+                            <div className="text-xs font-medium text-gray-500 uppercase mb-2">
+                              {paramType === 'bmp' ? 'BMP' :
+                               paramType === 'ts' ? 'Solidos Totais' :
+                               paramType === 'vs' ? 'Solidos Volateis' :
+                               paramType === 'cn_ratio' ? 'Relacao C:N' :
+                               paramType === 'ch4_content' ? 'Teor CH4' : paramType}
+                            </div>
+                            {refs.map((ref: any, idx: number) => (
+                              <div key={idx} className="text-xs text-gray-600 mb-2 pl-2 border-l-2 border-green-200">
+                                <p className="font-medium">{ref.authors || 'Autor desconhecido'} ({ref.year || 'N/A'})</p>
+                                <p className="text-gray-500 line-clamp-2">{ref.citation}</p>
+                                {ref.doi && (
+                                  <a
+                                    href={`https://doi.org/${ref.doi}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline inline-flex items-center gap-1 mt-1"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    DOI
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+
+                        {(!residuoDetails.references || residuoDetails.references.length === 0) && (
+                          <p className="text-xs text-gray-500 italic">
+                            Nenhuma referencia cientifica vinculada
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
+                      <Info className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm text-gray-500">
+                        Selecione um residuo para ver detalhes e referencias cientificas
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Conversion Factors */}
+              {conversionFactors.length > 0 && (
+                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Fatores de Conversao com Literatura
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Categoria</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Substrato</th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-700">Fator</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Fonte Literatura</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {conversionFactors.map((factor: any) => (
+                          <tr key={factor.id} className="hover:bg-gray-50">
+                            <td className="py-3 px-4 text-gray-600">{factor.category}</td>
+                            <td className="py-3 px-4 font-medium text-gray-900">{factor.subcategory}</td>
+                            <td className="py-3 px-4 text-right font-mono">
+                              {factor.factor_value} {factor.unit}
+                            </td>
+                            <td className="py-3 px-4 text-xs text-gray-500 max-w-xs truncate">
+                              {factor.literature_reference || 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           {/* Kinetics Tab */}
           {viewMode === 'kinetics' && (
             <>

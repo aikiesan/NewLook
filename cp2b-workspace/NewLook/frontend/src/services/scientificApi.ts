@@ -29,6 +29,75 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // ==========================================
+// REAL RESIDUOS API INTEGRATION
+// Source: Panorama_CP2B with 189 scientific references
+// ==========================================
+
+/**
+ * Fetch real residuos data from backend API
+ */
+export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
+  try {
+    const url = sectorCodigo
+      ? `${API_BASE_URL}/api/v1/residuos/?sector_codigo=${sectorCodigo}&limit=100`
+      : `${API_BASE_URL}/api/v1/residuos/?limit=100`
+
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Failed to fetch residuos')
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching real residuos:', error)
+    return { residuos: [], total: 0 }
+  }
+}
+
+/**
+ * Fetch real sectors summary from backend API
+ */
+export async function getRealSectorSummary(): Promise<any> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/summary/by-sector`)
+    if (!response.ok) throw new Error('Failed to fetch sector summary')
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching sector summary:', error)
+    return { summary: [] }
+  }
+}
+
+/**
+ * Fetch residuo details with all scientific references
+ */
+export async function getRealResiduoWithReferences(residuoId: number): Promise<any> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/${residuoId}`)
+    if (!response.ok) throw new Error('Failed to fetch residuo')
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching residuo with references:', error)
+    return null
+  }
+}
+
+/**
+ * Fetch conversion factors with literature references
+ */
+export async function getRealConversionFactors(): Promise<any> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/conversion-factors/`)
+    if (!response.ok) throw new Error('Failed to fetch conversion factors')
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching conversion factors:', error)
+    return { factors: [] }
+  }
+}
+
+// ==========================================
 // REAL DATA from CP2B Panorama Repository
 // Source: https://github.com/aikiesan/Panorama_CP2B
 // ==========================================
