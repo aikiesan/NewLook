@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects
+# Redirect root to default locale
+/ /pt-BR/ 302
+
+# Handle any non-locale paths that might be accessed directly
+# These will be caught by Cloudflare's 404 handling
