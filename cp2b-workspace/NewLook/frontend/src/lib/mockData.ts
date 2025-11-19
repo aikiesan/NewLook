@@ -195,7 +195,7 @@ export const mockMunicipalitiesGeoJSON: MunicipalityCollection = {
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [-48.5234, -27.5969], // Lages (Santa Catarina - sample)
+        coordinates: [-48.1780, -21.7845], // Araraquara, SP - correct coordinates
       },
       properties: createMockMunicipality({
         id: 'mock-7',
