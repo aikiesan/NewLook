@@ -215,11 +215,12 @@ export interface ReferencesResponse {
   data: ScientificReference[]
   total: number
   filters_applied: {
-    sector?: string
-    residue?: string
-    parameter?: string
-    year_min?: number
+    sector?: SectorType[]
+    residue?: string[]
+    parameter?: ParameterType[]
+    year_range?: [number, number]
     peer_reviewed?: boolean
+    has_data?: boolean
   }
 }
 
