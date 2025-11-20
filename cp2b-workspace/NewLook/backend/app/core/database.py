@@ -140,6 +140,74 @@ def get_db():
 
 
 @contextmanager
+def get_db_transaction():
+    """
+    Context manager for transactional database operations (RECOMMENDED for writes).
+    Automatically commits on success, rolls back on errors.
+
+    Features:
+    - Connection pooling for performance
+    - Automatic COMMIT on success
+    - Automatic ROLLBACK on any exception
+    - UTF-8 encoding enforcement
+    - Thread-safe connection management
+
+    Usage:
+        with get_db_transaction() as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO table VALUES (%s)", (value,))
+            cursor.execute("UPDATE other_table SET field = %s WHERE id = %s", (val, id))
+            cursor.close()
+            # Automatic COMMIT if no exceptions
+            # Automatic ROLLBACK if any exception occurs
+
+    Best Practices:
+        - Use for INSERT, UPDATE, DELETE operations
+        - Use get_db() for read-only SELECT operations
+        - Operations are atomic - all succeed or all fail
+
+    Yields:
+        psycopg2 connection from pool with autocommit=False
+    """
+    conn = None
+    connection_pool = get_connection_pool()
+
+    try:
+        # Get connection from pool
+        conn = connection_pool.getconn()
+
+        # Ensure UTF-8 encoding
+        conn.set_client_encoding('UTF8')
+
+        # Explicitly disable autocommit for transaction management
+        conn.autocommit = False
+
+        logger.debug(f"Transaction started (host: {settings.POSTGRES_HOST})")
+
+        yield conn
+
+        # If we reach here, no exception occurred - commit the transaction
+        conn.commit()
+        logger.debug("Transaction committed successfully")
+
+    except Exception as e:
+        # Any exception triggers rollback
+        logger.error(f"Transaction failed, rolling back: {e}")
+        if conn:
+            conn.rollback()
+            logger.debug("Transaction rolled back")
+        raise  # Re-raise the exception after rollback
+
+    finally:
+        if conn:
+            # Restore autocommit before returning to pool
+            conn.autocommit = True
+            # Return connection to pool
+            connection_pool.putconn(conn)
+            logger.debug("Connection returned to pool")
+
+
+@contextmanager
 def get_db_cursor(commit: bool = False):
     """
     Context manager for database cursor (LEGACY - prefer get_db())
