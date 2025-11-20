@@ -6,6 +6,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import type { MunicipalityProperties } from '@/types/geospatial';
 import {
   formatBiogas,
@@ -23,6 +24,7 @@ interface MunicipalityPopupProps {
 }
 
 export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
+  const router = useRouter();
   const totalBiogas = properties.total_biogas_m3_year;
   const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year, totalBiogas);
   const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year, totalBiogas);
@@ -142,16 +144,15 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
       </div>
 
       {/* View Details Button */}
-      <a
-        href={`/dashboard/municipality/${properties.id}`}
-        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-sm font-medium rounded transition-colors"
-        onClick={(e) => {
-          e.preventDefault();
-          window.location.href = `/dashboard/municipality/${properties.id}`;
+      <button
+        type="button"
+        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-sm font-medium rounded transition-colors cursor-pointer"
+        onClick={() => {
+          router.push(`/dashboard/municipality/${properties.id}`);
         }}
       >
         Ver Detalhes Completos →
-      </a>
+      </button>
     </div>
   );
 }
