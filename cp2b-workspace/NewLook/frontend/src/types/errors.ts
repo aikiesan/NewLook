@@ -85,18 +85,19 @@ export function isApiError(error: unknown): error is ApiError {
  * Converts unknown error to AppError
  */
 export function toAppError(error: unknown): AppError {
-  // Already an AppError
-  if (isAppError(error)) {
-    return error
-  }
-
-  // Standard Error object
+  // Standard Error object - check BEFORE isAppError
+  // because Error objects have 'message' but not 'code'
   if (error instanceof Error) {
     return {
       message: error.message,
       code: 'UNKNOWN_ERROR',
       details: error
     }
+  }
+
+  // Already a properly formed AppError with code and details
+  if (isAppError(error) && 'code' in error && error.code && 'details' in error) {
+    return error
   }
 
   // String error
@@ -109,11 +110,19 @@ export function toAppError(error: unknown): AppError {
 
   // Object with message property
   if (typeof error === 'object' && error !== null && 'message' in error) {
-    return {
+    const appError: AppError = {
       message: String((error as { message: unknown }).message),
-      code: 'UNKNOWN_ERROR',
       details: error
     }
+
+    // Preserve existing code if present, otherwise use UNKNOWN_ERROR
+    if ('code' in error && typeof (error as { code?: unknown }).code === 'string') {
+      appError.code = (error as { code: string }).code
+    } else {
+      appError.code = 'UNKNOWN_ERROR'
+    }
+
+    return appError
   }
 
   // Unknown error type

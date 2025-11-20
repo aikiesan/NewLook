@@ -106,7 +106,11 @@ describe('Error Conversion', () => {
   describe('toAppError', () => {
     it('should return AppError as-is', () => {
       const error: AppError = { message: 'Test', code: 'TEST' }
-      expect(toAppError(error)).toEqual(error)
+      const result = toAppError(error)
+
+      expect(result.message).toBe('Test')
+      expect(result.code).toBe('TEST')
+      expect(result.details).toBe(error) // Details should be preserved for error tracking
     })
 
     it('should convert Error to AppError', () => {
