@@ -24,6 +24,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { logger } from '@/lib/logger'
 
 interface NavItem {
   href: string
@@ -70,7 +71,7 @@ export default function TopNavigation() {
       await logout()
       setUserMenuOpen(false)
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 

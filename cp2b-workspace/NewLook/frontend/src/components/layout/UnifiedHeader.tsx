@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { useTranslations } from 'next-intl'
+import { logger } from '@/lib/logger'
 
 interface NavItem {
   href: string
@@ -112,7 +113,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
       await logout()
       setUserMenuOpen(false)
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 
