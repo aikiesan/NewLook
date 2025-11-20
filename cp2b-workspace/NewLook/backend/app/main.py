@@ -8,12 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from datetime import datetime, timezone
+from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.database import test_db_connection
 from app.api.v1.api import api_router
 from app.middleware.rate_limiter import rate_limit_middleware
 from app.middleware.response_compression import gzip_middleware
+from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler
 from app.services.cache_service import get_all_cache_stats
 
 # Create FastAPI app
@@ -24,6 +26,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Register slowapi limiter with FastAPI app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # Sprint 4: Performance Middleware (applied in order)
 # 1. Rate limiting (prevents abuse)

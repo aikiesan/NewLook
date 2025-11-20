@@ -26,6 +26,8 @@ import {
   REAL_REFERENCES
 } from '@/data/scientificData'
 
+import { logger } from '@/lib/logger'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // ==========================================
@@ -47,7 +49,7 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching real residuos:', error)
+    logger.error('Error fetching real residuos:', error)
     return { residuos: [], total: 0 }
   }
 }
@@ -62,7 +64,7 @@ export async function getRealSectorSummary(): Promise<any> {
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching sector summary:', error)
+    logger.error('Error fetching sector summary:', error)
     return { summary: [] }
   }
 }
@@ -77,7 +79,7 @@ export async function getRealResiduoWithReferences(residuoId: number): Promise<a
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching residuo with references:', error)
+    logger.error('Error fetching residuo with references:', error)
     return null
   }
 }
@@ -92,7 +94,7 @@ export async function getRealConversionFactors(): Promise<any> {
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching conversion factors:', error)
+    logger.error('Error fetching conversion factors:', error)
     return { factors: [] }
   }
 }
