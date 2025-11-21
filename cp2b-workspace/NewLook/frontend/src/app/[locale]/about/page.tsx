@@ -8,6 +8,9 @@
 import { useState } from 'react'
 import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
+import AnimatedCounter from '@/components/ui/AnimatedCounter'
+import Timeline, { TimelineEvent } from '@/components/ui/Timeline'
+import NewsletterSignup from '@/components/ui/NewsletterSignup'
 import {
   ArrowLeft,
   Target,
@@ -31,11 +34,78 @@ import {
   Factory,
   Lightbulb,
   TrendingUp,
-  Calendar
+  Calendar,
+  Rocket,
+  Users
 } from 'lucide-react'
 
 export default function AboutPage() {
   const [activeTab, setActiveTab] = useState('mission')
+
+  // Project timeline data
+  const projectTimeline: TimelineEvent[] = [
+    {
+      date: 'Fevereiro 2025',
+      title: 'Início do Projeto CP2B',
+      description: 'Lançamento oficial do Centro Paulista de Estudos em Biogás e Bioprodutos com financiamento FAPESP.',
+      status: 'completed',
+      details: [
+        'Aprovação do projeto FAPESP 2025/08745-2',
+        'Formação da equipe multidisciplinar',
+        'Estruturação dos 8 eixos temáticos'
+      ],
+      icon: <Rocket className="w-4 h-4" />
+    },
+    {
+      date: 'Março 2025',
+      title: 'Desenvolvimento da Plataforma CP2B Maps V3',
+      description: 'Início do desenvolvimento da plataforma web moderna para análise de potencial de biogás.',
+      status: 'in-progress',
+      details: [
+        'Arquitetura Next.js 15 + FastAPI',
+        'Integração com MapBiomas',
+        'Sistema MCDA implementado',
+        'Dashboard interativo com 645 municípios'
+      ],
+      icon: <Database className="w-4 h-4" />
+    },
+    {
+      date: 'Abril 2025',
+      title: 'Primeiros Workshops e Capacitação',
+      description: 'Início das atividades de educação e capacitação para stakeholders do setor.',
+      status: 'upcoming',
+      details: [
+        'Workshop sobre metodologia SAF',
+        'Treinamento de gestores públicos',
+        'Seminário sobre bioeconomia circular'
+      ],
+      icon: <Users className="w-4 h-4" />
+    },
+    {
+      date: 'Junho 2025',
+      title: 'Parcerias Estratégicas',
+      description: 'Consolidação de parcerias com universidades, governo e setor privado.',
+      status: 'upcoming',
+      details: [
+        'Acordo com Aalborg University',
+        'Parceria com CIBiogás',
+        'Colaboração com UNICA'
+      ],
+      icon: <Building2 className="w-4 h-4" />
+    },
+    {
+      date: 'Fevereiro 2030',
+      title: 'Conclusão do Projeto',
+      description: 'Encerramento da primeira fase do CP2B com legado de pesquisa e inovação.',
+      status: 'upcoming',
+      details: [
+        'Relatório final de impacto',
+        'Publicações científicas',
+        'Transferência de tecnologia'
+      ],
+      icon: <Award className="w-4 h-4" />
+    }
+  ]
 
   // 8 Thematic Axes data
   const thematicAxes = [
@@ -157,22 +227,30 @@ export default function AboutPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
                       <Factory className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
-                      <div className="text-2xl font-bold text-white">4,6 bi</div>
+                      <div className="text-2xl font-bold text-white">
+                        <AnimatedCounter end={4.6} decimals={1} suffix=" bi" />
+                      </div>
                       <div className="text-xs text-green-300 uppercase tracking-wide">m³ biogás/ano</div>
                     </div>
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
                       <TrendingUp className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
-                      <div className="text-2xl font-bold text-white">R$ 20M</div>
+                      <div className="text-2xl font-bold text-white">
+                        R$ <AnimatedCounter end={20} suffix="M" />
+                      </div>
                       <div className="text-xs text-green-300 uppercase tracking-wide">Investimento</div>
                     </div>
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
                       <MapPin className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
-                      <div className="text-2xl font-bold text-white">645</div>
+                      <div className="text-2xl font-bold text-white">
+                        <AnimatedCounter end={645} />
+                      </div>
                       <div className="text-xs text-green-300 uppercase tracking-wide">Municípios</div>
                     </div>
                     <div className="bg-green-900/50 rounded-lg p-4 text-center">
                       <Layers className="h-8 w-8 text-green-300 mx-auto mb-2" aria-hidden="true" />
-                      <div className="text-2xl font-bold text-white">8</div>
+                      <div className="text-2xl font-bold text-white">
+                        <AnimatedCounter end={8} />
+                      </div>
                       <div className="text-xs text-green-300 uppercase tracking-wide">Eixos Temáticos</div>
                     </div>
                   </div>
@@ -195,19 +273,27 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">4,6 bi</div>
+              <div className="text-2xl font-bold text-green-700">
+                <AnimatedCounter end={4.6} decimals={1} suffix=" bi" />
+              </div>
               <div className="text-xs text-gray-600 uppercase tracking-wide">m³/ano</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">R$ 20M</div>
+              <div className="text-2xl font-bold text-green-700">
+                R$ <AnimatedCounter end={20} suffix="M" />
+              </div>
               <div className="text-xs text-gray-600 uppercase tracking-wide">Investimento</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">645</div>
+              <div className="text-2xl font-bold text-green-700">
+                <AnimatedCounter end={645} />
+              </div>
               <div className="text-xs text-gray-600 uppercase tracking-wide">Municípios</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">8</div>
+              <div className="text-2xl font-bold text-green-700">
+                <AnimatedCounter end={8} />
+              </div>
               <div className="text-xs text-gray-600 uppercase tracking-wide">Eixos</div>
             </div>
           </div>
@@ -473,37 +559,49 @@ export default function AboutPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">4,6 bi</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={4.6} decimals={1} suffix=" bi" />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">m³ biogás/ano</div>
               <p className="text-green-200 text-sm mt-2">Potencial total estimado</p>
             </div>
 
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">6,4 M</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={6.4} decimals={1} suffix=" M" />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">m³ biometano/dia</div>
               <p className="text-green-200 text-sm mt-2">32% do consumo de gás natural</p>
             </div>
 
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">20 mil</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={20} suffix=" mil" />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">Empregos</div>
               <p className="text-green-200 text-sm mt-2">Diretos e indiretos</p>
             </div>
 
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">181</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={181} />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">Plantas de biogás</div>
               <p className="text-green-200 text-sm mt-2">84% sucroenergético</p>
             </div>
 
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">5,5 M</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={5.5} decimals={1} suffix=" M" />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">Hectares de cana</div>
               <p className="text-green-200 text-sm mt-2">50% produção nacional</p>
             </div>
 
             <div className="bg-green-800/50 rounded-xl p-6 border border-green-700/50 text-center hover:bg-green-800/70 transition-colors">
-              <div className="text-4xl font-bold text-white mb-2">16%</div>
+              <div className="text-4xl font-bold text-white mb-2">
+                <AnimatedCounter end={16} suffix="%" />
+              </div>
               <div className="text-green-300 uppercase text-sm tracking-wide">Redução GEE</div>
               <p className="text-green-200 text-sm mt-2">Meta climática estadual</p>
             </div>
@@ -588,6 +686,32 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Project Timeline */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Linha do Tempo do Projeto
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Acompanhe os principais marcos do desenvolvimento do CP2B desde o início até a conclusão prevista.
+            </p>
+          </div>
+
+          <Timeline events={projectTimeline} />
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <NewsletterSignup
+            title="Acompanhe o progresso do CP2B"
+            description="Receba atualizações sobre o projeto, publicações científicas e eventos do setor de biogás."
+          />
         </div>
       </section>
 
