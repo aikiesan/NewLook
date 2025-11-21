@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { ArrowLeft, MapPin, Users, Factory, Leaf, TrendingUp, DollarSign, GitCompare } from 'lucide-react';
 import { useComparison } from '@/contexts/ComparisonContext';
 
