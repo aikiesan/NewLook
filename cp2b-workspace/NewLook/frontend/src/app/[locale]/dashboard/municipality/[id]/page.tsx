@@ -1,10 +1,7 @@
 import MunicipalityClient from './MunicipalityClient';
 
-// Use dynamic rendering for all municipality pages
-// This ensures all municipalities from the database can be accessed
-export const dynamic = 'force-dynamic';
-
 // Server component wrapper
+// Data is fetched client-side, so this page can be statically exported
 export default function MunicipalityPage() {
   return <MunicipalityClient />;
 }
