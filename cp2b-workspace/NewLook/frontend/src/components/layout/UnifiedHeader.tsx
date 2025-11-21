@@ -154,11 +154,24 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
   const currentStyles = styles[effectiveVariant]
 
   return (
-    <header className={`sticky top-0 z-50 ${currentStyles.header}`}>
-      <nav
-        className="max-w-full mx-auto px-4 sm:px-6 lg:px-8"
-        aria-label="Main navigation"
-      >
+    <>
+      {/* Click outside overlay - rendered outside header */}
+      {(userMenuOpen || mobileMenuOpen) && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40"
+          onClick={() => {
+            setUserMenuOpen(false)
+            setMobileMenuOpen(false)
+          }}
+          aria-hidden="true"
+        />
+      )}
+
+      <header className={`sticky top-0 z-50 ${currentStyles.header}`}>
+        <nav
+          className="max-w-full mx-auto px-4 sm:px-6 lg:px-8"
+          aria-label="Main navigation"
+        >
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
@@ -334,7 +347,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div
-            className={`md:hidden ${currentStyles.mobileMenu}`}
+            className={`md:hidden relative z-50 ${currentStyles.mobileMenu}`}
             id="mobile-menu"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
@@ -417,18 +430,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
           </div>
         )}
       </nav>
-
-      {/* Click outside to close menus */}
-      {(userMenuOpen || mobileMenuOpen) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setUserMenuOpen(false)
-            setMobileMenuOpen(false)
-          }}
-          aria-hidden="true"
-        />
-      )}
     </header>
+    </>
   )
 }
