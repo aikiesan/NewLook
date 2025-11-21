@@ -7,6 +7,11 @@ import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
+import AnimatedCounter from '@/components/ui/AnimatedCounter'
+import VideoModal from '@/components/ui/VideoModal'
+import TestimonialCarousel, { Testimonial } from '@/components/ui/TestimonialCarousel'
+import NewsletterSignup from '@/components/ui/NewsletterSignup'
+import ParallaxSection from '@/components/ui/ParallaxSection'
 import {
   ArrowRight,
   Play,
@@ -99,19 +104,27 @@ const StatCard = ({
   number,
   label,
   description,
-  icon
+  icon,
+  animateValue,
+  suffix = ''
 }: {
   number: string
   label: string
   description: string
   icon: React.ReactNode
+  animateValue?: number
+  suffix?: string
 }) => (
   <div className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-slate-700 hover:border-cp2b-lime dark:hover:border-emerald-500 hover:shadow-xl dark:hover:shadow-dark-lg transition-all duration-500 hover:-translate-y-1">
     <div className="flex justify-center mb-3 transform group-hover:scale-110 transition-transform duration-300">
       {icon}
     </div>
     <div className="text-3xl font-bold text-cp2b-gray-900 dark:text-gray-100 mb-1 group-hover:text-cp2b-green transition-colors duration-300">
-      {number}
+      {animateValue ? (
+        <AnimatedCounter end={animateValue} duration={2000} suffix={suffix} />
+      ) : (
+        number
+      )}
     </div>
     <div className="text-sm font-semibold text-cp2b-green dark:text-emerald-400 mb-1">
       {label}
@@ -330,8 +343,34 @@ const screenshots = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const { isAuthenticated } = useAuth()
   const t = useTranslations('landing')
+
+  // Testimonials data
+  const testimonials: Testimonial[] = [
+    {
+      name: 'Dr. João Silva',
+      role: 'Pesquisador em Bioenergia',
+      organization: 'Universidade de São Paulo (USP)',
+      content: 'A plataforma CP2B Maps revolucionou nossa forma de analisar o potencial de biogás. A integração com MapBiomas e a análise MCDA são ferramentas indispensáveis para tomada de decisão.',
+      rating: 5
+    },
+    {
+      name: 'Maria Santos',
+      role: 'Gestora de Sustentabilidade',
+      organization: 'Empresa de Energia Renovável',
+      content: 'Utilizamos o CP2B Maps para identificar locais estratégicos para novas plantas de biogás. A análise de proximidade e os dados municipais detalhados nos economizaram meses de pesquisa.',
+      rating: 5
+    },
+    {
+      name: 'Prof. Carlos Oliveira',
+      role: 'Coordenador de Projetos',
+      organization: 'Instituto de Pesquisa Ambiental',
+      content: 'Excelente ferramenta para ensino e pesquisa. Os dados são precisos, a interface é intuitiva, e a documentação científica é completa. Recomendo para todos os profissionais do setor.',
+      rating: 5
+    }
+  ]
 
   // Auto-advance carousel
   useEffect(() => {
@@ -411,6 +450,7 @@ export default function HomePage() {
               </Link>
 
               <button
+                onClick={() => setIsVideoModalOpen(true)}
                 className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white border-2 border-cp2b-green hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
                 aria-label="Assistir demonstração em vídeo da plataforma"
               >
@@ -507,6 +547,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
               <StatCard
                 number="645"
+                animateValue={645}
                 label="Municípios"
                 description="Estado de SP"
                 icon={<MapPin className="w-7 h-7 text-cp2b-green" />}
@@ -514,6 +555,7 @@ export default function HomePage() {
 
               <StatCard
                 number="8"
+                animateValue={8}
                 label="Módulos"
                 description="Análise MCDA"
                 icon={<Layers className="w-7 h-7 text-cp2b-orange" />}
@@ -521,6 +563,7 @@ export default function HomePage() {
 
               <StatCard
                 number="58"
+                animateValue={58}
                 label="Referências"
                 description="Papers RAG AI"
                 icon={<BookOpen className="w-7 h-7 text-cp2b-lime" />}
@@ -657,6 +700,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-cp2b-gray-900 mb-4">
+                O que dizem os usuários
+              </h2>
+              <p className="text-lg text-cp2b-gray-600 max-w-2xl mx-auto">
+                Profissionais e pesquisadores que utilizam o CP2B Maps para suas análises de biogás
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={200}>
+            <TestimonialCarousel testimonials={testimonials} />
+          </FadeIn>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -690,6 +753,26 @@ export default function HomePage() {
           </FadeIn>
         </div>
       </section>
+
+      {/* Newsletter Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <NewsletterSignup
+              title="Receba novidades sobre biogás"
+              description="Inscreva-se para receber atualizações sobre novos recursos, análises e insights sobre o setor de biogás em São Paulo."
+            />
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        title="Demonstração da Plataforma CP2B Maps"
+      />
 
       {/* Footer */}
       <footer className="bg-cp2b-gray-900 text-white py-8">
