@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { getErrorMessage } from '@/types/errors'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -65,8 +66,8 @@ export default function RegisterPage() {
         full_name: formData.full_name
       })
       router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Falha no registro. Tente novamente.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Falha no registro. Tente novamente.')
     }
   }
 

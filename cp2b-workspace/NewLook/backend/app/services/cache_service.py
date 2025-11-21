@@ -3,6 +3,8 @@ In-Memory Cache Service for CP2B Maps V3
 Caches repeated proximity analyses and MapBiomas queries
 Sprint 4: Task 4.1 - Performance Optimization
 
+Thread-safe implementation using locks for concurrent access.
+
 Production note: Replace with Redis for multi-server deployments
 """
 
@@ -12,6 +14,7 @@ from collections import OrderedDict
 import hashlib
 import json
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +36,19 @@ class CacheEntry:
 
 class LRUCache:
     """
-    LRU (Least Recently Used) Cache with TTL
-    
+    Thread-safe LRU (Least Recently Used) Cache with TTL
+
     Features:
     - Automatic expiration (TTL)
     - Max size limit (evicts oldest)
     - Cache hit/miss tracking
+    - Thread-safe operations via lock
+
+    Thread Safety:
+    All cache operations are protected by a threading.Lock() to ensure
+    safe concurrent access in multi-threaded FastAPI environment.
     """
-    
+
     def __init__(self, max_size: int = 1000, default_ttl: int = 300):
         """
         Args:
@@ -50,7 +58,10 @@ class LRUCache:
         self.max_size = max_size
         self.default_ttl = default_ttl
         self.cache: OrderedDict[str, CacheEntry] = OrderedDict()
-        
+
+        # Thread safety
+        self._lock = threading.Lock()
+
         # Statistics
         self.hits = 0
         self.misses = 0
@@ -74,99 +85,105 @@ class LRUCache:
     
     def get(self, key: str) -> Optional[Any]:
         """
-        Get value from cache
-        
+        Get value from cache (thread-safe)
+
         Returns:
             Cached value if exists and not expired, None otherwise
         """
-        if key not in self.cache:
-            self.misses += 1
-            return None
-        
-        entry = self.cache[key]
-        
-        # Check expiration
-        if entry.is_expired():
-            del self.cache[key]
-            self.misses += 1
-            logger.debug(f"Cache expired: {key}")
-            return None
-        
-        # Move to end (mark as recently used)
-        self.cache.move_to_end(key)
-        self.hits += 1
-        
-        logger.debug(f"Cache hit: {key} (age: {entry.get_age_seconds()}s)")
-        return entry.value
+        with self._lock:
+            if key not in self.cache:
+                self.misses += 1
+                return None
+
+            entry = self.cache[key]
+
+            # Check expiration
+            if entry.is_expired():
+                del self.cache[key]
+                self.misses += 1
+                logger.debug(f"Cache expired: {key}")
+                return None
+
+            # Move to end (mark as recently used)
+            self.cache.move_to_end(key)
+            self.hits += 1
+
+            logger.debug(f"Cache hit: {key} (age: {entry.get_age_seconds()}s)")
+            return entry.value
     
     def set(self, key: str, value: Any, ttl: Optional[int] = None):
         """
-        Store value in cache
-        
+        Store value in cache (thread-safe)
+
         Args:
             key: Cache key
             value: Value to store
             ttl: Time-to-live in seconds (overrides default)
         """
-        # Remove existing entry if present
-        if key in self.cache:
-            del self.cache[key]
-        
-        # Evict oldest if at capacity
-        if len(self.cache) >= self.max_size:
-            oldest_key = next(iter(self.cache))
-            del self.cache[oldest_key]
-            self.evictions += 1
-            logger.debug(f"Cache eviction: {oldest_key}")
-        
-        # Add new entry
-        ttl_seconds = ttl if ttl is not None else self.default_ttl
-        self.cache[key] = CacheEntry(value, ttl_seconds)
-        
-        logger.debug(f"Cache set: {key} (TTL: {ttl_seconds}s)")
+        with self._lock:
+            # Remove existing entry if present
+            if key in self.cache:
+                del self.cache[key]
+
+            # Evict oldest if at capacity
+            if len(self.cache) >= self.max_size:
+                oldest_key = next(iter(self.cache))
+                del self.cache[oldest_key]
+                self.evictions += 1
+                logger.debug(f"Cache eviction: {oldest_key}")
+
+            # Add new entry
+            ttl_seconds = ttl if ttl is not None else self.default_ttl
+            self.cache[key] = CacheEntry(value, ttl_seconds)
+
+            logger.debug(f"Cache set: {key} (TTL: {ttl_seconds}s)")
     
     def delete(self, key: str):
-        """Delete specific cache entry"""
-        if key in self.cache:
-            del self.cache[key]
-    
+        """Delete specific cache entry (thread-safe)"""
+        with self._lock:
+            if key in self.cache:
+                del self.cache[key]
+
     def clear(self):
-        """Clear all cache entries"""
-        self.cache.clear()
-        self.hits = 0
-        self.misses = 0
-        self.evictions = 0
-        logger.info("Cache cleared")
+        """Clear all cache entries (thread-safe)"""
+        with self._lock:
+            self.cache.clear()
+            self.hits = 0
+            self.misses = 0
+            self.evictions = 0
+            logger.info("Cache cleared")
     
     def get_stats(self) -> dict:
-        """Get cache statistics"""
-        total_requests = self.hits + self.misses
-        hit_rate = (self.hits / total_requests * 100) if total_requests > 0 else 0
-        
-        return {
-            "size": len(self.cache),
-            "max_size": self.max_size,
-            "hits": self.hits,
-            "misses": self.misses,
-            "evictions": self.evictions,
-            "hit_rate_percent": round(hit_rate, 2),
-            "total_requests": total_requests
-        }
+        """Get cache statistics (thread-safe)"""
+        with self._lock:
+            total_requests = self.hits + self.misses
+            hit_rate = (self.hits / total_requests * 100) if total_requests > 0 else 0
+
+            return {
+                "size": len(self.cache),
+                "max_size": self.max_size,
+                "hits": self.hits,
+                "misses": self.misses,
+                "evictions": self.evictions,
+                "hit_rate_percent": round(hit_rate, 2),
+                "total_requests": total_requests
+            }
     
     def cleanup_expired(self) -> int:
-        """Remove all expired entries (periodic maintenance)"""
-        expired_keys = [
-            key for key, entry in self.cache.items()
-            if entry.is_expired()
-        ]
-        
-        for key in expired_keys:
-            del self.cache[key]
-        
-        if expired_keys:
-            logger.info(f"Cleaned up {len(expired_keys)} expired cache entries")
-        
-        return len(expired_keys)
+        """Remove all expired entries (periodic maintenance, thread-safe)"""
+        with self._lock:
+            expired_keys = [
+                key for key, entry in self.cache.items()
+                if entry.is_expired()
+            ]
+
+            for key in expired_keys:
+                del self.cache[key]
+
+            if expired_keys:
+                logger.info(f"Cleaned up {len(expired_keys)} expired cache entries")
+
+            return len(expired_keys)
 
 
 # Global cache instances
