@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 
 export interface Testimonial {
@@ -91,7 +92,7 @@ export default function TestimonialCarousel({
           {/* Testimonial Content */}
           <blockquote className="mb-8">
             <p className="text-lg md:text-xl text-gray-700 dark:text-gray-200 leading-relaxed italic">
-              "{currentTestimonial.content}"
+              &quot;{currentTestimonial.content}&quot;
             </p>
           </blockquote>
 
@@ -99,9 +100,11 @@ export default function TestimonialCarousel({
           <div className="flex items-center gap-4">
             {currentTestimonial.image && (
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-cp2b-lime flex-shrink-0">
-                <img
+                <Image
                   src={currentTestimonial.image}
                   alt={currentTestimonial.name}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-cover"
                 />
               </div>
