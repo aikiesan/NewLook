@@ -6,6 +6,7 @@
  * Updated with validated research from NIPE/UNICAMP and FAPESP sources
  */
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/navigation'
 import {
   ArrowLeft,
@@ -273,9 +274,11 @@ export default function AboutPage() {
                 <div className="md:w-1/3 bg-gradient-to-br from-green-600 to-emerald-700 p-8 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-white/30">
-                      <img
+                      <Image
                         src="/images/team/bruna-moraes.jpg"
                         alt="Profa. Dra. Bruna de Souza Moraes"
+                        width={128}
+                        height={128}
                         className="w-full h-full object-cover"
                       />
                     </div>
