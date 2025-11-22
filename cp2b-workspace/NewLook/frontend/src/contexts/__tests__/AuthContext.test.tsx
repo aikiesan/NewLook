@@ -43,7 +43,49 @@ describe('AuthContext', () => {
   }
 
   beforeEach(() => {
+    // Clear all mocks before each test
     jest.clearAllMocks()
+
+    // Mock Supabase auth methods that are always needed
+    ;(supabase.auth.getSession as jest.Mock) = jest.fn().mockResolvedValue({
+      data: { session: null },
+      error: null,
+    })
+
+    ;(supabase.auth.onAuthStateChange as jest.Mock) = jest.fn().mockReturnValue({
+      data: {
+        subscription: {
+          unsubscribe: jest.fn(),
+        },
+      },
+    })
+
+    // Mock supabase.auth.getUser by default
+    ;(supabase.auth.getUser as jest.Mock) = jest.fn().mockResolvedValue({
+      data: { user: null },
+      error: null,
+    })
+
+    // Mock supabase.auth methods
+    ;(supabase.auth.signUp as jest.Mock) = jest.fn()
+    ;(supabase.auth.signInWithPassword as jest.Mock) = jest.fn()
+    ;(supabase.auth.signOut as jest.Mock) = jest.fn()
+
+    // Mock supabase.from to return null by default (tests can override)
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      }),
+    })
+  })
+
+  afterEach(() => {
+    // Clean up any pending timers or async operations
+    jest.clearAllTimers()
   })
 
   describe('useAuth hook', () => {
