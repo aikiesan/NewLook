@@ -151,27 +151,12 @@ export default function MunicipalityPopup({ properties, onViewDetails }: Municip
         </div>
       </div>
 
-      {/* View Details Button */}
-      <button
-        type="button"
-        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-xs font-medium rounded transition-colors cursor-pointer shadow-sm hover:shadow"
-        onClick={() => {
-          if (onViewDetails) {
-            // Use callback if provided (e.g., from Leaflet popup)
-            onViewDetails(properties.id);
-          } else if (router) {
-            // Use Next.js router if available
-            router.push(`/dashboard/municipality/${properties.id}`);
-          } else {
-            // Fallback to window.location for contexts without router
-            // Get current locale from URL
-            const locale = window.location.pathname.split('/')[1] || 'pt-BR';
-            window.location.href = `/${locale}/dashboard/municipality/${properties.id}`;
-          }
-        }}
-      >
-        Ver Detalhes Completos →
-      </button>
+      {/* Info Footer */}
+      <div className="text-center pt-2 border-t border-gray-200">
+        <p className="text-[10px] text-gray-500">
+          Todas as informações principais são exibidas neste popup
+        </p>
+      </div>
     </div>
   );
 }
