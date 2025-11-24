@@ -761,7 +761,6 @@ export default function AboutPage() {
               <ul className="space-y-2 text-sm">
                 <li><Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
                 <li><Link href="/map" className="text-gray-400 hover:text-white transition-colors">Mapa Interativo</Link></li>
-                <li><Link href="/analysis" className="text-gray-400 hover:text-white transition-colors">Análises</Link></li>
                 <li><Link href="/login" className="text-gray-400 hover:text-white transition-colors">Login</Link></li>
               </ul>
             </div>
