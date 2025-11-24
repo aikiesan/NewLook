@@ -7,7 +7,7 @@
 Professional platform for analyzing **biogas potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
 
 **Research Project**: FAPESP 2025/08745-2  
-**Production URL**: https://new-look-nu.vercel.app  
+**Production URL**: https://cp2bmaps.pages.dev  
 **API Docs**: https://newlook-production.up.railway.app/docs
 
 ---
@@ -46,7 +46,7 @@ Professional platform for analyzing **biogas potential** from agricultural, live
 - **Maps**: React Leaflet 4.2
 - **Charts**: Recharts 2.12
 - **Auth**: Supabase Auth
-- **Deployment**: Vercel
+- **Deployment**: Cloudflare Pages
 
 ### Backend
 - **Framework**: FastAPI 0.104 + Uvicorn 0.24
@@ -302,7 +302,7 @@ supabase==2.7.4
 git push origin main
 
 # Railway (backend) auto-deploys
-# Vercel (frontend) auto-deploys
+# Cloudflare Pages (frontend) auto-deploys
 ```
 
 ### Manual Deploy
@@ -310,8 +310,8 @@ git push origin main
 See: [docs/DEPLOYMENT_CHECKLIST.md](./docs/DEPLOYMENT_CHECKLIST.md)
 
 **Production URLs**:
-- Frontend: https://new-look-nu.vercel.app
-- Backend: https://newlook-production.up.railway.app
+- Frontend: https://cp2bmaps.pages.dev (Cloudflare Pages)
+- Backend: https://newlook-production.up.railway.app (Railway)
 - API Docs: https://newlook-production.up.railway.app/docs
 
 ---
@@ -364,7 +364,7 @@ See [LICENSE](./LICENSE) for details.
 - **MapBiomas**: Land use data (https://mapbiomas.org)
 - **DBFZ**: Inspiration for UI/UX (https://datalab.dbfz.de/resdb)
 - **Supabase**: Database hosting
-- **Vercel**: Frontend hosting
+- **Cloudflare Pages**: Frontend hosting
 - **Railway**: Backend hosting
 
 ---

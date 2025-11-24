@@ -50,7 +50,11 @@
       "Bash(findstr:*)",
       "Bash(dir \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\NewLook\\backend\\data\\shapefiles\" /b)",
       "Bash(dir \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\NewLook\\backend\\data\\shapefiles\" /b /a)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(copy \"C:\\Users\\Lucas\\Documents\\CP2B\\Validacao_dados\\02_LITERATURA\\PROTOCO_CODIGESTAO\\WhatsApp Image 2025-11-04 at 14.24.10.jpeg\" \"C:\\Users\\Lucas\\Documents\\CP2B\\CP2B_Maps_V3\\cp2b-workspace\\NewLook\\frontend\\public\\images\\team\\bruna-moraes.jpg\")",
+      "Bash(copy:*)",
+      "Bash(powershell:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
     ],
     "deny": [],
     "ask": []

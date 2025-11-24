@@ -5,6 +5,7 @@ Sprint 4: Performance optimizations, error handling, and production deployment
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from datetime import datetime, timezone
@@ -29,12 +30,12 @@ app = FastAPI(
 # 1. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 2. CORS middleware - Allow Vercel production + preview deployments
+# 2. CORS middleware - Allow Cloudflare Pages deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes localhost origins
-    # Allow all Vercel preview deployments for this project
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    # Allow all Cloudflare Pages preview deployments
+    allow_origin_regex=r"https://.*\.pages\.dev",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
     allow_headers=["*"],  # Allow all headers for preflight compatibility
@@ -45,13 +46,18 @@ app.add_middleware(
 # 3. Response compression (reduces bandwidth)
 app.middleware("http")(gzip_middleware)
 
-# Trusted host middleware - DISABLED for Railway deployment
-# Railway uses dynamic host headers that don't work well with TrustedHostMiddleware
-# TODO: Re-enable with proper configuration after deployment is stable
-# app.add_middleware(
-#     TrustedHostMiddleware,
-#     allowed_hosts=settings.ALLOWED_HOSTS,
-# )
+# 4. Trusted host middleware - Prevents host header injection attacks
+# Supports Railway (backend), Cloudflare Pages (frontend), and local development
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=[
+        "newlook-production.up.railway.app",
+        "*.pages.dev",  # Cloudflare Pages (production + preview)
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",  # For Railway internal health checks
+    ]
+)
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
