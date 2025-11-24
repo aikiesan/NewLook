@@ -364,6 +364,8 @@ async def get_municipalities_polygons():
                     co2_reduction_tons_year,
                     population,
                     administrative_region,
+                    immediate_region,
+                    intermediate_region,
                     area_km2
                 FROM municipalities
             """)
@@ -385,6 +387,8 @@ async def get_municipalities_polygons():
                     'co2_reduction_tons_year': row.get('co2_reduction_tons_year', 0) or 0,
                     'population': row.get('population', 0) or 0,
                     'administrative_region': row.get('administrative_region', ''),
+                    'immediate_region': row.get('immediate_region', ''),
+                    'intermediate_region': row.get('intermediate_region', ''),
                     'area_km2': row.get('area_km2', 0) or 0
                 }
 
@@ -428,6 +432,18 @@ async def get_municipalities_polygons():
             matched_count += 1
             area = biogas_data['area_km2'] or 0
             pop = biogas_data['population'] or 0
+            total_biogas = biogas_data['total_biogas_m3_year']
+
+            # Calculate potential category
+            if total_biogas > 100000000:
+                potential_category = 'ALTO'
+            elif total_biogas > 10000000:
+                potential_category = 'MEDIO'
+            elif total_biogas > 0:
+                potential_category = 'BAIXO'
+            else:
+                potential_category = 'SEM DADOS'
+
             enriched_props.update({
                 'total_biogas': round(biogas_data['total_biogas_m3_year'], 2),
                 'total_biogas_m3_year': round(biogas_data['total_biogas_m3_year'], 2),
@@ -443,9 +459,11 @@ async def get_municipalities_polygons():
                 'co2_reduction_tons_year': round(biogas_data['co2_reduction_tons_year'], 2),
                 'population': pop,
                 'region': biogas_data['administrative_region'],
-                'intermediate_region': biogas_data['administrative_region'],
+                'immediate_region': biogas_data['immediate_region'],
+                'intermediate_region': biogas_data['intermediate_region'],
                 'area_km2': round(area, 2),
-                'population_density': round(pop / area, 2) if area > 0 else 0
+                'population_density': round(pop / area, 2) if area > 0 else 0,
+                'potential_category': potential_category
             })
         else:
             # No biogas data found - set defaults
@@ -464,9 +482,11 @@ async def get_municipalities_polygons():
                 'co2_reduction_tons_year': 0,
                 'population': 0,
                 'region': '',
+                'immediate_region': '',
                 'intermediate_region': '',
                 'area_km2': 0,
-                'population_density': 0
+                'population_density': 0,
+                'potential_category': 'SEM DADOS'
             })
 
         enriched_features.append({
