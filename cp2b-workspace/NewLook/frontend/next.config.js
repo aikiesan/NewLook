@@ -6,24 +6,27 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig = {
   // Enable static export only for production builds (Cloudflare Pages)
   // For local development, use dynamic rendering
-  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' 
-    ? { output: 'export' } 
+  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true'
+    ? { output: 'export' }
     : {}),
-  
+
   // Disable image optimization (not supported in static export)
   images: {
     unoptimized: true,
   },
-  
+
   // Disabled React Strict Mode due to known incompatibility with Leaflet
   // React Strict Mode causes double-mounting in development which triggers
   // "Map container is already initialized" error from Leaflet
   // This only affects development; production builds work fine
   reactStrictMode: false,
-  
-  // Trailing slash for better static hosting compatibility
+
+  // Trailing slash disabled for Cloudflare Pages compatibility
   trailingSlash: false,
-  
+
+  // Skip trailing slash redirect for static export
+  skipTrailingSlashRedirect: true,
+
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -36,6 +39,12 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Experimental features for better static export compatibility
+  experimental: {
+    // Disable Suspense CSR bailout for better static export
+    missingSuspenseWithCSRBailout: false,
   },
 }
 
