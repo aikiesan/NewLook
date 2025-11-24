@@ -6,7 +6,7 @@ Comprehensive spatial analysis for biogas potential assessment
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import logging
 import time
@@ -325,7 +325,7 @@ async def analyze_proximity(request: ProximityAnalysisRequest):
                 radius_recommendation=radius_recommendation
             ),
             metadata=AnalysisMetadata(
-                analysis_timestamp=datetime.utcnow().isoformat() + "Z",
+                analysis_timestamp=datetime.now(timezone.utc).isoformat(),
                 processing_time_ms=processing_time
             )
         )

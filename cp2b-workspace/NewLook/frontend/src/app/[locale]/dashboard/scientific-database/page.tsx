@@ -116,7 +116,7 @@ export default function ScientificDatabasePage() {
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
-  const [yearRange, setYearRange] = useState<[number, number]>([2010, 2025])
+  const [yearRange, setYearRange] = useState<[number, number]>([2010, new Date().getFullYear()])
   const [peerReviewedOnly, setPeerReviewedOnly] = useState(false)
 
   // Loading states
