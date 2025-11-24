@@ -41,22 +41,22 @@ const navItems: NavItem[] = [
     description: 'Mapa interativo'
   },
   {
-    href: '/analysis',
+    href: '/dashboard/advanced-analysis',
     label: 'Análises',
     icon: <BarChart3 className="h-4 w-4" />,
     description: 'MCDA e estatísticas'
   },
   {
-    href: '/compare',
-    label: 'Comparar',
-    icon: <GitCompare className="h-4 w-4" />,
-    description: 'Comparar municípios'
+    href: '/dashboard/scientific-database',
+    label: 'Científica',
+    icon: <Database className="h-4 w-4" />,
+    description: 'Base de dados científica'
   },
   {
-    href: '/data',
-    label: 'Dados',
-    icon: <Database className="h-4 w-4" />,
-    description: 'Explorar dados'
+    href: '/dashboard/proximity',
+    label: 'Proximidade',
+    icon: <GitCompare className="h-4 w-4" />,
+    description: 'Análise de proximidade'
   },
 ]
 
