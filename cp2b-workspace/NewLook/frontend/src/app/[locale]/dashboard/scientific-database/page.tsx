@@ -916,14 +916,17 @@ export default function ScientificDatabasePage() {
                         )}
                       </div>
 
+import ParameterWithReference from '@/components/scientific/ParameterWithReference';
+
+// ... inside the component, in the 'chemical' tab rendering ...
                       <div className="space-y-3">
-                        {/* BMP */}
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">BMP</span>
-                          <span className="font-mono font-semibold text-gray-900">
-                            {residue.bmp} L/kg SV
-                          </span>
-                        </div>
+                        <ParameterWithReference
+                          residueId={residue.residue_id}
+                          parameterType="bmp"
+                          label="BMP"
+                          value={residue.bmp}
+                          unit="L/kg SV"
+                        />
 
                         {/* Composition */}
                         <div className="grid grid-cols-3 gap-2 text-xs">
@@ -941,34 +944,29 @@ export default function ScientificDatabasePage() {
                           </div>
                         </div>
 
-                        {/* C:N Ratio */}
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">C:N</span>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: cnStatus.color }}
-                            />
-                            <span className="font-mono font-semibold text-gray-900">
-                              {residue.cn_ratio}:1
-                            </span>
-                          </div>
-                        </div>
+                        <ParameterWithReference
+                          residueId={residue.residue_id}
+                          parameterType="cn_ratio"
+                          label="C:N"
+                          value={`${residue.cn_ratio}:1`}
+                        />
 
-                        {/* pH */}
                         {residue.ph && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">pH</span>
-                            <span className="font-mono text-gray-900">{residue.ph}</span>
-                          </div>
+                          <ParameterWithReference
+                            residueId={residue.residue_id}
+                            parameterType="ph"
+                            label="pH"
+                            value={residue.ph}
+                          />
                         )}
 
-                        {/* CH4 Content */}
                         {residue.ch4_content && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Teor CH4</span>
-                            <span className="font-mono text-gray-900">{residue.ch4_content}%</span>
-                          </div>
+                          <ParameterWithReference
+                            residueId={residue.residue_id}
+                            parameterType="ch4_content"
+                            label="Teor CH4"
+                            value={`${residue.ch4_content}%`}
+                          />
                         )}
                       </div>
                     </div>

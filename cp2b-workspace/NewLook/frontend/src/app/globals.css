@@ -92,9 +92,8 @@
 
 /* Base styles */
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
+  /* Remove html scroll-behavior to prevent Next.js 15 warning */
+  /* Next.js now handles scroll behavior through its routing system */
 
   body {
     @apply bg-[rgb(var(--background))] text-[rgb(var(--text-primary))];

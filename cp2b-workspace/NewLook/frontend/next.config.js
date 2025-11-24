@@ -4,8 +4,11 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export for Cloudflare Pages
-  output: 'export',
+  // Enable static export only for production builds (Cloudflare Pages)
+  // For local development, use dynamic rendering
+  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' 
+    ? { output: 'export' } 
+    : {}),
   
   // Disable image optimization (not supported in static export)
   images: {

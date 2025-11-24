@@ -329,3 +329,134 @@ export const EXPORT_OPTIONS: ExportOption[] = [
   { format: 'geojson', icon: 'Map', label: 'GeoJSON', description: 'Para software GIS' },
   { format: 'json', icon: 'Braces', label: 'JSON', description: 'Dados estruturados para API' }
 ]
+
+// ============================================================================
+// PER-RESIDUE CUSTOMIZATION TYPES
+// ============================================================================
+
+// Scenario type for the new scenario system
+export type ScenarioType = 'baseline' | 'conservative' | 'optimistic' | 'custom'
+
+// Per-residue factor overrides
+// Maps residue code (e.g., "AG_CANA_TORTA_FILTRO") to custom correction factors
+// null or undefined means "use default factors from CSV"
+export interface ResidueFactorOverrides {
+  [residueCode: string]: CorrectionFactors | null | undefined
+}
+
+// Scenario configuration with per-residue factors
+export interface ResidueScenario {
+  type: ScenarioType
+  name: string
+  description: string
+  color: string
+  // For baseline: uses default factors from residueFactors.ts
+  // For conservative/optimistic: applies multiplier to all factors
+  // For custom: uses residueFactorOverrides
+  factorOverrides?: ResidueFactorOverrides
+  multiplier?: number  // For conservative/optimistic scenarios
+}
+
+// Default scenarios for the new system
+export const RESIDUE_SCENARIOS: Record<ScenarioType, Omit<ResidueScenario, 'type'>> = {
+  baseline: {
+    name: 'Baseline',
+    description: 'Fatores padrão baseados em dados da literatura (CSV)',
+    color: '#3B82F6',
+    multiplier: 1.0
+  },
+  conservative: {
+    name: 'Conservador',
+    description: 'Reduz todos os fatores em 20% (pior cenário)',
+    color: '#F59E0B',
+    multiplier: 0.8
+  },
+  optimistic: {
+    name: 'Otimista',
+    description: 'Aumenta fatores em 15% (melhor cenário)',
+    color: '#22C55E',
+    multiplier: 1.15
+  },
+  custom: {
+    name: 'Personalizado',
+    description: 'Fatores ajustados manualmente por resíduo',
+    color: '#8B5CF6'
+  }
+}
+
+// Weighted FDE calculation result for multiple residues
+export interface WeightedFDEResult {
+  overallFDE: number  // Weighted average FDE (0-1)
+  totalTheoretical: number  // Total theoretical potential (m3/year)
+  totalAvailable: number  // Total available after FDE (m3/year)
+  residueContributions: ResidueContribution[]
+}
+
+// Individual residue contribution to weighted FDE
+export interface ResidueContribution {
+  residueCode: string
+  residueName: string
+  theoretical: number  // m3/year for this residue
+  fde: number  // 0-1
+  available: number  // theoretical * fde
+  weight: number  // Contribution to weighted average (0-1)
+  factors: CorrectionFactors  // Factors used (default or custom)
+}
+
+// Calculate weighted FDE for multiple residues
+export function calculateWeightedFDE(
+  residuePotentials: Array<{ code: string; name: string; theoretical: number }>,
+  factorOverrides: ResidueFactorOverrides,
+  defaultFactorsMap: Map<string, CorrectionFactors>
+): WeightedFDEResult {
+  const contributions: ResidueContribution[] = []
+  let totalTheoretical = 0
+  let totalAvailable = 0
+
+  residuePotentials.forEach(({ code, name, theoretical }) => {
+    // Use override factors if available, otherwise use defaults
+    const factors = factorOverrides[code] || defaultFactorsMap.get(code) || DEFAULT_FACTORS
+    const fde = calculateFDE(factors)
+    const available = theoretical * fde
+
+    totalTheoretical += theoretical
+    totalAvailable += available
+
+    contributions.push({
+      residueCode: code,
+      residueName: name,
+      theoretical,
+      fde,
+      available,
+      weight: 0,  // Will be calculated after totals
+      factors
+    })
+  })
+
+  // Calculate weights (contribution to weighted average)
+  contributions.forEach(contrib => {
+    contrib.weight = totalTheoretical > 0 ? contrib.theoretical / totalTheoretical : 0
+  })
+
+  const overallFDE = totalTheoretical > 0 ? totalAvailable / totalTheoretical : 0
+
+  return {
+    overallFDE,
+    totalTheoretical,
+    totalAvailable,
+    residueContributions: contributions
+  }
+}
+
+// Apply scenario multiplier to factors
+export function applyScenarioMultiplier(
+  factors: CorrectionFactors,
+  multiplier: number
+): CorrectionFactors {
+  return {
+    fc: Math.min(1, Math.max(0, factors.fc * multiplier)),
+    fcp: Math.min(1, Math.max(0, factors.fcp * multiplier)),
+    fs: Math.min(1, Math.max(0, factors.fs * multiplier)),
+    fl: Math.min(1, Math.max(0, factors.fl * multiplier))
+  }
+}
