@@ -5,7 +5,7 @@
  * Full-page map with floating panels (DBFZ-inspired)
  */
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'

@@ -96,8 +96,8 @@ export default function MunicipalityLayer({
     // Tooltip (hover)
     layer.bindTooltip(
       `<div style="text-align: center; padding: 4px;">
-        <strong style="font-size: 12px;">${props.name}</strong><br/>
-        <span style="font-size: 11px; color: #666;">
+        <strong style="font-size: 12px; color: white;">${props.name}</strong><br/>
+        <span style="font-size: 11px; color: rgba(255, 255, 255, 0.9);">
           ${getBiomassLabel()}: ${formatBiogas(biogasValue)} m³/ano
         </span>
       </div>`,
@@ -113,11 +113,21 @@ export default function MunicipalityLayer({
     layer.bindPopup(() => {
       const container = L.DomUtil.create('div');
       const root = createRoot(container);
-      root.render(<MunicipalityPopup properties={props} />);
+
+      root.render(
+        <MunicipalityPopup
+          properties={props}
+        />
+      );
       return container;
     }, {
-      maxWidth: 350,
-      className: 'custom-popup',
+      maxWidth: 340,
+      minWidth: 340,
+      maxHeight: 480,
+      className: 'municipality-popup',
+      autoPan: true,
+      autoPanPadding: [50, 50],
+      keepInView: true,
     });
 
     // Hover effects for polygons

@@ -12,6 +12,7 @@ import type {
   LoginCredentials,
   RegistrationData
 } from '@/types/auth'
+import { createAuthError, toAppError, getErrorMessage } from '@/types/errors'
 import { logger } from '@/lib/logger'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -111,6 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw createAuthError(
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'AUTH_FAILED'
+        )
+      }
+
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -126,9 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (authData.user && authData.session) {
         await fetchUserProfile(authData.user.id, authData.session.access_token)
       }
-    } catch (error: any) {
-      logger.error('Registration error:', error)
-      throw new Error(error.message || 'Registration failed')
+    } catch (error: unknown) {
+      const appError = toAppError(error)
+      logger.error('Registration error:', appError)
+      throw createAuthError(
+        getErrorMessage(error) || 'Registration failed',
+        'REGISTRATION_FAILED'
+      )
     } finally {
       setLoading(false)
     }
@@ -138,6 +151,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       setLoading(true)
+
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw createAuthError(
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'AUTH_FAILED'
+        )
+      }
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
@@ -149,9 +170,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.user && data.session) {
         await fetchUserProfile(data.user.id, data.session.access_token)
       }
-    } catch (error: any) {
-      logger.error('Login error:', error)
-      throw new Error(error.message || 'Login failed')
+    } catch (error: unknown) {
+      const appError = toAppError(error)
+      logger.error('Login error:', appError)
+      throw createAuthError(
+        getErrorMessage(error) || 'Login failed',
+        'INVALID_CREDENTIALS'
+      )
     } finally {
       setLoading(false)
     }
@@ -164,9 +189,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       setUser(null)
-    } catch (error: any) {
-      logger.error('Logout error:', error)
-      throw new Error(error.message || 'Logout failed')
+    } catch (error: unknown) {
+      const appError = toAppError(error)
+      logger.error('Logout error:', appError)
+      throw createAuthError(
+        getErrorMessage(error) || 'Logout failed',
+        'AUTH_FAILED'
+      )
     } finally {
       setLoading(false)
     }
@@ -203,9 +232,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updated_at: new Date().toISOString()
         })
       }
-    } catch (error: any) {
-      logger.error('Update profile error:', error)
-      throw new Error(error.message || 'Profile update failed')
+    } catch (error: unknown) {
+      const appError = toAppError(error)
+      logger.error('Update profile error:', appError)
+      throw createAuthError(
+        getErrorMessage(error) || 'Profile update failed',
+        'AUTH_FAILED'
+      )
     } finally {
       setLoading(false)
     }

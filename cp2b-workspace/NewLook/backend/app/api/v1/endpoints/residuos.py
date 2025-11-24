@@ -222,7 +222,8 @@ async def get_residuos(
                 params.append(f"%{search}%")
 
             query += " ORDER BY s.ordem, r.nome"
-            query += f" LIMIT {limit} OFFSET {offset}"
+            query += " LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
 
             cursor.execute(query, params)
 

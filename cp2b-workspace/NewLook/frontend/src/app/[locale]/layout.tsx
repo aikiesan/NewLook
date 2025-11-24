@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ComparisonProvider } from '@/contexts/ComparisonContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import ComparisonBar from '@/components/comparison/ComparisonBar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -40,8 +41,10 @@ export default async function LocaleLayout({
       <ThemeProvider>
         <AuthProvider>
           <ComparisonProvider>
-            {children}
-            <ComparisonBar />
+            <ErrorBoundary>
+              {children}
+              <ComparisonBar />
+            </ErrorBoundary>
           </ComparisonProvider>
         </AuthProvider>
       </ThemeProvider>

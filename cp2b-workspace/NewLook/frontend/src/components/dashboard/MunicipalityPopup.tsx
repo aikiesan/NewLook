@@ -1,6 +1,7 @@
 /**
  * CP2B Maps V3 - Municipality Popup Component
- * Displays detailed municipality information in map popup
+ * Displays all municipality information in an interactive map popup
+ * No separate detail pages needed - all info is shown here
  */
 
 'use client';
@@ -29,19 +30,19 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
   const urbanPercentage = calculatePercentage(properties.urban_biogas_m3_year, totalBiogas);
 
   return (
-    <div className="min-w-[280px] max-w-[320px]">
+    <div className="w-[316px] max-w-[316px]">
       {/* Header */}
-      <div className="pb-3 border-b border-gray-200 mb-3">
-        <h3 className="text-lg font-bold text-gray-900">
+      <div className="pb-2 border-b border-gray-200 mb-2.5">
+        <h3 className="text-base font-bold text-gray-900 leading-tight mb-1">
           {properties.name}
         </h3>
-        <p className="text-xs text-gray-500">
+        <p className="text-[11px] text-gray-500">
           IBGE: {properties.ibge_code}
         </p>
 
         {/* Category Badge */}
         <span
-          className={`inline-block px-2 py-1 mt-2 text-xs font-semibold rounded ${getCategoryColor(
+          className={`inline-block px-2 py-0.5 mt-1.5 text-[10px] font-semibold rounded ${getCategoryColor(
             properties.potential_category
           )}`}
         >
@@ -50,9 +51,9 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
       </div>
 
       {/* Total Biogas Potential */}
-      <div className="mb-4 p-3 bg-green-50 rounded-lg">
-        <div className="flex items-center gap-2 mb-1">
-          <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="mb-2.5 p-2 bg-green-50 rounded">
+        <div className="flex items-center gap-1.5 mb-1">
+          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <span className="text-xs font-medium text-green-900">
@@ -65,93 +66,88 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
       </div>
 
       {/* Sector Breakdown */}
-      <div className="space-y-2 mb-4">
-        <h4 className="text-xs font-semibold text-gray-700 mb-2">
+      <div className="space-y-2 mb-2.5">
+        <h4 className="text-xs font-semibold text-gray-700 mb-1.5">
           Distribuição por Setor:
         </h4>
 
         {/* Agricultural */}
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">🌾 Agrícola</span>
-          <div className="flex items-center gap-2">
-            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-600"
-                style={{ width: `${agriPercentage}%` }}
-              />
-            </div>
-            <span className="font-medium text-gray-900 w-12 text-right">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-gray-600">🌾 Agrícola</span>
+            <span className="font-semibold text-gray-900">
               {formatPercentage(agriPercentage)}
             </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-green-600 transition-all"
+              style={{ width: `${agriPercentage}%` }}
+            />
           </div>
         </div>
 
         {/* Livestock */}
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">🐄 Pecuária</span>
-          <div className="flex items-center gap-2">
-            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-yellow-600"
-                style={{ width: `${livestockPercentage}%` }}
-              />
-            </div>
-            <span className="font-medium text-gray-900 w-12 text-right">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-gray-600">🐄 Pecuária</span>
+            <span className="font-semibold text-gray-900">
               {formatPercentage(livestockPercentage)}
             </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-yellow-600 transition-all"
+              style={{ width: `${livestockPercentage}%` }}
+            />
           </div>
         </div>
 
         {/* Urban */}
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">🏙️ Urbano</span>
-          <div className="flex items-center gap-2">
-            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600"
-                style={{ width: `${urbanPercentage}%` }}
-              />
-            </div>
-            <span className="font-medium text-gray-900 w-12 text-right">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-gray-600">🏙️ Urbano</span>
+            <span className="font-semibold text-gray-900">
               {formatPercentage(urbanPercentage)}
             </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 transition-all"
+              style={{ width: `${urbanPercentage}%` }}
+            />
           </div>
         </div>
       </div>
 
       {/* Demographics */}
-      <div className="pt-3 border-t border-gray-200 space-y-2 mb-4">
-        <div className="flex justify-between text-xs">
+      <div className="pt-2 border-t border-gray-200 space-y-1.5 mb-2">
+        <div className="flex justify-between text-[11px]">
           <span className="text-gray-600">População:</span>
           <span className="font-medium text-gray-900">
             {formatPopulation(properties.population)}
           </span>
         </div>
-        <div className="flex justify-between text-xs">
+        <div className="flex justify-between text-[11px]">
           <span className="text-gray-600">Área:</span>
           <span className="font-medium text-gray-900">
             {formatArea(properties.area_km2)}
           </span>
         </div>
-        <div className="flex justify-between text-xs">
+        <div className="flex justify-between text-[11px]">
           <span className="text-gray-600">Região:</span>
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-gray-900 truncate max-w-[200px]" title={properties.immediate_region}>
             {properties.immediate_region}
           </span>
         </div>
       </div>
 
-      {/* View Details Button */}
-      <a
-        href={`/dashboard/municipality/${properties.id}`}
-        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-sm font-medium rounded transition-colors"
-        onClick={(e) => {
-          e.preventDefault();
-          window.location.href = `/dashboard/municipality/${properties.id}`;
-        }}
-      >
-        Ver Detalhes Completos →
-      </a>
+      {/* Info Footer */}
+      <div className="text-center pt-2 border-t border-gray-200">
+        <p className="text-[10px] text-gray-500 leading-snug">
+          Todas as informações principais são exibidas neste popup
+        </p>
+      </div>
     </div>
   );
 }

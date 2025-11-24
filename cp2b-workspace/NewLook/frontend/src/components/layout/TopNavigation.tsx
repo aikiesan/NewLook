@@ -7,8 +7,7 @@
  */
 
 import React, { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import {
   Leaf,
   Map,
@@ -25,6 +24,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { logger } from '@/lib/logger'
 
 interface NavItem {
   href: string
@@ -41,22 +41,22 @@ const navItems: NavItem[] = [
     description: 'Mapa interativo'
   },
   {
-    href: '/analysis',
+    href: '/dashboard/advanced-analysis',
     label: 'Análises',
     icon: <BarChart3 className="h-4 w-4" />,
     description: 'MCDA e estatísticas'
   },
   {
-    href: '/compare',
-    label: 'Comparar',
-    icon: <GitCompare className="h-4 w-4" />,
-    description: 'Comparar municípios'
+    href: '/dashboard/scientific-database',
+    label: 'Científica',
+    icon: <Database className="h-4 w-4" />,
+    description: 'Base de dados científica'
   },
   {
-    href: '/data',
-    label: 'Dados',
-    icon: <Database className="h-4 w-4" />,
-    description: 'Explorar dados'
+    href: '/dashboard/proximity',
+    label: 'Proximidade',
+    icon: <GitCompare className="h-4 w-4" />,
+    description: 'Análise de proximidade'
   },
 ]
 
@@ -71,7 +71,7 @@ export default function TopNavigation() {
       await logout()
       setUserMenuOpen(false)
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 

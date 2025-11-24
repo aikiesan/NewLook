@@ -74,8 +74,14 @@ MAPBIOMAS_RESIDUOS_MAPPING = {
 WGS84 = "EPSG:4326"  # Input/output
 UTM_23S = "EPSG:31983"  # SIRGAS 2000 / UTM zone 23S - for accurate buffer in meters
 
-# Shapefile directory path - located in project_map/data/shapefiles
-SHAPEFILE_DIR = Path(__file__).parent.parent.parent.parent.parent / "project_map" / "data" / "shapefiles"
+# Shapefile directory paths - check Railway deployment first, then local development
+# Railway downloads to: backend/data/shapefiles/
+# Local development uses: project_map/data/shapefile/
+_RAILWAY_SHAPEFILE_DIR = Path(__file__).parent.parent.parent / "data" / "shapefiles"
+_LOCAL_SHAPEFILE_DIR = Path(__file__).parent.parent.parent.parent.parent / "project_map" / "data" / "shapefile"
+
+# Use Railway path if it exists, otherwise fall back to local
+SHAPEFILE_DIR = _RAILWAY_SHAPEFILE_DIR if _RAILWAY_SHAPEFILE_DIR.exists() else _LOCAL_SHAPEFILE_DIR
 
 
 class ProximityService:

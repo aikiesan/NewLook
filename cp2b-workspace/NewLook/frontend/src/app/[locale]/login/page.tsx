@@ -5,11 +5,11 @@
  * WCAG 2.1 AA Compliant
  */
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { LogIn, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { getErrorMessage } from '@/types/errors'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,8 +31,8 @@ export default function LoginPage() {
     try {
       await login({ email, password })
       router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Falha no login. Verifique suas credenciais.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Falha no login. Verifique suas credenciais.')
     }
   }
 
