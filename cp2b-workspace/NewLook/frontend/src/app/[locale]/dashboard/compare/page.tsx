@@ -256,20 +256,6 @@ function ComparePageContent() {
             </tbody>
           </table>
         </div>
-
-        {/* Individual Links */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {municipalities.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => router.push(`/dashboard/municipality/${m.id}`)}
-              className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
-            >
-              <p className="font-medium text-gray-900">{m.municipality_name}</p>
-              <p className="text-sm text-green-600 mt-1">Ver detalhes completos →</p>
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

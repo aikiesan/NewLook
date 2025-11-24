@@ -716,8 +716,7 @@ export default function AdvancedAnalysisPage() {
                       {filteredMunicipalities.slice(0, 50).map((municipality, index) => (
                         <tr
                           key={municipality.id}
-                          className="hover:bg-green-50/50 transition-colors cursor-pointer"
-                          onClick={() => router.push(`/dashboard/municipality/${municipality.id}`)}
+                          className="hover:bg-green-50/50 transition-colors"
                         >
                           <td className="py-4 px-4 text-gray-500 font-medium">{index + 1}</td>
                           <td className="py-4 px-4">

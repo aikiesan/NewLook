@@ -1,12 +1,12 @@
 /**
  * CP2B Maps V3 - Municipality Popup Component
- * Displays detailed municipality information in map popup
+ * Displays all municipality information in an interactive map popup
+ * No separate detail pages needed - all info is shown here
  */
 
 'use client';
 
 import React from 'react';
-import { useRouter } from '@/i18n/navigation';
 import type { MunicipalityProperties } from '@/types/geospatial';
 import {
   formatBiogas,
@@ -21,18 +21,9 @@ import {
 
 interface MunicipalityPopupProps {
   properties: MunicipalityProperties;
-  onViewDetails?: (municipalityId: number) => void;
 }
 
-export default function MunicipalityPopup({ properties, onViewDetails }: MunicipalityPopupProps) {
-  // Only use router if we're in a context where it's available (not in Leaflet popup)
-  let router;
-  try {
-    router = useRouter();
-  } catch (e) {
-    // Router not available (e.g., in Leaflet popup) - will use callback or window.location
-    router = null;
-  }
+export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
   const totalBiogas = properties.total_biogas_m3_year;
   const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year, totalBiogas);
   const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year, totalBiogas);
@@ -151,27 +142,12 @@ export default function MunicipalityPopup({ properties, onViewDetails }: Municip
         </div>
       </div>
 
-      {/* View Details Button */}
-      <button
-        type="button"
-        className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-center text-xs font-medium rounded transition-colors cursor-pointer shadow-sm hover:shadow"
-        onClick={() => {
-          if (onViewDetails) {
-            // Use callback if provided (e.g., from Leaflet popup)
-            onViewDetails(properties.id);
-          } else if (router) {
-            // Use Next.js router if available
-            router.push(`/dashboard/municipality/${properties.id}`);
-          } else {
-            // Fallback to window.location for contexts without router
-            // Get current locale from URL
-            const locale = window.location.pathname.split('/')[1] || 'pt-BR';
-            window.location.href = `/${locale}/dashboard/municipality/${properties.id}`;
-          }
-        }}
-      >
-        Ver Detalhes Completos →
-      </button>
+      {/* Info Footer */}
+      <div className="text-center pt-2 border-t border-gray-200">
+        <p className="text-[10px] text-gray-500">
+          Todas as informações principais são exibidas neste popup
+        </p>
+      </div>
     </div>
   );
 }
