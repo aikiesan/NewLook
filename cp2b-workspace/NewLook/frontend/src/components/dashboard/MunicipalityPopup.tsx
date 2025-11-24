@@ -21,10 +21,18 @@ import {
 
 interface MunicipalityPopupProps {
   properties: MunicipalityProperties;
+  onViewDetails?: (municipalityId: number) => void;
 }
 
-export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
-  const router = useRouter();
+export default function MunicipalityPopup({ properties, onViewDetails }: MunicipalityPopupProps) {
+  // Only use router if we're in a context where it's available (not in Leaflet popup)
+  let router;
+  try {
+    router = useRouter();
+  } catch (e) {
+    // Router not available (e.g., in Leaflet popup) - will use callback or window.location
+    router = null;
+  }
   const totalBiogas = properties.total_biogas_m3_year;
   const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year, totalBiogas);
   const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year, totalBiogas);
@@ -148,7 +156,18 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
         type="button"
         className="block w-full py-1.5 px-3 bg-green-600 hover:bg-green-700 text-white text-center text-[11px] font-medium rounded transition-colors cursor-pointer"
         onClick={() => {
-          router.push(`/dashboard/municipality/${properties.id}`);
+          if (onViewDetails) {
+            // Use callback if provided (e.g., from Leaflet popup)
+            onViewDetails(properties.id);
+          } else if (router) {
+            // Use Next.js router if available
+            router.push(`/dashboard/municipality/${properties.id}`);
+          } else {
+            // Fallback to window.location for contexts without router
+            // Get current locale from URL
+            const locale = window.location.pathname.split('/')[1] || 'pt-BR';
+            window.location.href = `/${locale}/dashboard/municipality/${properties.id}`;
+          }
         }}
       >
         Ver Detalhes Completos →

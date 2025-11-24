@@ -113,7 +113,20 @@ export default function MunicipalityLayer({
     layer.bindPopup(() => {
       const container = L.DomUtil.create('div');
       const root = createRoot(container);
-      root.render(<MunicipalityPopup properties={props} />);
+
+      // Navigation callback for Leaflet popup context
+      const handleViewDetails = (municipalityId: number) => {
+        // Get current locale from URL
+        const locale = window.location.pathname.split('/')[1] || 'pt-BR';
+        window.location.href = `/${locale}/dashboard/municipality/${municipalityId}`;
+      };
+
+      root.render(
+        <MunicipalityPopup
+          properties={props}
+          onViewDetails={handleViewDetails}
+        />
+      );
       return container;
     }, {
       maxWidth: 260,
