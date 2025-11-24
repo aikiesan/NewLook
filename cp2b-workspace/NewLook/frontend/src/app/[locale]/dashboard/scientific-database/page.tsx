@@ -62,6 +62,8 @@ import {
   formatBMPError
 } from '@/types/scientific'
 
+import ParameterWithReference from '@/components/scientific/ParameterWithReference';
+
 // API
 import {
   getKineticsData,
@@ -895,82 +897,67 @@ export default function ScientificDatabasePage() {
             <>
               {/* Chemical Data Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {chemicalData.map((residue) => {
-                  const cnStatus = getCNStatus(residue.cn_ratio)
+                {realResiduos.map((residue) => {
+                  const cnStatus = getCNStatus(residue.chemical_cn_ratio);
                   return (
                     <div
-                      key={residue.residue_id}
+                      key={residue.id}
                       className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="font-semibold text-gray-900">{residue.residue_name}</h4>
+                          <h4 className="font-semibold text-gray-900">{residue.nome}</h4>
                           <span className="text-xs text-gray-500">
-                            {SECTOR_LABELS[residue.sector]}
+                            {residue.sector_nome}
                           </span>
                         </div>
-                        {residue.fde && (
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                            FDE: {residue.fde.toFixed(1)}%
-                          </span>
-                        )}
                       </div>
 
-import ParameterWithReference from '@/components/scientific/ParameterWithReference';
-
-// ... inside the component, in the 'chemical' tab rendering ...
                       <div className="space-y-3">
                         <ParameterWithReference
-                          residueId={residue.residue_id}
+                          residueId={residue.id}
                           parameterType="bmp"
                           label="BMP"
-                          value={residue.bmp}
+                          value={residue.bmp_medio?.toFixed(1) || 'N/A'}
                           unit="L/kg SV"
                         />
 
                         {/* Composition */}
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900">{residue.moisture}%</div>
-                            <div className="text-gray-500">Umidade</div>
-                          </div>
-                          <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900">{residue.ts}%</div>
+                            <div className="font-semibold text-gray-900">{residue.ts_medio?.toFixed(1) || 'N/A'}%</div>
                             <div className="text-gray-500">ST</div>
                           </div>
                           <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900">{residue.vs}%</div>
+                            <div className="font-semibold text-gray-900">{residue.vs_medio?.toFixed(1) || 'N/A'}%</div>
                             <div className="text-gray-500">SV</div>
+                          </div>
+                          <div className="text-center p-2 bg-gray-50 rounded">
+                            <div className="font-semibold text-gray-900" style={{ color: cnStatus.color }}>{residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1</div>
+                            <div className="text-gray-500">C:N</div>
                           </div>
                         </div>
 
-                        <ParameterWithReference
-                          residueId={residue.residue_id}
-                          parameterType="cn_ratio"
-                          label="C:N"
-                          value={`${residue.cn_ratio}:1`}
-                        />
-
                         {residue.ph && (
                           <ParameterWithReference
-                            residueId={residue.residue_id}
+                            residueId={residue.id}
                             parameterType="ph"
                             label="pH"
                             value={residue.ph}
                           />
                         )}
 
-                        {residue.ch4_content && (
+                        {residue.chemical_ch4_content && (
                           <ParameterWithReference
-                            residueId={residue.residue_id}
+                            residueId={residue.id}
                             parameterType="ch4_content"
                             label="Teor CH4"
-                            value={`${residue.ch4_content}%`}
+                            value={`${residue.chemical_ch4_content}%`}
                           />
                         )}
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </>
