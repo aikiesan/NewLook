@@ -5,7 +5,7 @@
  * Enhanced with DBFZ-inspired features: correction factors, cascade, Sankey, scenarios
  * Based on SAF (Surplus Availability Factor) methodology
  */
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
@@ -28,8 +28,9 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 
 // Existing Components
-import ResidueSelector, { ResidueCategory } from '@/components/analysis/ResidueSelector'
+import SimpleResidueSelector, { ResidueCategory } from '@/components/analysis/SimpleResidueSelector'
 import TopMunicipalitiesChart from '@/components/analysis/charts/TopMunicipalitiesChart'
+import TopMunicipalitiesMiniCard from '@/components/analysis/TopMunicipalitiesMiniCard'
 import DistributionHistogram from '@/components/analysis/charts/DistributionHistogram'
 import RegionalPieChart from '@/components/analysis/charts/RegionalPieChart'
 import CategoryComparisonChart from '@/components/analysis/charts/CategoryComparisonChart'
@@ -40,6 +41,8 @@ import BiomassFlowSankey from '@/components/analysis/charts/BiomassFlowSankey'
 import FactorRangeSliders from '@/components/analysis/FactorRangeSliders'
 import ScenarioComparator from '@/components/analysis/ScenarioComparator'
 import MethodologyPanel from '@/components/analysis/MethodologyPanel'
+import PerResidueFactorEditor from '@/components/analysis/PerResidueFactorEditor'
+import ScenarioSelector from '@/components/analysis/ScenarioSelector'
 
 // API
 import {
@@ -60,8 +63,16 @@ import {
   DEFAULT_FACTORS,
   calculateFDE,
   Scenario,
-  AnalysisViewMode
+  AnalysisViewMode,
+  ScenarioType,
+  ResidueFactorOverrides,
+  RESIDUE_SCENARIOS,
+  applyScenarioMultiplier,
+  calculateWeightedFDE
 } from '@/types/analysis'
+
+// Data
+import { getResidueByCode, DETAILED_RESIDUES } from '@/data/residueFactors'
 
 export default function AdvancedAnalysisPage() {
   const router = useRouter()
@@ -69,7 +80,7 @@ export default function AdvancedAnalysisPage() {
 
   // State for filters
   const [selectedCategory, setSelectedCategory] = useState<ResidueCategory>('agricultural')
-  const [selectedResidues, setSelectedResidues] = useState<string[]>([])
+  const [selectedResidueCodes, setSelectedResidueCodes] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'biogas' | 'population'>('biogas')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -77,7 +88,11 @@ export default function AdvancedAnalysisPage() {
   // View mode - enhanced with new tabs
   const [viewMode, setViewMode] = useState<AnalysisViewMode>('cascade')
 
-  // Correction factors state
+  // Scenario system state
+  const [currentScenario, setCurrentScenario] = useState<ScenarioType>('baseline')
+  const [residueFactorOverrides, setResidueFactorOverrides] = useState<ResidueFactorOverrides>({})
+
+  // Legacy correction factors state (for backward compatibility)
   const [factors, setFactors] = useState<CorrectionFactors>(DEFAULT_FACTORS)
 
   // Methodology panel state
@@ -99,16 +114,119 @@ export default function AdvancedAnalysisPage() {
   // Error state
   const [error, setError] = useState<string | null>(null)
 
-  // Calculate theoretical potential from category stats
-  const theoreticalPotential = useMemo(() => {
+  // Calculate TOTAL theoretical potential (all residues in category)
+  const totalTheoreticalPotential = useMemo(() => {
     if (!categoryStats) return 0
     return categoryStats.categories[selectedCategory]?.total || 0
   }, [categoryStats, selectedCategory])
 
+  // Calculate FILTERED theoretical potential (only selected residues)
+  const filteredTheoreticalPotential = useMemo(() => {
+    if (!topMunicipalities || topMunicipalities.length === 0) return 0
+
+    // Sum up biogas from filtered municipalities
+    return topMunicipalities.reduce((sum, mun) => sum + (mun.biogas_m3_year || 0), 0)
+  }, [topMunicipalities])
+
+  // Use filtered if residues selected, otherwise total
+  const theoreticalPotential = useMemo(() => {
+    return selectedResidueCodes.length > 0 ? filteredTheoreticalPotential : totalTheoreticalPotential
+  }, [selectedResidueCodes.length, filteredTheoreticalPotential, totalTheoreticalPotential])
+
+  // Get effective factors based on scenario and per-residue overrides
+  const effectiveFactors = useMemo((): CorrectionFactors => {
+    // If no residues selected or only one residue, use scenario-based factors
+    if (selectedResidueCodes.length === 0) {
+      // No selection - use scenario default
+      const scenarioConfig = RESIDUE_SCENARIOS[currentScenario]
+      if (currentScenario === 'custom') {
+        return factors // Use manually adjusted factors
+      }
+      return applyScenarioMultiplier(DEFAULT_FACTORS, scenarioConfig.multiplier || 1)
+    }
+
+    if (selectedResidueCodes.length === 1) {
+      // Single residue - use its specific factors (with override if exists)
+      const residueCode = selectedResidueCodes[0]
+      if (residueFactorOverrides[residueCode]) {
+        return residueFactorOverrides[residueCode]!
+      }
+      const residue = getResidueByCode(residueCode)
+      if (residue) {
+        const baseFactors = { fc: residue.fc, fcp: residue.fcp, fs: residue.fs, fl: residue.fl }
+        // Apply scenario multiplier
+        const scenarioConfig = RESIDUE_SCENARIOS[currentScenario]
+        return applyScenarioMultiplier(baseFactors, scenarioConfig.multiplier || 1)
+      }
+      return DEFAULT_FACTORS
+    }
+
+    // Multiple residues - calculate weighted average
+    const defaultFactorsMap = new Map<string, CorrectionFactors>()
+    selectedResidueCodes.forEach(code => {
+      const residue = getResidueByCode(code)
+      if (residue) {
+        const baseFactors = { fc: residue.fc, fcp: residue.fcp, fs: residue.fs, fl: residue.fl }
+        const scenarioConfig = RESIDUE_SCENARIOS[currentScenario]
+        defaultFactorsMap.set(code, applyScenarioMultiplier(baseFactors, scenarioConfig.multiplier || 1))
+      }
+    })
+
+    const residuePotentials = selectedResidueCodes.map(code => {
+      const residue = getResidueByCode(code)
+      // Simplified: equal distribution (in real scenario, would use actual municipal data per residue)
+      const theoretical = theoreticalPotential / selectedResidueCodes.length
+      return {
+        code,
+        name: residue?.name || code,
+        theoretical
+      }
+    })
+
+    const weightedResult = calculateWeightedFDE(residuePotentials, residueFactorOverrides, defaultFactorsMap)
+
+    // Return average factors (approximation for display)
+    // In reality, FDE is weighted, but for display we show representative factors
+    const avgFDE = weightedResult.overallFDE
+    return {
+      fc: Math.sqrt(avgFDE), // Approximation
+      fcp: 0.3,
+      fs: Math.sqrt(avgFDE),
+      fl: Math.sqrt(avgFDE)
+    }
+  }, [selectedResidueCodes, currentScenario, residueFactorOverrides, factors, theoreticalPotential])
+
   // Calculate FDE-adjusted potential
   const fdeAdjustedPotential = useMemo(() => {
-    return theoreticalPotential * calculateFDE(factors)
-  }, [theoreticalPotential, factors])
+    return theoreticalPotential * calculateFDE(effectiveFactors)
+  }, [theoreticalPotential, effectiveFactors])
+
+  // Handle scenario change
+  const handleScenarioChange = (scenario: ScenarioType) => {
+    setCurrentScenario(scenario)
+    if (scenario !== 'custom') {
+      // Clear custom overrides when switching away from custom
+      setResidueFactorOverrides({})
+    }
+  }
+
+  // Handle factor overrides change - auto-switch to custom scenario
+  const handleFactorOverridesChange = (overrides: ResidueFactorOverrides) => {
+    setResidueFactorOverrides(overrides)
+    if (Object.keys(overrides).length > 0) {
+      setCurrentScenario('custom')
+    }
+  }
+
+  // Check if there are custom factors
+  const hasCustomFactors = Object.keys(residueFactorOverrides).length > 0
+
+  // Stable reference for selected residue codes to prevent infinite loops
+  const stableResidueCodesRef = useRef<string>(JSON.stringify(selectedResidueCodes))
+
+  useEffect(() => {
+    stableResidueCodesRef.current = JSON.stringify(selectedResidueCodes)
+  }, [selectedResidueCodes])
 
   // Fetch all data
   const fetchAllData = useCallback(async () => {
@@ -117,8 +235,12 @@ export default function AdvancedAnalysisPage() {
     // Fetch top municipalities
     setLoadingMunicipalities(true)
     try {
+      // Note: API may not support specific residue codes yet
+      // For now, we pass the residue codes as residueTypes
+      // In production, backend should be updated to handle specific codes
+      const residueCodes = JSON.parse(stableResidueCodesRef.current) as string[]
       const residueResponse = await getAnalysisByResidue(selectedCategory, {
-        residueTypes: selectedResidues.length > 0 ? selectedResidues : undefined,
+        residueTypes: residueCodes.length > 0 ? residueCodes : undefined,
         limit: 20
       })
       setTopMunicipalities(residueResponse.data)
@@ -162,7 +284,7 @@ export default function AdvancedAnalysisPage() {
     } finally {
       setLoadingDistribution(false)
     }
-  }, [selectedCategory, selectedResidues])
+  }, [selectedCategory])
 
   // Handle apply filter
   const handleApplyFilter = () => {
@@ -208,15 +330,17 @@ export default function AdvancedAnalysisPage() {
 
   // Export to CSV
   const handleExportCSV = useCallback(() => {
-    const headers = ['Posicao', 'Municipio', 'Regiao', 'Biogas (m3/ano)', 'Populacao', 'FDE (%)']
-    const fdePercent = (calculateFDE(factors) * 100).toFixed(1)
+    const headers = ['Posicao', 'Municipio', 'Regiao', 'Biogas (m3/ano)', 'Populacao', 'FDE (%)', 'Cenario']
+    const fdePercent = (calculateFDE(effectiveFactors) * 100).toFixed(1)
+    const scenarioName = RESIDUE_SCENARIOS[currentScenario].name
     const rows = filteredMunicipalities.map((m, idx) => [
       idx + 1,
       m.municipality_name,
       m.administrative_region || 'N/A',
       m.biogas_m3_year.toFixed(2),
       m.population || 'N/A',
-      fdePercent
+      fdePercent,
+      scenarioName
     ])
 
     const csv = [
@@ -227,13 +351,16 @@ export default function AdvancedAnalysisPage() {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `analise_${selectedCategory}_fde${fdePercent}_${new Date().toISOString().split('T')[0]}.csv`
+    link.download = `analise_${selectedCategory}_${currentScenario}_fde${fdePercent}_${new Date().toISOString().split('T')[0]}.csv`
     link.click()
-  }, [filteredMunicipalities, selectedCategory, factors])
+  }, [filteredMunicipalities, selectedCategory, effectiveFactors, currentScenario])
 
-  // Initial data fetch
+  // Initial data fetch - only run once when authenticated
+  const hasInitiallyFetched = useRef(false)
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !hasInitiallyFetched.current) {
+      hasInitiallyFetched.current = true
       fetchAllData()
     }
   }, [isAuthenticated, fetchAllData])
@@ -264,7 +391,8 @@ export default function AdvancedAnalysisPage() {
   const categoryLabels: Record<ResidueCategory, string> = {
     agricultural: 'Agricola',
     livestock: 'Pecuario',
-    urban: 'Urbano'
+    urban: 'Urbano',
+    industrial: 'Industrial'
   }
 
   // Format large numbers
@@ -377,7 +505,7 @@ export default function AdvancedAnalysisPage() {
                 {formatValue(fdeAdjustedPotential)}
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                m3/ano ({(calculateFDE(factors) * 100).toFixed(1)}%)
+                m3/ano ({(calculateFDE(effectiveFactors) * 100).toFixed(1)}%)
               </div>
             </div>
 
@@ -409,210 +537,185 @@ export default function AdvancedAnalysisPage() {
           </div>
         )}
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar - Residue Selector + Factors */}
-          <div className="lg:col-span-1 space-y-4">
-            <ResidueSelector
-              selectedCategory={selectedCategory}
-              selectedResidues={selectedResidues}
-              onCategoryChange={setSelectedCategory}
-              onResiduesChange={setSelectedResidues}
-              onApply={handleApplyFilter}
-            />
+        {/* Main Content - Graphs Front and Center */}
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          {/* Left Sidebar - Compact Residue & Category Selector */}
+          <div className="lg:col-span-1">
+            <div className="space-y-4 sticky top-6">
+              {/* Simple Residue Selector */}
+              <SimpleResidueSelector
+                selectedCategory={selectedCategory}
+                selectedResidueCodes={selectedResidueCodes}
+                onCategoryChange={setSelectedCategory}
+                onResidueCodesChange={setSelectedResidueCodes}
+                onApply={handleApplyFilter}
+              />
 
-            {/* Factor Range Sliders */}
-            <FactorRangeSliders
-              factors={factors}
-              onChange={setFactors}
-              showFDEPreview={true}
-            />
-
-            {/* Category Info Card */}
-            <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                Categoria Selecionada
-              </h4>
-              <div className="text-xl font-bold text-green-600 mb-3">
-                {categoryLabels[selectedCategory]}
-              </div>
-              {categoryStats && (
-                <div className="space-y-2.5 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Municipios:</span>
-                    <span className="font-semibold text-gray-900">
-                      {categoryStats.categories[selectedCategory].count}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Maximo:</span>
-                    <span className="font-semibold text-gray-900">
-                      {(categoryStats.categories[selectedCategory].max / 1000000).toFixed(2)}M m3/ano
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">Media:</span>
-                    <span className="font-semibold text-gray-900">
-                      {(categoryStats.categories[selectedCategory].average / 1000000).toFixed(2)}M m3/ano
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Search and Filter Controls */}
-            <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                Buscar e Filtrar
-              </h4>
-              <div className="space-y-3">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Nome ou regiao..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-8"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      x
-                    </button>
+              {/* Factor Adjustment Panel (in sidebar) */}
+              {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && (
+                <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md border-l-4 border-blue-500 p-4">
+                  {selectedResidueCodes.length > 0 ? (
+                    <PerResidueFactorEditor
+                      selectedResidueCodes={selectedResidueCodes}
+                      factorOverrides={residueFactorOverrides}
+                      onChange={handleFactorOverridesChange}
+                      showAggregatedFDE={true}
+                    />
+                  ) : (
+                    <FactorRangeSliders
+                      factors={factors}
+                      onChange={setFactors}
+                      showFDEPreview={true}
+                    />
                   )}
                 </div>
+              )}
 
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1.5">Ordenar por:</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'name' | 'biogas' | 'population')}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  >
-                    <option value="biogas">Potencial de Biogas</option>
-                    <option value="name">Nome do Municipio</option>
-                    <option value="population">Populacao</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1.5">Ordem:</label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSortOrder('desc')}
-                      className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-                        sortOrder === 'desc'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Decrescente
-                    </button>
-                    <button
-                      onClick={() => setSortOrder('asc')}
-                      className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-                        sortOrder === 'asc'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Crescente
-                    </button>
-                  </div>
-                </div>
-
-                {searchQuery && (
-                  <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-                    {filteredMunicipalities.length} resultado(s) encontrado(s)
-                  </div>
-                )}
+              {/* Search Filter */}
+              <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Search className="h-3.5 w-3.5" />
+                  Buscar
+                </h4>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Nome..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
               </div>
             </div>
           </div>
 
-          {/* Charts Grid */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* View Mode Toggle - Enhanced with tabs */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 bg-white rounded-xl shadow-md p-4 sm:p-4 border border-gray-100">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                Visualizacao de Dados
-              </h3>
-              <div className="flex gap-1 sm:gap-2 flex-wrap">
-                <button
-                  onClick={() => setViewMode('cascade')}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
-                    viewMode === 'cascade'
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <TrendingDown className="h-3.5 w-3.5" />
-                  <span>Cascata</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('flow')}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
-                    viewMode === 'flow'
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <GitBranch className="h-3.5 w-3.5" />
-                  <span>Fluxo</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('scenarios')}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
-                    viewMode === 'scenarios'
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  <span>Cenarios</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium transition-all ${
-                    viewMode === 'table'
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Table2 className="h-3.5 w-3.5" />
-                  <span>Tabela</span>
-                </button>
+          {/* Center - Main Visualization Area (5/6 width) */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Scenario Selector - Integrated with View Controls */}
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                {/* Scenario Selector */}
+                <div className="flex-1">
+                  <ScenarioSelector
+                    currentScenario={currentScenario}
+                    onScenarioChange={handleScenarioChange}
+                    hasCustomFactors={hasCustomFactors}
+                  />
+                </div>
+
+                {/* View Mode Toggles */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-600 mr-2">Visualização:</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setViewMode('cascade')}
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'cascade'
+                          ? 'bg-green-600 text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <TrendingDown className="h-3.5 w-3.5" />
+                      <span>Cascata</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('flow')}
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'flow'
+                          ? 'bg-green-600 text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <GitBranch className="h-3.5 w-3.5" />
+                      <span>Fluxo</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('scenarios')}
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'scenarios'
+                          ? 'bg-green-600 text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      <span>Cenários</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'table'
+                          ? 'bg-green-600 text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Table2 className="h-3.5 w-3.5" />
+                      <span>Tabela</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Cascade View */}
             {viewMode === 'cascade' && (
               <>
+                {/* Scenario and Selection Info */}
+                <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-sm font-semibold text-gray-700">
+                        Análise Atual
+                      </h3>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      currentScenario === 'baseline' ? 'bg-blue-100 text-blue-700' :
+                      currentScenario === 'conservative' ? 'bg-orange-100 text-orange-700' :
+                      currentScenario === 'optimistic' ? 'bg-green-100 text-green-700' :
+                      'bg-purple-100 text-purple-700'
+                    }`}>
+                      {RESIDUE_SCENARIOS[currentScenario].name}
+                    </span>
+                  </div>
+
+                  {/* Info text */}
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p>
+                      <span className="font-medium">Categoria:</span> {categoryLabels[selectedCategory]}
+                    </p>
+                    {selectedResidueCodes.length > 0 ? (
+                      <p>
+                        <span className="font-medium">Resíduos Selecionados:</span> {selectedResidueCodes.length} resíduo(s)
+                        <br />
+                        <span className="text-xs">({(filteredTheoreticalPotential / 1e9).toFixed(2)}B m³/ano)</span>
+                      </p>
+                    ) : (
+                      <p>
+                        <span className="font-medium">Todos os resíduos</span> da categoria
+                        <br />
+                        <span className="text-xs">({(totalTheoreticalPotential / 1e9).toFixed(2)}B m³/ano)</span>
+                      </p>
+                    )}
+                    <p>
+                      <span className="font-medium">FDE Efetivo:</span> {(calculateFDE(effectiveFactors) * 100).toFixed(2)}%
+                    </p>
+                  </div>
+                </div>
+
                 {/* Potential Cascade Chart */}
                 <PotentialCascadeChart
                   theoreticalPotential={theoreticalPotential}
-                  factors={factors}
-                  title={`Cascata de Potencial - ${categoryLabels[selectedCategory]}`}
+                  factors={effectiveFactors}
+                  title={`Cascata de Potencial - ${RESIDUE_SCENARIOS[currentScenario].name} ${selectedResidueCodes.length > 0 ? `(${selectedResidueCodes.length} resíduos)` : ''}`}
                   loading={loadingStats}
                 />
 
-                {/* Category Comparison */}
-                <CategoryComparisonChart
-                  data={categoryStats}
-                  loading={loadingStats}
-                />
-
-                {/* Top Municipalities */}
-                <TopMunicipalitiesChart
+                {/* Top 5 Municipalities Mini Card - Compact View */}
+                <TopMunicipalitiesMiniCard
                   data={filteredMunicipalities}
-                  title={`Top 20 Municipios - ${categoryLabels[selectedCategory]}`}
                   loading={loadingMunicipalities}
-                  maxItems={20}
+                  maxItems={5}
+                  title={`Top 5 Municípios - ${categoryLabels[selectedCategory]}`}
+                  onViewAll={() => setViewMode('table')}
                 />
               </>
             )}
@@ -620,11 +723,43 @@ export default function AdvancedAnalysisPage() {
             {/* Flow View */}
             {viewMode === 'flow' && (
               <>
+                {/* Scenario and Selection Info */}
+                <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-sm font-semibold text-gray-700">
+                        Análise de Fluxo
+                      </h3>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      currentScenario === 'baseline' ? 'bg-blue-100 text-blue-700' :
+                      currentScenario === 'conservative' ? 'bg-orange-100 text-orange-700' :
+                      currentScenario === 'optimistic' ? 'bg-green-100 text-green-700' :
+                      'bg-purple-100 text-purple-700'
+                    }`}>
+                      {RESIDUE_SCENARIOS[currentScenario].name}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p>
+                      <span className="font-medium">Potencial:</span>{' '}
+                      {selectedResidueCodes.length > 0
+                        ? `${selectedResidueCodes.length} resíduos (${(filteredTheoreticalPotential / 1e9).toFixed(2)}B m³/ano)`
+                        : `Todos (${(totalTheoreticalPotential / 1e9).toFixed(2)}B m³/ano)`}
+                    </p>
+                    <p>
+                      <span className="font-medium">FDE Efetivo:</span> {(calculateFDE(effectiveFactors) * 100).toFixed(2)}%
+                    </p>
+                  </div>
+                </div>
+
                 {/* Sankey Diagram */}
                 <BiomassFlowSankey
                   theoreticalPotential={theoreticalPotential}
-                  factors={factors}
-                  title={`Fluxo de Biomassa - ${categoryLabels[selectedCategory]}`}
+                  factors={effectiveFactors}
+                  title={`Fluxo de Biomassa - ${RESIDUE_SCENARIOS[currentScenario].name}`}
                   loading={loadingStats}
                 />
 
@@ -636,11 +771,12 @@ export default function AdvancedAnalysisPage() {
                     title={`Distribuicao - ${categoryLabels[selectedCategory]}`}
                     loading={loadingDistribution}
                   />
-                  <RegionalPieChart
-                    data={regionData}
-                    title={`Distribuicao Regional - ${categoryLabels[selectedCategory]}`}
-                    loading={loadingRegion}
-                    maxRegions={8}
+                  <TopMunicipalitiesMiniCard
+                    data={filteredMunicipalities}
+                    loading={loadingMunicipalities}
+                    maxItems={5}
+                    title={`Top 5 Municípios - ${categoryLabels[selectedCategory]}`}
+                    onViewAll={() => setViewMode('table')}
                   />
                 </div>
               </>
@@ -685,7 +821,7 @@ export default function AdvancedAnalysisPage() {
                       Ranking de Municipios
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      {filteredMunicipalities.length} municipio(s) listado(s) | FDE: {(calculateFDE(factors) * 100).toFixed(1)}%
+                      {filteredMunicipalities.length} municipio(s) | FDE: {(calculateFDE(effectiveFactors) * 100).toFixed(1)}% | {RESIDUE_SCENARIOS[currentScenario].name}
                     </p>
                   </div>
                   <button
@@ -776,7 +912,7 @@ export default function AdvancedAnalysisPage() {
 
       {/* Methodology Panel */}
       <MethodologyPanel
-        factors={factors}
+        factors={effectiveFactors}
         isOpen={showMethodology}
         onClose={() => setShowMethodology(false)}
       />

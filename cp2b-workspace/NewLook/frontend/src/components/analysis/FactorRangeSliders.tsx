@@ -73,7 +73,7 @@ export default function FactorRangeSliders({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
+    <div className="bg-white rounded-xl shadow-md p-3 border border-gray-100">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="h-5 w-5 text-green-600" />
@@ -95,7 +95,7 @@ export default function FactorRangeSliders({
         <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">FDE Resultante:</span>
-            <span className={`text-xl font-mono font-bold ${
+            <span className={`text-lg font-mono font-bold ${
               fdeValue >= 0.5 ? 'text-green-600' :
               fdeValue >= 0.3 ? 'text-yellow-600' : 'text-red-600'
             }`}>

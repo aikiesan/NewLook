@@ -783,83 +783,122 @@ async def get_rankings(
 )
 async def get_summary_statistics():
     """
-    Get overall statistics for the platform
+    Get overall statistics for the platform with proper NULL handling
     """
-    with get_db() as conn:
-        cursor = conn.cursor()
+    logger.info("📊 Fetching summary statistics")
 
-        try:
-            # Get overall statistics
-            query_stats = """
-                SELECT
-                    COUNT(*) as total_municipalities,
-                    SUM(total_biogas_m3_year) as total_biogas_potential,
-                    AVG(total_biogas_m3_year) as avg_biogas_potential,
-                    SUM(energy_potential_mwh_year) as total_energy_potential,
-                    SUM(co2_reduction_tons_year) as total_co2_reduction,
-                    SUM(population) as total_population,
-                    SUM(agricultural_biogas_m3_year) as total_agricultural,
-                    SUM(livestock_biogas_m3_year) as total_livestock,
-                    SUM(urban_biogas_m3_year) as total_urban
-                FROM municipalities
-            """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
 
-            cursor.execute(query_stats)
-            row = cursor.fetchone()
+            try:
+                # Get overall statistics with COALESCE to handle NULL values
+                query_stats = """
+                    SELECT
+                        COUNT(*) as total_municipalities,
+                        COALESCE(SUM(total_biogas_m3_year), 0) as total_biogas_potential,
+                        COALESCE(AVG(total_biogas_m3_year), 0) as avg_biogas_potential,
+                        COALESCE(SUM(energy_potential_mwh_year), 0) as total_energy_potential,
+                        COALESCE(SUM(co2_reduction_tons_year), 0) as total_co2_reduction,
+                        COALESCE(SUM(population), 0) as total_population,
+                        COALESCE(SUM(agricultural_biogas_m3_year), 0) as total_agricultural,
+                        COALESCE(SUM(livestock_biogas_m3_year), 0) as total_livestock,
+                        COALESCE(SUM(urban_biogas_m3_year), 0) as total_urban
+                    FROM municipalities
+                    WHERE total_biogas_m3_year IS NOT NULL
+                """
 
-            total_biogas = float(row['total_biogas_potential'] or 0)
-            total_agricultural = float(row['total_agricultural'] or 0)
-            total_livestock = float(row['total_livestock'] or 0)
-            total_urban = float(row['total_urban'] or 0)
+                cursor.execute(query_stats)
+                row = cursor.fetchone()
 
-            # Get top 5 municipalities
-            query_top = """
-                SELECT municipality_name, total_biogas_m3_year
-                FROM municipalities
-                WHERE total_biogas_m3_year > 0
-                ORDER BY total_biogas_m3_year DESC
-                LIMIT 5
-            """
-            cursor.execute(query_top)
-            top_municipalities = cursor.fetchall()
-
-            return {
-                "total_municipalities": row['total_municipalities'],
-                "total_biogas_m3_year": total_biogas,
-                "average_biogas_m3_year": float(row['avg_biogas_potential'] or 0),
-                "total_energy_mwh_year": float(row['total_energy_potential'] or 0),
-                "total_co2_reduction_tons_year": float(row['total_co2_reduction'] or 0),
-                "total_population": row['total_population'] or 0,
-                "top_municipality": {
-                    "name": top_municipalities[0]['municipality_name'] if top_municipalities else "N/A",
-                    "biogas_m3_year": float(top_municipalities[0]['total_biogas_m3_year']) if top_municipalities else 0
-                },
-                "top_5_municipalities": [
-                    {
-                        "name": m['municipality_name'],
-                        "biogas_m3_year": float(m['total_biogas_m3_year'])
+                if not row:
+                    logger.warning("⚠️ No data returned from summary statistics query")
+                    return {
+                        "total_municipalities": 0,
+                        "total_biogas_m3_year": 0,
+                        "average_biogas_m3_year": 0,
+                        "error": "No data available"
                     }
-                    for m in top_municipalities
-                ],
-                "categories": {},  # Can be expanded later
-                "sector_breakdown": {
-                    "agricultural": total_agricultural,
-                    "livestock": total_livestock,
-                    "urban": total_urban
-                },
-                "sector_percentages": {
-                    "agricultural": round((total_agricultural / total_biogas * 100) if total_biogas > 0 else 0, 2),
-                    "livestock": round((total_livestock / total_biogas * 100) if total_biogas > 0 else 0, 2),
-                    "urban": round((total_urban / total_biogas * 100) if total_biogas > 0 else 0, 2)
-                },
-                "note": f"Dados de {row['total_municipalities']} municípios do estado de São Paulo"
-            }
 
-        except psycopg2.Error as e:
-            logger.error(f"Database error in get_summary_statistics: {e}")
-            raise HTTPException(status_code=500, detail="Database query failed")
-        finally:
-            cursor.close()
+                # Safely extract values with proper type conversion and defaults
+                total_municipalities = int(row.get('total_municipalities', 0) or 0)
+                total_biogas = float(row.get('total_biogas_potential', 0) or 0)
+                total_agricultural = float(row.get('total_agricultural', 0) or 0)
+                total_livestock = float(row.get('total_livestock', 0) or 0)
+                total_urban = float(row.get('total_urban', 0) or 0)
+
+                logger.debug(f"📈 Summary stats: {total_municipalities} municipalities, {total_biogas:.2e} m³/year biogas")
+
+                # Get top 5 municipalities with NULL-safe query
+                query_top = """
+                    SELECT municipality_name, total_biogas_m3_year
+                    FROM municipalities
+                    WHERE total_biogas_m3_year > 0 AND total_biogas_m3_year IS NOT NULL
+                    ORDER BY total_biogas_m3_year DESC
+                    LIMIT 5
+                """
+                cursor.execute(query_top)
+                top_municipalities = cursor.fetchall()
+
+                logger.info(f"✅ Summary statistics generated successfully: {total_municipalities} municipalities")
+
+                return {
+                    "total_municipalities": total_municipalities,
+                    "total_biogas_m3_year": total_biogas,
+                    "average_biogas_m3_year": float(row.get('avg_biogas_potential', 0) or 0),
+                    "total_energy_mwh_year": float(row.get('total_energy_potential', 0) or 0),
+                    "total_co2_reduction_tons_year": float(row.get('total_co2_reduction', 0) or 0),
+                    "total_population": int(row.get('total_population', 0) or 0),
+                    "top_municipality": {
+                        "name": top_municipalities[0]['municipality_name'] if top_municipalities else "N/A",
+                        "biogas_m3_year": float(top_municipalities[0]['total_biogas_m3_year']) if top_municipalities else 0
+                    },
+                    "top_5_municipalities": [
+                        {
+                            "name": m['municipality_name'],
+                            "biogas_m3_year": float(m['total_biogas_m3_year'])
+                        }
+                        for m in top_municipalities
+                    ],
+                    "categories": {},  # Can be expanded later
+                    "sector_breakdown": {
+                        "agricultural": total_agricultural,
+                        "livestock": total_livestock,
+                        "urban": total_urban
+                    },
+                    "sector_percentages": {
+                        "agricultural": round((total_agricultural / total_biogas * 100) if total_biogas > 0 else 0, 2),
+                        "livestock": round((total_livestock / total_biogas * 100) if total_biogas > 0 else 0, 2),
+                        "urban": round((total_urban / total_biogas * 100) if total_biogas > 0 else 0, 2)
+                    },
+                    "note": f"Dados de {total_municipalities} municípios do estado de São Paulo"
+                }
+
+            except psycopg2.Error as e:
+                logger.error(f"🔥 Database error in get_summary_statistics: {str(e)}", exc_info=True)
+                raise HTTPException(status_code=500, detail=f"Database query failed: {str(e)}")
+            finally:
+                cursor.close()
+
+    except Exception as e:
+        logger.error(f"🔥 CRITICAL ERROR in get_summary_statistics: {str(e)}", exc_info=True)
+        # Return safe defaults instead of crashing
+        return {
+            "total_municipalities": 0,
+            "total_biogas_m3_year": 0,
+            "average_biogas_m3_year": 0,
+            "total_energy_mwh_year": 0,
+            "total_co2_reduction_tons_year": 0,
+            "total_population": 0,
+            "top_municipality": {"name": "N/A", "biogas_m3_year": 0},
+            "top_5_municipalities": [],
+            "categories": {},
+            "sector_breakdown": {"agricultural": 0, "livestock": 0, "urban": 0},
+            "sector_percentages": {"agricultural": 0, "livestock": 0, "urban": 0},
+            "error": "Database connection or query failed",
+            "detail": str(e),
+            "note": "Erro ao carregar dados - usando valores padrão"
+        }
 
 
 # ============================================================================
