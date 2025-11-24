@@ -1,17 +1,21 @@
-# Redirect root to default locale
-/ /pt-BR 301
+# Redirect root to default locale (with trailing slash)
+/ /pt-BR/ 302
+
+# Redirect About pages to external website
+/about https://nipe.unicamp.br/cp2b/ 302
+/pt-BR/about https://nipe.unicamp.br/cp2b/ 302
+/en-US/about https://nipe.unicamp.br/cp2b/ 302
 
 # Redirect non-locale-prefixed routes to default locale
-/map /pt-BR/map 301
-/dashboard /pt-BR/dashboard 301
-/about /pt-BR/about 301
-/login /pt-BR/login 301
-/register /pt-BR/register 301
-/settings /pt-BR/settings 301
+/map /pt-BR/map 302
+/dashboard /pt-BR/dashboard 302
+/login /pt-BR/login 302
+/register /pt-BR/register 302
+/settings /pt-BR/settings 302
 
 # Dashboard sub-routes
-/dashboard/about /pt-BR/dashboard/about 301
-/dashboard/advanced-analysis /pt-BR/dashboard/advanced-analysis 301
-/dashboard/compare /pt-BR/dashboard/compare 301
-/dashboard/proximity /pt-BR/dashboard/proximity 301
-/dashboard/scientific-database /pt-BR/dashboard/scientific-database 301
+/dashboard/about /pt-BR/dashboard/about 302
+/dashboard/advanced-analysis /pt-BR/dashboard/advanced-analysis 302
+/dashboard/compare /pt-BR/dashboard/compare 302
+/dashboard/proximity /pt-BR/dashboard/proximity 302
+/dashboard/scientific-database /pt-BR/dashboard/scientific-database 302
