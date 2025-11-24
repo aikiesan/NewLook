@@ -182,7 +182,7 @@ export default function PerResidueFactorEditor({
             <div className="pb-4 border-b border-gray-100">
               <div className="flex flex-col items-start gap-2 mb-2">
                 <div>
-                  <h4 className="font-semibold text-gray-900">{activeResidue.name}</h4>
+                  <h4 className="font-semibold text-gray-900 break-words">{activeResidue.name}</h4>
                   <p className="text-xs text-gray-600 mt-0.5">Código: {activeResidue.code}</p>
                 </div>
                 {isCustom && (
@@ -232,7 +232,7 @@ export default function PerResidueFactorEditor({
 
                 return (
                   <div key={config.key} className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between">
                       <div className="flex items-center gap-2">
                         <label className="text-sm font-medium text-gray-700">
                           {config.label}
@@ -241,7 +241,7 @@ export default function PerResidueFactorEditor({
                           <div className="group relative">
                             <Info className="w-4 h-4 text-gray-400 cursor-help" />
                             {/* TOOLTIP POSITION FIX */}
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-xs" style={{whiteSpace: 'normal', width: '250px'}}>
+                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-[200px]" style={{whiteSpace: 'normal'}}>
                               {justification}
                             </div>
                           </div>
@@ -281,10 +281,10 @@ export default function PerResidueFactorEditor({
                 <TrendingUp className="w-4 h-4 text-purple-700" />
                 <span className="text-sm font-semibold text-purple-900">Cálculo FDE</span>
               </div>
-              <div className="text-xs text-gray-700 font-mono">
+              <div className="text-xs text-gray-700 font-mono break-words">
                 FDE = FC × (1 - FCp) × FS × FL
               </div>
-              <div className="text-xs text-gray-700 font-mono mt-1">
+              <div className="text-xs text-gray-700 font-mono mt-1 break-all">
                 FDE = {(activeFactors.fc * 100).toFixed(0)}% × {((1 - activeFactors.fcp) * 100).toFixed(0)}% × {(activeFactors.fs * 100).toFixed(0)}% × {(activeFactors.fl * 100).toFixed(0)}% = {activeFDE.toFixed(2)}%
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function PerResidueFactorEditor({
       {/* Weighted FDE Summary (if multiple residues) */}
       {showAggregatedFDE && selectedResidueCodes.length > 1 && weightedFDE !== null && (
         <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-t border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between">
             <span className="text-sm font-medium text-gray-700">FDE Médio Ponderado (todos resíduos):</span>
             <span className="text-lg font-bold text-purple-700">{weightedFDE.toFixed(2)}%</span>
           </div>
