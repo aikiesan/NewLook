@@ -22,7 +22,7 @@ const nextConfig = {
   reactStrictMode: false,
   
   // Trailing slash for better static hosting compatibility
-  trailingSlash: true,
+  trailingSlash: false,
   
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
