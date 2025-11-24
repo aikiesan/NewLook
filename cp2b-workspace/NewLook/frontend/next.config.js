@@ -40,12 +40,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-
-  // Experimental features for better static export compatibility
-  experimental: {
-    // Disable Suspense CSR bailout for better static export
-    missingSuspenseWithCSRBailout: false,
-  },
 }
 
 module.exports = withNextIntl(nextConfig);

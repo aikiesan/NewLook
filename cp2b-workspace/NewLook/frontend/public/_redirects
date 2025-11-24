@@ -15,6 +15,3 @@
 /dashboard/compare /pt-BR/dashboard/compare 301
 /dashboard/proximity /pt-BR/dashboard/proximity 301
 /dashboard/scientific-database /pt-BR/dashboard/scientific-database 301
-
-# Catch-all fallback for any other routes without locale prefix
-/* /pt-BR/:splat 301
