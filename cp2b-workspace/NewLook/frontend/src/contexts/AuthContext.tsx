@@ -112,6 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw createAuthError(
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'AUTH_FAILED'
+        )
+      }
+
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -143,6 +151,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       setLoading(true)
+
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        throw createAuthError(
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'AUTH_FAILED'
+        )
+      }
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,

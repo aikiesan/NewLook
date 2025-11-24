@@ -196,7 +196,7 @@ const FDEBreakdown: React.FC<FDEBreakdownProps> = ({
               diferente do BMP teórico que não considera disponibilidade ou usos concorrentes.
               Para detalhes completos, consulte a{' '}
               <a
-                href="/methodology"
+                href="/dashboard/about"
                 className="text-cp2b-green hover:text-cp2b-green-dark underline"
               >
                 metodologia FDE

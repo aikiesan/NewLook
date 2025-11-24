@@ -179,7 +179,7 @@ const DataProvenance: React.FC<DataProvenanceProps> = ({
         {showMethodology && (
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
             <a
-              href={`/methodology#${residueName.toLowerCase().replace(/\s+/g, '-')}`}
+              href={`/dashboard/about#${residueName.toLowerCase().replace(/\s+/g, '-')}`}
               className="inline-flex items-center gap-2 text-sm text-cp2b-green hover:text-cp2b-green-dark transition-colors font-medium"
             >
               <FileText size={16} />
