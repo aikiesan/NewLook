@@ -1,12 +1,12 @@
 /**
  * CP2B Maps V3 - Municipality Popup Component
- * Displays detailed municipality information in map popup
+ * Displays all municipality information in an interactive map popup
+ * No separate detail pages needed - all info is shown here
  */
 
 'use client';
 
 import React from 'react';
-import { useRouter } from '@/i18n/navigation';
 import type { MunicipalityProperties } from '@/types/geospatial';
 import {
   formatBiogas,
@@ -21,18 +21,9 @@ import {
 
 interface MunicipalityPopupProps {
   properties: MunicipalityProperties;
-  onViewDetails?: (municipalityId: number) => void;
 }
 
-export default function MunicipalityPopup({ properties, onViewDetails }: MunicipalityPopupProps) {
-  // Only use router if we're in a context where it's available (not in Leaflet popup)
-  let router;
-  try {
-    router = useRouter();
-  } catch (e) {
-    // Router not available (e.g., in Leaflet popup) - will use callback or window.location
-    router = null;
-  }
+export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
   const totalBiogas = properties.total_biogas_m3_year;
   const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year, totalBiogas);
   const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year, totalBiogas);
