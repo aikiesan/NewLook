@@ -112,8 +112,12 @@ export async function getAnalysisByResidue(
   const params = new URLSearchParams();
   params.append('category', category);
 
-  if (options?.residueTypes) {
-    options.residueTypes.forEach(rt => params.append('residue_types', rt));
+  // Only add residue_types if array is non-empty and contains valid values
+  if (options?.residueTypes && options.residueTypes.length > 0) {
+    const validResidueTypes = options.residueTypes.filter(rt => rt && rt.trim() !== '');
+    if (validResidueTypes.length > 0) {
+      validResidueTypes.forEach(rt => params.append('residue_types', rt));
+    }
   }
   if (options?.limit) {
     params.append('limit', options.limit.toString());
@@ -122,10 +126,15 @@ export async function getAnalysisByResidue(
     params.append('min_value', options.minValue.toString());
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/by-residue?${params}`);
+  const url = `${API_BASE_URL}/api/v1/analysis/by-residue?${params}`;
+  console.log('Fetching analysis by residue:', url);
+
+  const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch residue analysis: ${response.statusText}`);
+    const errorText = await response.text().catch(() => response.statusText);
+    console.error('API Error:', response.status, errorText);
+    throw new Error(`Failed to fetch residue analysis: ${response.status} ${errorText}`);
   }
 
   return response.json();
