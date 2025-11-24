@@ -51,9 +51,8 @@ def get_connection_pool():
                         port=settings.POSTGRES_PORT,
                         cursor_factory=RealDictCursor,
                         connect_timeout=10,
-                        options='-c statement_timeout=30000',
-                        sslmode='require',
-                        client_encoding='utf8'
+                        options='-c statement_timeout=30000 -c client_encoding=UTF8',
+                        sslmode='require'
                     )
                     logger.info("✅ Database connection pool initialized (min=2, max=20)")
                 except psycopg2.Error as e:

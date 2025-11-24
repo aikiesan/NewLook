@@ -11,7 +11,7 @@ import { getFromCache, setInCache, generateCacheKey, CACHE_DURATION } from '@/li
 import { fetchWithQueue } from '@/lib/apiQueue';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-const REQUEST_TIMEOUT = 30000; // 30 seconds (Sprint 4 requirement)
+const REQUEST_TIMEOUT = 120000; // 120 seconds - increased for debugging
 
 // Types matching backend Pydantic models
 
@@ -176,12 +176,17 @@ export async function analyzeProximity(
 
         const result = await response.json();
 
-        // Log response for debugging
+        // Log full response for debugging
         logger.info('✅ API Response received:', {
           municipalities: result.results?.municipalities?.length || 0,
           totalBiogas: result.summary?.total_biogas_m3_year || 0,
           processingTime: result.metadata?.processing_time_ms || 0,
+          hasLandUse: !!result.results?.land_use,
+          hasBiogasPotential: !!result.results?.biogas_potential,
         });
+        
+        // Log the full result structure for debugging
+        console.log('Full API result structure:', JSON.stringify(result, null, 2));
 
         // Log cache hits from backend
         if (result.from_cache) {

@@ -11,10 +11,46 @@ from shapely.geometry import Point
 from shapely.ops import transform
 import pyproj
 from pathlib import Path
+import unicodedata
+import re
 
 from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_municipality_name(name: str) -> str:
+    """
+    Normalize municipality name for matching.
+    
+    Removes accents, converts to lowercase, removes extra spaces.
+    Example: "São José dos Campos" -> "sao jose dos campos"
+    
+    Args:
+        name: Original municipality name
+        
+    Returns:
+        Normalized name for matching
+    """
+    if not name:
+        return ""
+    
+    # Convert to string if not already
+    name = str(name)
+    
+    # Normalize unicode characters (NFD = decompose accents)
+    name = unicodedata.normalize('NFD', name)
+    
+    # Remove accent marks
+    name = ''.join(char for char in name if unicodedata.category(char) != 'Mn')
+    
+    # Convert to lowercase
+    name = name.lower()
+    
+    # Remove extra spaces and trim
+    name = re.sub(r'\s+', ' ', name).strip()
+    
+    return name
 
 # MapBiomas Class to Residuos Mapping
 # Maps MapBiomas land use classes to corresponding residue types in the database
@@ -164,8 +200,11 @@ class ProximityService:
             if gdf.crs != WGS84:
                 gdf = gdf.to_crs(WGS84)
 
-            # Get biogas data from database
+            # Get biogas data from database with multiple lookup keys
             biogas_data = {}
+            biogas_data_by_normalized = {}
+            biogas_data_by_ibge = {}
+            
             try:
                 with get_db() as conn:
                     cursor = conn.cursor()
@@ -179,9 +218,19 @@ class ProximityService:
                         FROM municipalities
                     """)
                     for row in cursor.fetchall():
-                        # Use municipality name as key
+                        # Store by original name
                         biogas_data[row["municipality_name"]] = row
+                        
+                        # Store by normalized name for fuzzy matching
+                        normalized = normalize_municipality_name(row["municipality_name"])
+                        biogas_data_by_normalized[normalized] = row
+                        
+                        # Store by IBGE code if available
+                        if row["ibge_code"]:
+                            biogas_data_by_ibge[str(row["ibge_code"])] = row
+                    
                     cursor.close()
+                    logger.info(f"Loaded biogas data for {len(biogas_data)} municipalities")
             except Exception as e:
                 logger.warning(f"Could not load biogas data from database: {e}")
 
@@ -201,20 +250,38 @@ class ProximityService:
 
                     # Get municipality name from shapefile
                     muni_name = row.get("NM_MUN", row.get("nome", f"Municipality_{idx}"))
+                    muni_ibge = str(row.get("CD_MUN", ""))
 
-                    # Get biogas data if available
-                    muni_biogas = biogas_data.get(muni_name, {})
+                    # Try multiple matching strategies to find biogas data
+                    muni_biogas = {}
+                    
+                    # Strategy 1: Direct name match
+                    if muni_name in biogas_data:
+                        muni_biogas = biogas_data[muni_name]
+                    
+                    # Strategy 2: Normalized name match (handles accents, case)
+                    elif not muni_biogas:
+                        normalized_name = normalize_municipality_name(muni_name)
+                        muni_biogas = biogas_data_by_normalized.get(normalized_name, {})
+                    
+                    # Strategy 3: IBGE code match
+                    if not muni_biogas and muni_ibge:
+                        muni_biogas = biogas_data_by_ibge.get(muni_ibge, {})
+                    
+                    # Log if we still couldn't find data
+                    if not muni_biogas:
+                        logger.debug(f"No biogas data found for municipality: {muni_name} (IBGE: {muni_ibge})")
 
                     muni_id += 1
                     municipalities.append({
                         "id": muni_id,
                         "name": muni_name,
-                        "ibge_code": muni_biogas.get("ibge_code") or row.get("CD_MUN"),
+                        "ibge_code": muni_biogas.get("ibge_code") or muni_ibge,
                         "distance_km": round(distance_km, 2),
                         "intersection_percent": 100,  # Simplified for now
-                        "population": muni_biogas.get("population"),
+                        "population": muni_biogas.get("population", 0) or 0,
                         "area_km2": muni_biogas.get("area_km2") or row.get("AREA_KM2"),
-                        "biogas_m3_year": muni_biogas.get("total_biogas_m3_year") or 0
+                        "biogas_m3_year": muni_biogas.get("total_biogas_m3_year", 0) or 0
                     })
 
             # Sort by distance
@@ -308,9 +375,9 @@ class ProximityService:
                 return {
                     "total_m3_year": float(row["total_biogas"]) if row["total_biogas"] else 0,
                     "by_category": {
-                        "Urbano": float(row["urban_biogas"]) if row["urban_biogas"] else 0,
-                        "Agrícola": float(row["agricultural_biogas"]) if row["agricultural_biogas"] else 0,
-                        "Pecuário": float(row["livestock_biogas"]) if row["livestock_biogas"] else 0
+                        "urban": float(row["urban_biogas"]) if row["urban_biogas"] else 0,
+                        "agricultural": float(row["agricultural_biogas"]) if row["agricultural_biogas"] else 0,
+                        "livestock": float(row["livestock_biogas"]) if row["livestock_biogas"] else 0
                     },
                     "by_residue": {
                         "RSU (Resíduos Sólidos Urbanos)": float(row["rsu_biogas"]) if row["rsu_biogas"] else 0,
@@ -339,9 +406,9 @@ class ProximityService:
         return {
             "total_m3_year": 0,
             "by_category": {
-                "Urbano": 0,
-                "Agrícola": 0,
-                "Pecuário": 0
+                "urban": 0,
+                "agricultural": 0,
+                "livestock": 0
             },
             "by_residue": {},
             "energy_potential_mwh_year": 0,

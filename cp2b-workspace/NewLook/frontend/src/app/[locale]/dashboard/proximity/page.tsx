@@ -129,15 +129,25 @@ function ProximityAnalysisContent() {
 
     setLoading(true)
     setError(null)
+    setAnalysisResult(null) // Clear previous results
 
     try {
+      console.log('🔍 Starting proximity analysis...', {
+        lat: selectedPoint.lat,
+        lng: selectedPoint.lng,
+        radius: radius
+      });
+      
       const result = await analyzeProximity({
         latitude: selectedPoint.lat,
         longitude: selectedPoint.lng,
         radius_km: radius
       })
+      
+      console.log('✅ Analysis result received:', result);
       setAnalysisResult(result as unknown as AnalysisResult)
     } catch (err: any) {
+      console.error('❌ Analysis error:', err);
       setError(err.message || 'Erro ao realizar análise')
     } finally {
       setLoading(false)
@@ -436,9 +446,9 @@ function ProximityAnalysisContent() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <CheckCircle2 className="h-6 w-6 text-green-600 mr-2" />
-                <h2 className="text-xl font-bold text-gray-900">Resultados da Análise</h2>
+                <h2 className="text-xl font-bold text-gray-900">Análise de Uso do Solo</h2>
                 <span className="ml-3 text-sm text-gray-500">
-                  Processado em {analysisResult.metadata.processing_time_ms}ms
+                  {analysisResult.summary?.total_municipalities || 0} municípios • Processado em {analysisResult.metadata.processing_time_ms}ms
                 </span>
               </div>
               <div className="flex gap-2">
@@ -454,177 +464,225 @@ function ProximityAnalysisContent() {
                   className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Exportar CSV
+                  Exportar Dados
                 </button>
               </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <p className="text-sm text-gray-500">Municípios</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {analysisResult.summary.total_municipalities}
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <p className="text-sm text-gray-500">População Total</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {analysisResult.summary.total_population.toLocaleString('pt-BR')}
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <p className="text-sm text-gray-500">Biogás Total</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  {(analysisResult.summary.total_biogas_m3_year / 1000000).toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500">milhões m³/ano</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <p className="text-sm text-gray-500">Energia</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {(analysisResult.summary.energy_potential_mwh_year / 1000).toFixed(1)}
-                </p>
-                <p className="text-xs text-gray-500">GWh/ano</p>
-              </div>
-            </div>
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 gap-6">
 
-            {/* Warning for low/zero results */}
-            {analysisResult.summary.total_municipalities === 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-800">
-                      Nenhum município encontrado neste raio
-                    </p>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Tente aumentar o raio de captação ou selecionar um ponto em área mais urbanizada.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {analysisResult.summary.total_municipalities > 0 && analysisResult.summary.total_biogas_m3_year === 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <Info className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      Dados de biogás não disponíveis para estes municípios
-                    </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Os municípios foram encontrados, mas os dados de potencial de biogás ainda estão sendo processados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Detailed Results */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Biogas Breakdown */}
-              {analysisResult.results.biogas_potential && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                    <Zap className="h-5 w-5 mr-2 text-yellow-500" />
-                    Potencial de Biogás por Categoria
-                  </h3>
-                  <div className="space-y-3">
-                    {Object.entries(analysisResult.results.biogas_potential.by_category).map(([category, value]) => (
-                      <div key={category} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 capitalize">
-                          {category === 'agricultural' ? 'Agrícola' :
-                           category === 'livestock' ? 'Pecuária' :
-                           category === 'urban' ? 'Urbano' : category}
-                        </span>
-                        <span className="font-medium text-gray-900">
-                          {(value / 1000000).toFixed(2)} milhões m³/ano
-                        </span>
-                      </div>
-                    ))}
-                    <div className="pt-2 border-t flex items-center justify-between">
-                      <span className="font-semibold text-gray-900">Total</span>
-                      <span className="font-bold text-emerald-600">
-                        {(analysisResult.results.biogas_potential.total_m3_year / 1000000).toFixed(2)} milhões m³/ano
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Land Use */}
+              {/* Land Use - Primary Focus - Expanded Vertical Layout */}
               {analysisResult.results.land_use && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                    <Leaf className="h-5 w-5 mr-2 text-green-500" />
-                    Uso do Solo (MapBiomas)
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Área Total</span>
-                      <span className="font-medium text-gray-900">
-                        {analysisResult.results.land_use.total_area_km2.toFixed(2)} km²
-                      </span>
+                <div className="space-y-6">
+                  {/* Hero Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white">
+                      <div className="flex items-center justify-between mb-3">
+                        <Layers className="h-8 w-8 opacity-80" />
+                        <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                          MapBiomas 2023
+                        </div>
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Área Total Analisada</p>
+                      <p className="text-4xl font-bold mb-1">
+                        {analysisResult.results.land_use.total_area_km2.toFixed(1)}
+                      </p>
+                      <p className="text-sm opacity-80">quilômetros quadrados</p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Classe Dominante</span>
-                      <span className="font-medium text-gray-900 capitalize">
-                        {analysisResult.results.land_use.dominant_class}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Área Agrícola</span>
-                      <span className="font-medium text-green-600">
+
+                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white">
+                      <div className="flex items-center justify-between mb-3">
+                        <Leaf className="h-8 w-8 opacity-80" />
+                        <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                          Uso Agrícola
+                        </div>
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Área Agricultável</p>
+                      <p className="text-4xl font-bold mb-1">
                         {analysisResult.results.land_use.agricultural_percent.toFixed(1)}%
-                      </span>
+                      </p>
+                      <p className="text-sm opacity-80">
+                        {(analysisResult.results.land_use.total_area_km2 * analysisResult.results.land_use.agricultural_percent / 100).toFixed(1)} km²
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
+                      <div className="flex items-center justify-between mb-3">
+                        <Circle className="h-8 w-8 opacity-80" />
+                        <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                          Dominante
+                        </div>
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Classe Principal</p>
+                      <p className="text-2xl font-bold mb-1 capitalize">
+                        {analysisResult.results.land_use.dominant_class}
+                      </p>
+                      <p className="text-sm opacity-80">uso predominante na área</p>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Municipalities List */}
-              <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <Building className="h-5 w-5 mr-2 text-blue-500" />
-                  Municípios na Área de Análise
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 font-medium text-gray-600">Município</th>
-                        <th className="text-right py-2 font-medium text-gray-600">Distância</th>
-                        <th className="text-right py-2 font-medium text-gray-600">População</th>
-                        <th className="text-right py-2 font-medium text-gray-600">Biogás (m³/ano)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {analysisResult.results.municipalities
-                        .slice(0, 10)
-                        .map((mun: any, index: number) => (
-                          <tr key={index} className="border-b border-gray-100">
-                            <td className="py-2 text-gray-900">{mun.name}</td>
-                            <td className="py-2 text-right text-gray-600">
-                              {mun.distance_km?.toFixed(1) || '0'} km
-                            </td>
-                            <td className="py-2 text-right text-gray-600">
-                              {(mun.population || 0).toLocaleString('pt-BR')}
-                            </td>
-                            <td className="py-2 text-right font-medium text-emerald-600">
-                              {(mun.biogas_m3_year || 0).toLocaleString('pt-BR')}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                  {analysisResult.results.municipalities.length > 10 && (
-                    <p className="text-sm text-gray-500 mt-2 text-center">
-                      ... e mais {analysisResult.results.municipalities.length - 10} municípios
-                    </p>
+                  {/* Land Use Breakdown - Card Style */}
+                  {analysisResult.results.land_use.by_class && Object.keys(analysisResult.results.land_use.by_class).length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <Layers className="h-6 w-6 mr-3 text-blue-600" />
+                        Distribuição Detalhada do Uso do Solo
+                      </h3>
+
+                      {/* Large Visual Bar */}
+                      <div className="mb-8">
+                        <p className="text-sm font-medium text-gray-600 mb-3">Proporção Visual</p>
+                        <div className="w-full h-16 flex rounded-xl overflow-hidden shadow-lg border-2 border-gray-200">
+                          {Object.entries(analysisResult.results.land_use.by_class)
+                            .sort(([, a]: [string, any], [, b]: [string, any]) => (b.percent || 0) - (a.percent || 0))
+                            .map(([classId, classData]: [string, any]) => (
+                              <div
+                                key={classId}
+                                style={{
+                                  width: `${classData.percent || 0}%`,
+                                  backgroundColor: classData.color || '#888888'
+                                }}
+                                className="relative group hover:opacity-90 transition-opacity cursor-pointer"
+                                title={`${classData.name}: ${(classData.percent || 0).toFixed(1)}%`}
+                              >
+                                {(classData.percent || 0) > 8 && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-white font-bold text-xs drop-shadow-lg">
+                                      {(classData.percent || 0).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* Cards Grid for Land Classes */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {Object.entries(analysisResult.results.land_use.by_class)
+                          .sort(([, a]: [string, any], [, b]: [string, any]) => (b.percent || 0) - (a.percent || 0))
+                          .map(([classId, classData]: [string, any]) => (
+                            <div
+                              key={classId}
+                              className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border-2 hover:border-gray-300 transition-all hover:shadow-lg cursor-pointer group"
+                              style={{ borderColor: `${classData.color}40` }}
+                            >
+                              <div className="flex items-start gap-4">
+                                {/* Large Color Indicator */}
+                                <div
+                                  className="w-16 h-16 rounded-xl shadow-md flex-shrink-0 group-hover:scale-110 transition-transform"
+                                  style={{ backgroundColor: classData.color || '#888888' }}
+                                />
+                                
+                                <div className="flex-1 min-w-0">
+                                  {/* Class Name */}
+                                  <h4 className="font-bold text-gray-900 mb-1 text-base leading-tight">
+                                    {classData.name || `Classe ${classId}`}
+                                  </h4>
+                                  
+                                  {/* Category Badge */}
+                                  <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs mb-3">
+                                    {classData.category || 'Outros'}
+                                  </span>
+                                  
+                                  {/* Stats */}
+                                  <div className="space-y-1">
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="text-2xl font-bold text-gray-900">
+                                        {(classData.percent || 0).toFixed(1)}%
+                                      </span>
+                                      <span className="text-sm text-gray-500">da área</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 font-medium">
+                                      {(classData.area_km2 || 0).toFixed(2)} km²
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Agricultural Suitability - Prominent Card */}
+                  {analysisResult.results.land_use.agricultural_percent > 0 && (
+                    <div className={`rounded-2xl shadow-xl p-8 ${
+                      analysisResult.results.land_use.agricultural_percent >= 50
+                        ? 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300'
+                        : analysisResult.results.land_use.agricultural_percent >= 20
+                        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300'
+                        : 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300'
+                    }`}>
+                      <div className="flex items-start gap-4">
+                        {analysisResult.results.land_use.agricultural_percent >= 50 ? (
+                          <CheckCircle2 className="h-12 w-12 text-green-600 flex-shrink-0" />
+                        ) : analysisResult.results.land_use.agricultural_percent >= 20 ? (
+                          <Info className="h-12 w-12 text-blue-600 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="h-12 w-12 text-yellow-600 flex-shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <h4 className={`text-xl font-bold mb-2 ${
+                            analysisResult.results.land_use.agricultural_percent >= 50
+                              ? 'text-green-900'
+                              : analysisResult.results.land_use.agricultural_percent >= 20
+                              ? 'text-blue-900'
+                              : 'text-yellow-900'
+                          }`}>
+                            {analysisResult.results.land_use.agricultural_percent >= 50
+                              ? '✓ Alta Aptidão para Produção de Biogás Agrícola'
+                              : analysisResult.results.land_use.agricultural_percent >= 20
+                              ? 'Aptidão Moderada para Biogás Agrícola'
+                              : 'Baixo Uso Agrícola na Área'}
+                          </h4>
+                          <p className={`text-base leading-relaxed ${
+                            analysisResult.results.land_use.agricultural_percent >= 50
+                              ? 'text-green-800'
+                              : analysisResult.results.land_use.agricultural_percent >= 20
+                              ? 'text-blue-800'
+                              : 'text-yellow-800'
+                          }`}>
+                            {analysisResult.results.land_use.agricultural_percent >= 50
+                              ? `A área possui predominância de uso agrícola (${analysisResult.results.land_use.agricultural_percent.toFixed(1)}%), ideal para coleta de resíduos agrícolas e produção de biogás. Esta região apresenta excelente potencial para instalação de biodigestores.`
+                              : analysisResult.results.land_use.agricultural_percent >= 20
+                              ? `A área possui ${analysisResult.results.land_use.agricultural_percent.toFixed(1)}% de uso agrícola. Há potencial razoável para produção de biogás de fontes agrícolas, podendo ser complementado com outras fontes de biomassa.`
+                              : `Apenas ${analysisResult.results.land_use.agricultural_percent.toFixed(1)}% de uso agrícola. Considere fontes urbanas (RSU) ou pecuárias para viabilizar a produção de biogás nesta região.`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
+              )}
+
+              {/* Municipalities List - Compact */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-blue-500" />
+                  Municípios no Raio ({analysisResult.results?.municipalities?.length || 0})
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {(analysisResult.results?.municipalities || [])
+                    .slice(0, 12)
+                    .map((mun: any, index: number) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">
+                          {(mun.distance_km || 0).toFixed(0)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">{mun.name || 'N/A'}</p>
+                          <p className="text-xs text-gray-500">{(mun.distance_km || 0).toFixed(1)} km</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                {(analysisResult.results?.municipalities?.length || 0) > 12 && (
+                  <p className="text-sm text-gray-500 mt-3 text-center">
+                    + {(analysisResult.results?.municipalities?.length || 0) - 12} municípios adicionais
+                  </p>
+                )}
               </div>
             </div>
           </div>
