@@ -129,15 +129,14 @@ class GeospatialClient {
 
   /**
    * Get all municipalities as GeoJSON FeatureCollection
-   * ALWAYS uses FastAPI backend which loads polygon boundaries from shapefile
-   * Supabase doesn't have polygon geometries, only tabular data
+   * Uses Supabase data via FastAPI backend with centroid points
    */
   async getMunicipalitiesGeoJSON(): Promise<MunicipalityCollection> {
-    // Always use FastAPI for polygon data - Supabase doesn't have geometries
-    const url = `${this.baseUrl}/api/v1/geospatial/municipalities/polygons`;
+    // Use FastAPI endpoint that fetches from Supabase
+    const url = `${this.baseUrl}/api/v1/municipalities/geojson`;
 
     try {
-      logger.info('🗺️ Fetching polygon data from FastAPI backend');
+      logger.info('🗺️ Fetching municipality data from Supabase via FastAPI');
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -150,16 +149,16 @@ class GeospatialClient {
 
       const data = await response.json();
 
-      // Check if we got actual features (shapefile might not be deployed)
+      // Check if we got actual features
       if (!data.features || data.features.length === 0) {
-        logger.warn('FastAPI returned empty features, trying IBGE API fallback');
+        logger.warn('No municipalities returned from Supabase, trying IBGE API fallback');
         return this.getFromIBGEWithBiogasData();
       }
 
-      logger.info(`✅ Loaded ${data.features?.length || 0} municipalities with polygon geometries`);
+      logger.info(`✅ Loaded ${data.features?.length || 0} municipalities from Supabase`);
       return data;
     } catch (error) {
-      logger.warn(`Failed to fetch polygons from FastAPI: ${error}`);
+      logger.warn(`Failed to fetch from Supabase: ${error}`);
       // Try IBGE API as fallback
       try {
         logger.info('🗺️ Trying IBGE GeoJSON API fallback');

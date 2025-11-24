@@ -186,6 +186,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                 width={140}
                 height={48}
                 className={`transition-transform group-hover:scale-105 ${currentStyles.logoClass}`}
+                style={{ height: 'auto' }}
                 priority
               />
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${

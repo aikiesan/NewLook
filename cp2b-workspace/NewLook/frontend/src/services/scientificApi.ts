@@ -99,6 +99,28 @@ export async function getRealConversionFactors(): Promise<any> {
   }
 }
 
+/**
+ * Fetch references for a specific residue and parameter
+ */
+export async function getReferencesForParameter(residuoId: number, parameterType: string): Promise<ScientificReference[]> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/residuos/${residuoId}/references?parameter_type=${parameterType}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return [];
+      }
+      throw new Error('Failed to fetch references for parameter');
+    }
+    const data = await response.json();
+    return data.references || data || [];
+  } catch (error) {
+    logger.error(`Error fetching references for residue ${residuoId}, parameter ${parameterType}:`, error);
+    return [];
+  }
+}
+
+
 // ==========================================
 // REAL DATA from CP2B Panorama Repository
 // Source: https://github.com/aikiesan/Panorama_CP2B
