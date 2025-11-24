@@ -9,7 +9,6 @@ import { logger } from '@/lib/logger'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import VideoModal from '@/components/ui/VideoModal'
-import TestimonialCarousel, { Testimonial } from '@/components/ui/TestimonialCarousel'
 import NewsletterSignup from '@/components/ui/NewsletterSignup'
 import ParallaxSection from '@/components/ui/ParallaxSection'
 import {
@@ -347,31 +346,6 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth()
   const t = useTranslations('landing')
 
-  // Testimonials data
-  const testimonials: Testimonial[] = [
-    {
-      name: 'Dr. João Silva',
-      role: 'Pesquisador em Bioenergia',
-      organization: 'Universidade de São Paulo (USP)',
-      content: 'A plataforma CP2B Maps revolucionou nossa forma de analisar o potencial de biogás. A integração com MapBiomas e a análise MCDA são ferramentas indispensáveis para tomada de decisão.',
-      rating: 5
-    },
-    {
-      name: 'Maria Santos',
-      role: 'Gestora de Sustentabilidade',
-      organization: 'Empresa de Energia Renovável',
-      content: 'Utilizamos o CP2B Maps para identificar locais estratégicos para novas plantas de biogás. A análise de proximidade e os dados municipais detalhados nos economizaram meses de pesquisa.',
-      rating: 5
-    },
-    {
-      name: 'Prof. Carlos Oliveira',
-      role: 'Coordenador de Projetos',
-      organization: 'Instituto de Pesquisa Ambiental',
-      content: 'Excelente ferramenta para ensino e pesquisa. Os dados são precisos, a interface é intuitiva, e a documentação científica é completa. Recomendo para todos os profissionais do setor.',
-      rating: 5
-    }
-  ]
-
   // Auto-advance carousel
   useEffect(() => {
     const timer = setInterval(() => {
@@ -698,26 +672,6 @@ export default function HomePage() {
               />
             </FadeIn>
           </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-cp2b-gray-900 mb-4">
-                O que dizem os usuários
-              </h2>
-              <p className="text-lg text-cp2b-gray-600 max-w-2xl mx-auto">
-                Profissionais e pesquisadores que utilizam o CP2B Maps para suas análises de biogás
-              </p>
-            </div>
-          </FadeIn>
-
-          <FadeIn delay={200}>
-            <TestimonialCarousel testimonials={testimonials} />
-          </FadeIn>
         </div>
       </section>
 
