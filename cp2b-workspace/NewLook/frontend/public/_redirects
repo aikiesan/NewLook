@@ -1,12 +1,9 @@
-# IMPORTANT: Using splat redirects to avoid caching issues
-# This prevents the infinite loop by explicitly excluding locale-prefixed paths
-
-# Redirect About pages to external website (must come BEFORE other rules)
+# Redirect About pages to external website
 /about https://nipe.unicamp.br/cp2b/ 302
 /pt-BR/about https://nipe.unicamp.br/cp2b/ 302
 /en-US/about https://nipe.unicamp.br/cp2b/ 302
 
-# Redirect non-locale-prefixed routes to default locale (except static assets)
+# Redirect non-locale-prefixed routes to default locale
 /map /pt-BR/map 302
 /dashboard /pt-BR/dashboard 302
 /login /pt-BR/login 302
@@ -19,6 +16,3 @@
 /dashboard/compare /pt-BR/dashboard/compare 302
 /dashboard/proximity /pt-BR/dashboard/proximity 302
 /dashboard/scientific-database /pt-BR/dashboard/scientific-database 302
-
-# Redirect root to default locale (MUST BE LAST to avoid conflicts)
-/ /pt-BR/index.html 302
