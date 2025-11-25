@@ -30,7 +30,8 @@ export default function LoginPage() {
 
     try {
       await login({ email, password })
-      router.push('/dashboard')
+      // Use window.location for static export compatibility
+      window.location.href = '/dashboard'
     } catch (err: unknown) {
       setError(getErrorMessage(err) || 'Falha no login. Verifique suas credenciais.')
     }
