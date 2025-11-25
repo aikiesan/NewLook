@@ -3,6 +3,9 @@
 /**
  * Protected Dashboard Page for CP2B Maps V3
  * Full-page map with floating panels (DBFZ-inspired)
+ *
+ * Protected by Vercel Edge Middleware that checks for Supabase auth cookies.
+ * Unauthenticated requests are redirected to /login.
  */
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
