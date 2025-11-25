@@ -43,8 +43,8 @@ GET /api/v1/residuos/summary/by-sector 500 (Internal Server Error)
 ### Option 2: Using psql CLI
 
 ```bash
-# Set environment variable
-export DATABASE_URL="postgresql://postgres.zyuxkzfhkueeipokyhgw:Bauzi#S#9285@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+# Set environment variable (get from Supabase dashboard)
+export DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
 
 # Run migration
 psql $DATABASE_URL < backend/migrations/001_create_residuos_tables.sql
