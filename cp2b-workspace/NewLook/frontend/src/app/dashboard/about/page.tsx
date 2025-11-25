@@ -7,7 +7,8 @@
  */
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Link, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   Target,
