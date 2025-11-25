@@ -24,7 +24,6 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { logger } from '@/lib/logger'
 
 interface NavItem {
@@ -130,11 +129,8 @@ export default function TopNavigation() {
             ))}
           </div>
 
-          {/* Theme & Language Toggles + User Menu (Desktop) */}
+          {/* Theme Toggle + User Menu (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Language Toggle */}
-            <LanguageToggle />
-
             {/* Theme Toggle */}
             <ThemeToggle />
 
