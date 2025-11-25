@@ -56,7 +56,7 @@ const publicNavItems: NavItem[] = [
     icon: <BarChart3 className="h-4 w-4" />,
   },
   {
-    href: '/about',
+    href: 'https://nipe.unicamp.br/cp2b/',
     label: 'Sobre',
     icon: <Info className="h-4 w-4" />,
   },
@@ -198,28 +198,44 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                  transition-all duration-200 focus:outline-none focus:ring-2
-                  ${isPublic
-                    ? 'focus:ring-cp2b-lime'
-                    : 'focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1E5128]'
-                  }
-                  ${isActive(item.href)
-                    ? currentStyles.navLinkActive
-                    : currentStyles.navLink
-                  }
-                `}
-                aria-current={isActive(item.href) ? 'page' : undefined}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isExternal = item.href.startsWith('http')
+              const linkClass = `
+                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                transition-all duration-200 focus:outline-none focus:ring-2
+                ${isPublic
+                  ? 'focus:ring-cp2b-lime'
+                  : 'focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1E5128]'
+                }
+                ${isActive(item.href)
+                  ? currentStyles.navLinkActive
+                  : currentStyles.navLink
+                }
+              `
+
+              return isExternal ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </a>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={linkClass}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
           </div>
 
           {/* Theme & Language Toggles + User Menu (Desktop) */}
@@ -346,31 +362,55 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
             id="mobile-menu"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`
-                    flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium
-                    ${isActive(item.href)
-                      ? currentStyles.navLinkActive
-                      : currentStyles.navLink
-                    }
-                  `}
-                  onClick={() => setMobileMenuOpen(false)}
-                  aria-current={isActive(item.href) ? 'page' : undefined}
-                >
-                  {item.icon}
-                  <div>
-                    <span className="block">{item.label}</span>
-                    {item.description && (
-                      <span className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
-                        {item.description}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isExternal = item.href.startsWith('http')
+                const linkClass = `
+                  flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium
+                  ${isActive(item.href)
+                    ? currentStyles.navLinkActive
+                    : currentStyles.navLink
+                  }
+                `
+
+                return isExternal ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={linkClass}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.icon}
+                    <div>
+                      <span className="block">{item.label}</span>
+                      {item.description && (
+                        <span className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
+                          {item.description}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={linkClass}
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                  >
+                    {item.icon}
+                    <div>
+                      <span className="block">{item.label}</span>
+                      {item.description && (
+                        <span className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
+                          {item.description}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
 
             {/* Mobile Toggles */}

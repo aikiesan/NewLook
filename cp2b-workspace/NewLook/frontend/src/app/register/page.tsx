@@ -65,7 +65,8 @@ export default function RegisterPage() {
         password: formData.password,
         full_name: formData.full_name
       })
-      router.push('/dashboard')
+      // Use window.location for static export compatibility
+      window.location.href = '/dashboard'
     } catch (err: unknown) {
       setError(getErrorMessage(err) || 'Falha no registro. Tente novamente.')
     }
