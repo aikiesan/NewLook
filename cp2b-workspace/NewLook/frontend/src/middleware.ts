@@ -1,78 +1,43 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+/**
+ * Edge Runtime Safe Middleware
+ *
+ * This middleware runs on Vercel's Edge Network and must be compatible with Edge Runtime.
+ * Edge Runtime does NOT support Node.js APIs like WebSockets, fs, etc.
+ *
+ * Strategy: Check for Supabase auth cookie directly without creating a Supabase client
+ * (Creating client in Edge Runtime causes incompatibility issues)
+ */
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
 
-  // Check if Supabase is configured
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    // If Supabase is not configured, skip auth checks
-    // This allows local development without env vars
-    return response
+  // Only run auth check for protected routes
+  if (!pathname.startsWith('/dashboard')) {
+    return NextResponse.next()
   }
 
-  try {
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    })
+  // Check if user has a valid Supabase session cookie
+  // The auth cookie is set by Supabase client-side during login
+  const hasAuthToken =
+    request.cookies.has('sb-auth-token') ||
+    request.cookies.has('sb-session-token') ||
+    // Also check for any cookie that starts with 'sb-' (Supabase cookies)
+    Array.from(request.cookies.keys()).some(key => key.startsWith('sb-'))
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    // If no user and trying to access protected routes, redirect to login
-    if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      loginUrl.search = `?redirect=${request.nextUrl.pathname}`
-      return NextResponse.redirect(loginUrl)
-    }
-
-    // If user is logged in and trying to access login/register, redirect to dashboard
-    if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')) {
-      const dashboardUrl = request.nextUrl.clone()
-      dashboardUrl.pathname = '/dashboard'
-      return NextResponse.redirect(dashboardUrl)
-    }
-  } catch (error) {
-    // If there's an error with Supabase, allow the request to proceed
-    // The client-side AuthContext will handle auth validation
-    console.error('Middleware auth check failed:', error)
+  // If trying to access dashboard without auth, redirect to login
+  if (!hasAuthToken) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.search = `?redirect=${pathname}`
+    return NextResponse.redirect(loginUrl)
   }
 
-  return response
+  // Allow access to dashboard
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/login',
-    '/register',
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  // Only match dashboard routes - this is more efficient
+  matcher: ['/dashboard/:path*'],
 }
