@@ -23,19 +23,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
-    // Load user from session
-    const loadUser = async () => {
-      try {
-        const {
-          data: { session }
-        } = await supabase.auth.getSession()
+    // Check if Supabase is properly configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-        if (session?.user) {
+    if (!supabaseUrl || !supabaseKey) {
+      logger.warn('Supabase not configured - auth disabled')
+      setLoading(false)
+      return
+    }
+
+    // Load user from session with safety timeout
+    const loadUser = async () => {
+      let timeoutId: NodeJS.Timeout | null = null
+
+      try {
+        // Safety timeout - if Supabase doesn't respond in 5 seconds, allow UI to render
+        const timeoutPromise = new Promise((resolve) => {
+          timeoutId = setTimeout(() => {
+            logger.warn('Auth session check timeout - proceeding without session')
+            setLoading(false)
+            resolve(null)
+          }, 5000)
+        })
+
+        // Race between Supabase and timeout
+        const sessionPromise = (async () => {
+          try {
+            const {
+              data: { session }
+            } = await supabase.auth.getSession()
+            return session
+          } catch (error) {
+            logger.error('Error loading user session:', error)
+            return null
+          }
+        })()
+
+        const session = await Promise.race([sessionPromise, timeoutPromise])
+
+        // If we got a valid session (not timeout), fetch profile
+        if (session && 'user' in session) {
           await fetchUserProfile(session.user.id, session.access_token)
         }
       } catch (error) {
-        logger.error('Error loading user:', error)
+        logger.error('Error in auth initialization:', error)
       } finally {
+        // Clear timeout if it hasn't fired yet
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
         setLoading(false)
       }
     }
