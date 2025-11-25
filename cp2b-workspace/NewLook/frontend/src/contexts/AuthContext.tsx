@@ -23,29 +23,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    // Check if Supabase is properly configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // Safety timeout: Force loading to false after 5 seconds
-    // This prevents infinite loading spinner if auth check hangs
-    const safetyTimeout = setTimeout(() => {
-      logger.warn('[AuthContext] Session check timeout - forcing loading to false')
+    if (!supabaseUrl || !supabaseKey) {
+      logger.warn('Supabase not configured - auth disabled')
       setLoading(false)
-    }, 5000)
+      return
+    }
 
-    // Load user from session
+    // Load user from session with safety timeout
     const loadUser = async () => {
-      try {
-        const {
-          data: { session }
-        } = await supabase.auth.getSession()
+      let timeoutId: NodeJS.Timeout | null = null
 
-        if (session?.user) {
+      try {
+        // Safety timeout - if Supabase doesn't respond in 5 seconds, allow UI to render
+        const timeoutPromise = new Promise((resolve) => {
+          timeoutId = setTimeout(() => {
+            logger.warn('[AuthContext] Session check timeout - forcing loading to false')
+            setLoading(false)
+            resolve(null)
+          }, 5000)
+        })
+
+        // Race between Supabase and timeout
+        const sessionPromise = (async () => {
+          try {
+            const {
+              data: { session }
+            } = await supabase.auth.getSession()
+            return session
+          } catch (error) {
+            logger.error('Error loading user session:', error)
+            return null
+          }
+        })()
+
+        const session = await Promise.race([sessionPromise, timeoutPromise])
+
+        // If we got a valid session (not timeout), fetch profile
+        if (session && 'user' in session) {
           await fetchUserProfile(session.user.id, session.access_token)
         }
       } catch (error) {
-        logger.error('Error loading user:', error)
+        logger.error('Error in auth initialization:', error)
       } finally {
-        clearTimeout(safetyTimeout)
+        // Clear timeout if it hasn't fired yet
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
         setLoading(false)
       }
     }
@@ -67,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
-      clearTimeout(safetyTimeout)
       subscription.unsubscribe()
     }
   }, [])
@@ -128,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }
@@ -168,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }

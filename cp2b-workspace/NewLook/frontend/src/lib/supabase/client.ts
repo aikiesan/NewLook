@@ -2,6 +2,9 @@
  * Supabase client for browser (client-side)
  * Uses @supabase/ssr for cookie-based session storage
  * This ensures the session is accessible to both client and server (middleware)
+ *
+ * Handles missing environment variables gracefully without hanging.
+ * AuthProvider will detect missing config and skip auth initialization.
  */
 import { createBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -15,8 +18,9 @@ if (typeof window !== 'undefined') {
   logger.debug('[Supabase] URL configured:', !!supabaseUrl)
   logger.debug('[Supabase] Key configured:', !!supabaseAnonKey)
   if (!supabaseUrl || !supabaseAnonKey) {
-    logger.error('[Supabase] Missing environment variables. Check Vercel build settings.')
-    logger.error('[Supabase] Expected: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    logger.error('[Supabase] Missing environment variables.')
+    logger.error('[Supabase] Expected NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    logger.error('[Supabase] Check Vercel Project Settings → Environment Variables')
   }
 }
 
@@ -32,10 +36,11 @@ if (supabaseUrl && supabaseAnonKey) {
     logger.debug('[Supabase] Browser client created with cookie-based storage')
   }
 } else {
-  // During build time or when env vars are missing, create a dummy client
-  // This allows static page generation to succeed
+  // Missing config - create stub client with disabled auth
+  // This prevents hanging and allows app to render
+  // AuthProvider will detect missing config and skip auth
   if (typeof window !== 'undefined') {
-    logger.warn('Supabase environment variables not configured. Authentication will not work.')
+    logger.warn('[Supabase] Creating stub client - authentication disabled')
   }
 
   // Create a placeholder client - auth operations will fail with clear errors
