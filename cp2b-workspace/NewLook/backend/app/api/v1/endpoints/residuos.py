@@ -162,6 +162,7 @@ async def get_residuos(
         offset: Pagination offset
     """
     try:
+        logger.info(f"Fetching residuos: sector={sector_codigo}, subsector={subsector_codigo}, search={search}")
         with get_db() as conn:
             cursor = conn.cursor()
 
@@ -447,9 +448,11 @@ async def get_conversion_factors(category: Optional[str] = None):
         category: Filter by category (e.g., 'Pecuária', 'Culturas')
     """
     try:
+        logger.info(f"Fetching conversion factors, category filter: {category}")
         with get_db() as conn:
             cursor = conn.cursor()
 
+            # Query matches the exact schema from 001_create_residuos_tables.sql
             if category:
                 cursor.execute("""
                     SELECT
@@ -488,13 +491,14 @@ async def get_conversion_factors(category: Optional[str] = None):
 
             rows = cursor.fetchall()
             columns = [desc[0] for desc in cursor.description]
+            logger.info(f"Found {len(rows)} conversion factors")
 
             factors = []
             for row in rows:
                 factor = dict(zip(columns, row))
-                # Convert Decimal to float
+                # Convert Decimal to float, handle None values
                 for key in ['factor_value', 'safety_margin_percent', 'final_factor']:
-                    if factor.get(key):
+                    if factor.get(key) is not None:
                         factor[key] = float(factor[key])
                 factors.append(factor)
 
@@ -505,8 +509,11 @@ async def get_conversion_factors(category: Optional[str] = None):
             }
 
     except Exception as e:
-        logger.error(f"Error fetching conversion factors: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching conversion factors: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
 
 
 @router.get("/summary/by-sector")
@@ -517,16 +524,18 @@ async def get_summary_by_sector():
     Returns residue counts, average BMP, and total references per sector.
     """
     try:
+        logger.info("Fetching sector summary...")
         with get_db() as conn:
             cursor = conn.cursor()
 
+            # Query matches the exact schema from 001_create_residuos_tables.sql
             cursor.execute("""
                 SELECT
                     s.codigo,
                     s.nome,
                     s.emoji,
                     s.ordem,
-                    COUNT(r.id) as num_residuos,
+                    COUNT(DISTINCT r.id) as num_residuos,
                     ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
                     ROUND(MIN(r.bmp_medio)::numeric, 2) as min_bmp,
                     ROUND(MAX(r.bmp_medio)::numeric, 2) as max_bmp,
@@ -534,7 +543,7 @@ async def get_summary_by_sector():
                     ROUND(AVG(r.vs_medio)::numeric, 2) as avg_vs,
                     ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
                     ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content,
-                    COUNT(rr.id) as total_references
+                    COUNT(DISTINCT rr.id) as total_references
                 FROM sectors s
                 LEFT JOIN residuos r ON s.codigo = r.sector_codigo
                 LEFT JOIN residuo_references rr ON r.id = rr.residuo_id
@@ -544,25 +553,30 @@ async def get_summary_by_sector():
 
             rows = cursor.fetchall()
             columns = [desc[0] for desc in cursor.description]
+            logger.info(f"Found {len(rows)} sectors")
 
             summary = []
             for row in rows:
                 item = dict(zip(columns, row))
-                # Convert Decimal to float
+                # Convert Decimal to float, handle None values
                 for key in ['avg_bmp', 'min_bmp', 'max_bmp', 'avg_ts',
                            'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
-                    if item.get(key):
+                    if item.get(key) is not None:
                         item[key] = float(item[key])
                 summary.append(item)
 
             return {
                 "success": True,
+                "count": len(summary),
                 "summary": summary
             }
 
     except Exception as e:
-        logger.error(f"Error fetching sector summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching sector summary: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
 
 
 @router.get("/compare")
