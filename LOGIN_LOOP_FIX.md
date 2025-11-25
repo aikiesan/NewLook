@@ -103,11 +103,21 @@ git commit -m "fix: resolve login loop with cookie-based session storage"
 git push
 ```
 
-2. **Verify environment variables** in Vercel dashboard:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+2. **CRITICAL: Verify Next.js config**:
+   - The `next.config.js` has been updated to **remove static export**
+   - Vercel now supports full Next.js features (middleware, SSR, API routes)
+   - **DO NOT** set `STATIC_EXPORT=true` in Vercel environment variables
+   - Image optimization is now enabled (Vercel supports it natively)
 
-3. **Deploy** and wait for build to complete
+3. **Verify environment variables** in Vercel dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+   - `NEXT_PUBLIC_API_URL` - (Optional) FastAPI backend URL
+
+4. **Deploy** and wait for build to complete
+   - Vercel will automatically detect the middleware
+   - Edge Functions will be deployed for authentication
+   - Build should complete successfully with all features enabled
 
 ### 2. Test Authentication Flow
 
@@ -174,10 +184,49 @@ Client (cookies) ✅← Sent with every request →✅ Middleware (cookies)
 | File | Status | Purpose |
 |------|--------|---------|
 | `package.json` | Modified | Added `@supabase/ssr` dependency |
+| `next.config.js` | **Modified** | Removed static export for Vercel |
 | `src/lib/supabase/client.ts` | Modified | Use `createBrowserClient` for cookies |
 | `src/lib/supabase/server.ts` | **NEW** | Server-side Supabase client |
 | `middleware.ts` | **NEW** | Authentication middleware |
 | `src/contexts/AuthContext.tsx` | Modified | Added 5s safety timeout |
+
+## Vercel-Specific Changes
+
+### Why Remove Static Export?
+
+**Before (Cloudflare Pages setup)**:
+```javascript
+output: 'export' // Static HTML files only
+```
+
+**After (Vercel deployment)**:
+```javascript
+// No output specified = Full Next.js features
+```
+
+### What This Enables:
+
+✅ **Middleware** - Runs on Edge Runtime for authentication
+✅ **Server-Side Rendering (SSR)** - Dynamic page generation
+✅ **API Routes** - Backend endpoints in Next.js
+✅ **Cookie Management** - Server can read/write cookies
+✅ **Image Optimization** - Automatic image processing
+✅ **ISR (Incremental Static Regeneration)** - Best of both worlds
+
+### Performance Impact:
+
+- **Edge Functions**: Middleware runs globally on Vercel's edge network (~20ms overhead)
+- **Cold Starts**: None (Edge Functions are always warm)
+- **Build Time**: Slightly longer (enables more features)
+- **Runtime**: Dynamic rendering where needed, static where possible
+
+### Migration Path (If Needed):
+
+If you need to deploy to **both** Vercel and Cloudflare Pages:
+
+1. **Vercel**: Use current config (no static export)
+2. **Cloudflare Pages**: Set `STATIC_EXPORT=true` environment variable
+3. **Trade-off**: Cloudflare Pages won't have middleware/auth
 
 ## Rollback Instructions
 
