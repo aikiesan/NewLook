@@ -6,7 +6,7 @@
  * Public version matching the dashboard Sobre page content
  */
 import { useState } from 'react'
-import { Link } from '@/i18n/navigation'
+import { Link } from 'next/navigation'
 import Image from 'next/image'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import Timeline, { TimelineEvent } from '@/components/ui/Timeline'
