@@ -36,12 +36,14 @@ app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 # 1. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 2. CORS middleware - Allow Cloudflare Pages deployments
+# 2. CORS middleware - Allow Vercel and Cloudflare Pages deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes localhost origins
-    # Allow all Cloudflare Pages preview deployments
-    allow_origin_regex=r"https://.*\.pages\.dev",
+    # Allow all Vercel and Cloudflare Pages preview deployments
+    # Vercel: *.vercel.app (production + previews)
+    # Cloudflare: *.pages.dev (production + previews)
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.pages\.dev",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
     allow_headers=["*"],  # Allow all headers for preflight compatibility
@@ -53,11 +55,12 @@ app.add_middleware(
 app.middleware("http")(gzip_middleware)
 
 # 4. Trusted host middleware - Prevents host header injection attacks
-# Supports Railway (backend), Cloudflare Pages (frontend), and local development
+# Supports Railway (backend), Vercel (frontend), Cloudflare Pages (frontend), and local development
 app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=[
         "newlook-production.up.railway.app",
+        "*.vercel.app",  # Vercel (production + preview deployments)
         "*.pages.dev",  # Cloudflare Pages (production + preview)
         "localhost",
         "127.0.0.1",
