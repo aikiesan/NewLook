@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
-import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
@@ -344,7 +343,6 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const { isAuthenticated } = useAuth()
-  const t = useTranslations('landing')
 
   // Auto-advance carousel
   useEffect(() => {
@@ -370,7 +368,7 @@ export default function HomePage() {
         className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 bg-cp2b-green text-white px-4 py-2 rounded-md"
         tabIndex={0}
       >
-        {t('accessibility.skipToContent')}
+        Pular para o conteúdo principal
       </a>
 
       {/* Unified Navigation Header - Always public on landing page */}
