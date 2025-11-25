@@ -58,9 +58,16 @@ export default function DashboardPage() {
     setActiveFilters(prev => ({ ...prev, searchQuery }))
   }, [searchQuery])
 
-  // Redirect if not authenticated (loading handled by useEffect above)
-  if (!user) {
-    return null
+  // Show loading state while checking authentication
+  if (loading || !user) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#1E5128] dark:border-emerald-500 mx-auto"></div>
+          <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg">Carregando dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
