@@ -23,6 +23,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
+    // Safety timeout: Force loading to false after 5 seconds
+    // This prevents infinite loading spinner if auth check hangs
+    const safetyTimeout = setTimeout(() => {
+      logger.warn('[AuthContext] Session check timeout - forcing loading to false')
+      setLoading(false)
+    }, 5000)
+
     // Load user from session
     const loadUser = async () => {
       try {
@@ -36,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         logger.error('Error loading user:', error)
       } finally {
+        clearTimeout(safetyTimeout)
         setLoading(false)
       }
     }
@@ -46,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      logger.debug('[AuthContext] Auth state change:', event)
+
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
       } else {
@@ -55,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
+      clearTimeout(safetyTimeout)
       subscription.unsubscribe()
     }
   }, [])
