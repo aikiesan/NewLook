@@ -50,7 +50,40 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
     return await response.json()
   } catch (error) {
     logger.error('Error fetching real residuos:', error)
-    return { residuos: [], total: 0 }
+    logger.warn('Falling back to mock data...')
+
+    // Fallback to mock data when backend is unavailable
+    const mockResiduos = MOCK_CHEMICAL_DATA.map(chem => ({
+      id: chem.residue_id,
+      nome: chem.residue_name,
+      nome_en: chem.residue_name,
+      sector_codigo: chem.sector === 'agricultural' ? 'AG_AGRICULTURA' :
+                     chem.sector === 'livestock' ? 'PC_PECUARIA' :
+                     chem.sector === 'industrial' ? 'IN_INDUSTRIAL' : 'UR_URBANO',
+      sector_nome: chem.sector === 'agricultural' ? 'Agricultura' :
+                   chem.sector === 'livestock' ? 'Pecuária' :
+                   chem.sector === 'industrial' ? 'Industrial' : 'Urbano',
+      bmp_medio: chem.bmp,
+      bmp_min: chem.bmp * 0.8,
+      bmp_max: chem.bmp * 1.2,
+      ts_medio: chem.ts,
+      vs_medio: chem.vs,
+      chemical_cn_ratio: chem.cn_ratio,
+      chemical_ch4_content: chem.ch4_content,
+      ph: chem.ph,
+      reference_count: 3,
+      references: []
+    }))
+
+    const filtered = sectorCodigo
+      ? mockResiduos.filter(r => r.sector_codigo === sectorCodigo)
+      : mockResiduos
+
+    return {
+      residuos: filtered,
+      total: filtered.length,
+      _isMockData: true
+    }
   }
 }
 
@@ -65,7 +98,49 @@ export async function getRealSectorSummary(): Promise<any> {
     return await response.json()
   } catch (error) {
     logger.error('Error fetching sector summary:', error)
-    return { summary: [] }
+    logger.warn('Falling back to mock sector summary...')
+
+    // Fallback to mock summary generated from MOCK_CHEMICAL_DATA
+    const sectorCounts = {
+      'AG_AGRICULTURA': 0,
+      'PC_PECUARIA': 0,
+      'IN_INDUSTRIAL': 0,
+      'UR_URBANO': 0
+    }
+
+    MOCK_CHEMICAL_DATA.forEach(chem => {
+      const sectorCode = chem.sector === 'agricultural' ? 'AG_AGRICULTURA' :
+                         chem.sector === 'livestock' ? 'PC_PECUARIA' :
+                         chem.sector === 'industrial' ? 'IN_INDUSTRIAL' : 'UR_URBANO'
+      sectorCounts[sectorCode]++
+    })
+
+    const mockSummary = Object.entries(sectorCounts).map(([codigo, count]) => ({
+      codigo: codigo,
+      nome: codigo === 'AG_AGRICULTURA' ? 'Agricultura' :
+            codigo === 'PC_PECUARIA' ? 'Pecuária' :
+            codigo === 'IN_INDUSTRIAL' ? 'Industrial' : 'Urbano',
+      emoji: codigo === 'AG_AGRICULTURA' ? '🌾' :
+             codigo === 'PC_PECUARIA' ? '🐄' :
+             codigo === 'IN_INDUSTRIAL' ? '🏭' : '🏙️',
+      ordem: codigo === 'AG_AGRICULTURA' ? 1 :
+             codigo === 'PC_PECUARIA' ? 2 :
+             codigo === 'IN_INDUSTRIAL' ? 3 : 4,
+      num_residuos: count,
+      avg_bmp: null,
+      min_bmp: null,
+      max_bmp: null,
+      avg_ts: null,
+      avg_vs: null,
+      avg_cn_ratio: null,
+      avg_ch4_content: null,
+      total_references: count * 3
+    }))
+
+    return {
+      summary: mockSummary,
+      _isMockData: true
+    }
   }
 }
 
@@ -90,12 +165,15 @@ export async function getRealResiduoWithReferences(residuoId: number): Promise<a
 export async function getRealConversionFactors(): Promise<any> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/residuos/conversion-factors/`)
-    if (!response.ok) throw new Error('Failed to fetch conversion factors')
+    if (!response.ok) {
+      logger.error(`[ERROR] Error fetching conversion factors: ${response.status} ${response.statusText}`)
+      return { factors: [], error: `HTTP ${response.status}` }
+    }
 
     return await response.json()
   } catch (error) {
-    logger.error('Error fetching conversion factors:', error)
-    return { factors: [] }
+    logger.error('[ERROR] Error fetching conversion factors:', error)
+    return { factors: [], error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
@@ -325,7 +403,7 @@ const MOCK_CHEMICAL_DATA: ChemicalData[] = [
     source_type: 'laboratory'
   },
   {
-    residue_id: 2,
+    residue_id: 2001,
     residue_name: 'Dejeto suíno',
     sector: 'livestock',
     moisture: 92,
@@ -345,7 +423,7 @@ const MOCK_CHEMICAL_DATA: ChemicalData[] = [
     source_type: 'laboratory'
   },
   {
-    residue_id: 3,
+    residue_id: 2002,
     residue_name: 'Vinhaça',
     sector: 'agricultural',
     moisture: 95,
@@ -365,7 +443,7 @@ const MOCK_CHEMICAL_DATA: ChemicalData[] = [
     source_type: 'laboratory'
   },
   {
-    residue_id: 4,
+    residue_id: 2003,
     residue_name: 'Dejeto bovino',
     sector: 'livestock',
     moisture: 85,
@@ -385,7 +463,7 @@ const MOCK_CHEMICAL_DATA: ChemicalData[] = [
     source_type: 'laboratory'
   },
   {
-    residue_id: 5,
+    residue_id: 2004,
     residue_name: 'Torta de filtro',
     sector: 'agricultural',
     moisture: 75,
@@ -497,7 +575,7 @@ const MOCK_REFERENCES: ScientificReference[] = [
     sample_size: 24
   },
   {
-    id: 2,
+    id: 2001,
     authors: 'Kunz, A.; Higarashi, M. M.; Oliveira, P. A.',
     title: 'Tecnologias de tratamento de dejetos suínos para produção de biogás',
     journal: 'Engenharia Agrícola',
@@ -524,7 +602,7 @@ const MOCK_REFERENCES: ScientificReference[] = [
     sample_size: 156
   },
   {
-    id: 3,
+    id: 2002,
     authors: 'Moraes, B. S.; Zaiat, M.; Bonomi, A.',
     title: 'Digestão anaeróbia da vinhaça de cana-de-açúcar',
     journal: 'Renewable Energy',
@@ -550,7 +628,7 @@ const MOCK_REFERENCES: ScientificReference[] = [
     sample_size: 36
   },
   {
-    id: 4,
+    id: 2003,
     authors: 'Carvalho, F.; Prazeres, A. R.; Rivas, J.',
     title: 'Cheese whey wastewater: Characterization and treatment',
     journal: 'Science of the Total Environment',
@@ -576,7 +654,7 @@ const MOCK_REFERENCES: ScientificReference[] = [
     sample_size: 200
   },
   {
-    id: 5,
+    id: 2004,
     authors: 'Amaral, A. C.; Kunz, A.; Steinmetz, R. L. R.; Scussiato, L. A.',
     title: 'Influence of solid-liquid separation strategy on biogas yield from swine manure',
     journal: 'Journal of Cleaner Production',

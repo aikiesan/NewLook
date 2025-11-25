@@ -69,7 +69,6 @@ import {
   getKineticsData,
   getChemicalData,
   getReferences,
-  getCoDigestionRecommendations,
   getResidueList,
   getScientificSummary,
   getRealResiduos,
@@ -77,6 +76,25 @@ import {
   getRealResiduoWithReferences,
   getRealConversionFactors
 } from '@/services/scientificApi'
+
+import type { SectorCode } from '@/services/residuosApi'
+
+// Helper function to get sector label from either old SectorType or new SectorCode
+function getSectorLabel(sector: SectorType | SectorCode | string): string {
+  const sectorMap: Record<string, string> = {
+    // Old SectorType format
+    'agricultural': 'Agrícola',
+    'livestock': 'Pecuária',
+    'industrial': 'Industrial',
+    'urban': 'Urbano',
+    // New SectorCode format (from backend)
+    'AG_AGRICULTURA': 'Agrícola',
+    'PC_PECUARIA': 'Pecuária',
+    'IN_INDUSTRIAL': 'Industrial',
+    'UR_URBANO': 'Urbano'
+  }
+  return sectorMap[sector] || sector
+}
 
 export default function ScientificDatabasePage() {
   const router = useRouter()
@@ -105,16 +123,12 @@ export default function ScientificDatabasePage() {
   const [residuoDetails, setResiduoDetails] = useState<any | null>(null)
   const [activeSector, setActiveSector] = useState<string>('AG_AGRICULTURA')
   const [conversionFactors, setConversionFactors] = useState<any[]>([])
+  const [isBackendAvailable, setIsBackendAvailable] = useState<boolean>(true)
 
   // Selection states
   const [selectedResidues, setSelectedResidues] = useState<string[]>([])
   const [selectedKineticClass, setSelectedKineticClass] = useState<KineticClassification | ''>('')
-  const [selectedSectors, setSelectedSectors] = useState<SectorType[]>([])
-
-  // Co-digestion states
-  const [primaryResidue, setPrimaryResidue] = useState<string>('')
-  const [targetCN, setTargetCN] = useState<number>(25)
-  const [coDigestionResults, setCoDigestionResults] = useState<any[]>([])
+  const [selectedSectors, setSelectedSectors] = useState<SectorCode[]>([])
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
@@ -123,7 +137,6 @@ export default function ScientificDatabasePage() {
 
   // Loading states
   const [loading, setLoading] = useState(true)
-  const [loadingCoDigestion, setLoadingCoDigestion] = useState(false)
 
   // Error state
   const [error, setError] = useState<string | null>(null)
@@ -135,6 +148,11 @@ export default function ScientificDatabasePage() {
   const fetchAllData = useCallback(async () => {
     setLoading(true)
     setError(null)
+
+    // Clear all state first to prevent duplicates
+    setRealResiduos([])
+    setSectorSummary([])
+    setConversionFactors([])
 
     try {
       const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.all([
@@ -152,18 +170,75 @@ export default function ScientificDatabasePage() {
       setSummary(summaryData)
 
       // Also fetch real residuos data from Panorama_CP2B
-      const [realRes, sectorSum, factors] = await Promise.all([
-        getRealResiduos(),
+      // Only fetch ONCE (not twice) to avoid duplicates
+      const [sectorSum, factors, allResiduosRes] = await Promise.all([
         getRealSectorSummary(),
-        getRealConversionFactors()
+        getRealConversionFactors(),
+        getRealResiduos() // Fetch all residues without filter
       ])
 
-      setRealResiduos(realRes.residuos || [])
-      setSectorSummary(sectorSum.summary || [])
-      setConversionFactors(factors.factors || [])
+      // Set all residues so Chemical tab has data on first load
+      // Add null safety checks for API responses
+      // Deduplicate by ID to prevent duplicate keys
+      const uniqueResiduos = allResiduosRes?.residuos || []
+      const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
+        index === self.findIndex((r: any) => r.id === residuo.id)
+      )
+
+      setRealResiduos(deduplicatedResiduos)
+      setSectorSummary(sectorSum?.summary || [])
+      setConversionFactors(factors?.factors || [])
+
+      // Check if backend is available (not using mock data)
+      setIsBackendAvailable(!allResiduosRes?._isMockData)
+
+      // Log warning if conversion factors failed to load
+      if (factors.error) {
+        console.warn('Could not load conversion factors:', factors.error)
+      }
+
+      // Extract references from real residuos data
+      // This allows the Referencias Científicas tab to show real data instead of mock data
+      // Only extract if we have valid residuo data
+      if (allResiduosRes?.residuos && Array.isArray(allResiduosRes.residuos) && allResiduosRes.residuos.length > 0) {
+        const extractedReferences: ScientificReference[] = []
+        const seenRefIds = new Set<string>()
+
+        allResiduosRes.residuos.forEach((residuo: any) => {
+          if (residuo.references && Array.isArray(residuo.references)) {
+            residuo.references.forEach((ref: any) => {
+              const refKey = `${ref.id || ref.title}-${ref.parameter_type}`
+              if (!seenRefIds.has(refKey)) {
+                seenRefIds.add(refKey)
+                extractedReferences.push({
+                  id: ref.id || `ref-${extractedReferences.length}`,
+                  authors: ref.authors || 'Autor desconhecido',
+                  title: ref.title || ref.citation || 'Sem título',
+                  year: ref.year || new Date().getFullYear(),
+                  doi: ref.doi || undefined,
+                  peer_reviewed: ref.is_primary || false,
+                  sector: residuo.sector_codigo as any, // Use real backend sector code
+                  residues_studied: [residuo.nome],
+                  parameters_measured: [ref.parameter_type || 'unknown'],
+                  reference_type: 'journal',
+                  journal: ref.journal,
+                  abstract: ref.abstract,
+                  keywords: [],
+                  key_findings: []
+                })
+              }
+            })
+          }
+        })
+
+        // Merge extracted references with mock references (prioritize real data)
+        if (extractedReferences.length > 0) {
+          setReferences(extractedReferences)
+        }
+      }
 
       // Update summary with real data counts
-      if (sectorSum.summary) {
+      if (sectorSum?.summary && Array.isArray(sectorSum.summary)) {
         const totalRefs = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
         const totalResidues = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
         setSummary(prev => prev ? {
@@ -196,27 +271,23 @@ export default function ScientificDatabasePage() {
   const fetchResiduosBySector = useCallback(async (sectorCode: string) => {
     try {
       const result = await getRealResiduos(sectorCode)
-      setRealResiduos(result.residuos || [])
+
+      // Deduplicate by ID to prevent duplicate keys
+      const uniqueResiduos = result.residuos || []
+      const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
+        index === self.findIndex((r: any) => r.id === residuo.id)
+      )
+
+      setRealResiduos(deduplicatedResiduos)
+      setIsBackendAvailable(!result._isMockData)
     } catch (err) {
       console.error('Error fetching residuos by sector:', err)
+      setIsBackendAvailable(false)
+      setRealResiduos([]) // Clear on error
     }
   }, [])
 
   // Calculate co-digestion
-  const calculateCoDigestion = useCallback(async () => {
-    if (!primaryResidue) return
-
-    setLoadingCoDigestion(true)
-    try {
-      const result = await getCoDigestionRecommendations(primaryResidue, targetCN)
-      setCoDigestionResults(result.recommendations)
-    } catch (err) {
-      console.error('Error calculating co-digestion:', err)
-    } finally {
-      setLoadingCoDigestion(false)
-    }
-  }, [primaryResidue, targetCN])
-
   // Generate kinetic curve data for selected residues
   const kineticCurveData = useMemo(() => {
     const selected = selectedResidues.length > 0
@@ -238,44 +309,23 @@ export default function ScientificDatabasePage() {
     })
   }, [kineticsData, selectedResidues])
 
-  // Radar chart data for chemical comparison
-  const radarData = useMemo(() => {
+  // Bar chart data for chemical comparison (updated to use realResiduos and remove FDE/pH)
+  const barChartData = useMemo(() => {
     const selected = selectedResidues.length > 0
-      ? chemicalData.filter(c => selectedResidues.includes(c.residue_name))
+      ? realResiduos.filter(r => selectedResidues.includes(r.nome))
       : []
 
     if (selected.length === 0) return []
 
-    const parameters = ['BMP', 'VS', 'C:N', 'pH', 'FDE']
-
-    return parameters.map(param => {
-      const point: any = { parameter: param }
-
-      selected.forEach(residue => {
-        let value = 0
-        switch (param) {
-          case 'BMP':
-            value = (residue.bmp / 400) * 100  // Normalize to 0-100
-            break
-          case 'VS':
-            value = residue.vs
-            break
-          case 'C:N':
-            value = Math.min((residue.cn_ratio / 100) * 100, 100)
-            break
-          case 'pH':
-            value = ((residue.ph || 7 - 4) / 5) * 100
-            break
-          case 'FDE':
-            value = residue.fde || 0
-            break
-        }
-        point[residue.residue_name] = value
-      })
-
-      return point
-    })
-  }, [chemicalData, selectedResidues])
+    // Map each residue to a data point with BMP, VS, C:N, CH4
+    return selected.map(residue => ({
+      residue: residue.nome,
+      BMP: residue.bmp_medio || 0,
+      VS: residue.vs_medio || 0,
+      'C:N': residue.chemical_cn_ratio || 0,
+      'CH4': residue.chemical_ch4_content || 0
+    }))
+  }, [realResiduos, selectedResidues])
 
   // Filtered references
   const filteredReferences = useMemo(() => {
@@ -463,8 +513,7 @@ export default function ScientificDatabasePage() {
               { id: 'kinetics', label: 'Cinetica de Degradacao', icon: TestTube2 },
               { id: 'chemical', label: 'Caracterizacao Quimica', icon: FlaskConical },
               { id: 'references', label: 'Referencias Cientificas', icon: BookOpen },
-              { id: 'comparison', label: 'Comparacao Interativa', icon: GitCompare },
-              { id: 'codigestion', label: 'Planejamento Co-Digestao', icon: Beaker }
+              { id: 'comparison', label: 'Comparacao Interativa', icon: GitCompare }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -517,179 +566,58 @@ export default function ScientificDatabasePage() {
                 ))}
               </div>
 
-              {/* Residues List */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left: Residue cards */}
-                <div className="lg:col-span-2 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Residuos - {sectorSummary.find((s: any) => s.codigo === activeSector)?.nome || 'Todos'}
-                  </h3>
+              {/* Simplified Residues List - Grouped by Sector */}
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                  Lista de Residuos por Setor
+                </h3>
 
-                  {realResiduos.filter((r: any) => r.sector_codigo === activeSector).map((residuo: any) => (
-                    <div
-                      key={residuo.id}
-                      onClick={() => {
-                        setSelectedResiduoId(residuo.id)
-                        fetchResiduoDetails(residuo.id)
-                      }}
-                      className={`bg-white rounded-xl shadow-md p-5 border cursor-pointer transition-all hover:shadow-lg ${
-                        selectedResiduoId === residuo.id
-                          ? 'border-green-500 ring-2 ring-green-200'
-                          : 'border-gray-100'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{residuo.nome}</h4>
-                          <span className="text-xs text-gray-500">
-                            {residuo.subsector_nome || residuo.sector_nome}
+                <div className="space-y-6">
+                  {sectorSummary.map((sector: any) => {
+                    const sectorResiduos = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo)
+
+                    return (
+                      <div key={sector.codigo} className="border-l-4 border-green-500 pl-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl">{sector.emoji}</span>
+                          <h4 className="font-semibold text-gray-900 text-base">
+                            {sector.nome}
+                          </h4>
+                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                            {sectorResiduos.length} residuos
                           </span>
                         </div>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                          {residuo.reference_count || 0} refs
-                        </span>
-                      </div>
 
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="text-center p-2 bg-gray-50 rounded">
-                          <div className="font-semibold text-gray-900">
-                            {residuo.bmp_medio?.toFixed(0) || 'N/A'}
-                          </div>
-                          <div className="text-gray-500">BMP</div>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded">
-                          <div className="font-semibold text-gray-900">
-                            {residuo.ts_medio?.toFixed(1) || 'N/A'}%
-                          </div>
-                          <div className="text-gray-500">ST</div>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded">
-                          <div className="font-semibold text-gray-900">
-                            {residuo.vs_medio?.toFixed(1) || 'N/A'}%
-                          </div>
-                          <div className="text-gray-500">SV</div>
-                        </div>
-                      </div>
-
-                      {residuo.chemical_cn_ratio && (
-                        <div className="mt-3 flex justify-between items-center text-sm">
-                          <span className="text-gray-600">Relacao C:N</span>
-                          <span className={`font-mono font-semibold ${
-                            residuo.chemical_cn_ratio >= 20 && residuo.chemical_cn_ratio <= 30
-                              ? 'text-green-600'
-                              : residuo.chemical_cn_ratio < 20
-                              ? 'text-yellow-600'
-                              : 'text-orange-600'
-                          }`}>
-                            {residuo.chemical_cn_ratio?.toFixed(1)}:1
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {realResiduos.filter((r: any) => r.sector_codigo === activeSector).length === 0 && (
-                    <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
-                      <FlaskConical className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                      <p className="text-gray-500">Nenhum residuo encontrado para este setor</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right: Selected residue details with references */}
-                <div className="lg:col-span-1">
-                  {residuoDetails ? (
-                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 sticky top-4">
-                      <h3 className="font-semibold text-gray-900 mb-4 text-lg">
-                        {residuoDetails.nome}
-                      </h3>
-
-                      {/* Chemical parameters */}
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">BMP</span>
-                          <span className="font-mono font-semibold">
-                            {residuoDetails.bmp_medio} L CH4/kg SV
-                          </span>
-                        </div>
-                        {residuoDetails.ts_medio && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Solidos Totais</span>
-                            <span className="font-mono">{residuoDetails.ts_medio}%</span>
-                          </div>
-                        )}
-                        {residuoDetails.vs_medio && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Solidos Volateis</span>
-                            <span className="font-mono">{residuoDetails.vs_medio}%</span>
-                          </div>
-                        )}
-                        {residuoDetails.chemical_cn_ratio && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">C:N</span>
-                            <span className="font-mono">{residuoDetails.chemical_cn_ratio}:1</span>
-                          </div>
-                        )}
-                        {residuoDetails.chemical_ch4_content && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Teor CH4</span>
-                            <span className="font-mono">{residuoDetails.chemical_ch4_content}%</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Scientific References */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          Referencias Cientificas ({residuoDetails.total_references || 0})
-                        </h4>
-
-                        {residuoDetails.references_by_type && Object.entries(residuoDetails.references_by_type).map(([paramType, refs]: [string, any]) => (
-                          <div key={paramType} className="mb-4">
-                            <div className="text-xs font-medium text-gray-500 uppercase mb-2">
-                              {paramType === 'bmp' ? 'BMP' :
-                               paramType === 'ts' ? 'Solidos Totais' :
-                               paramType === 'vs' ? 'Solidos Volateis' :
-                               paramType === 'cn_ratio' ? 'Relacao C:N' :
-                               paramType === 'ch4_content' ? 'Teor CH4' : paramType}
-                            </div>
-                            {refs.map((ref: any, idx: number) => (
-                              <div key={idx} className="text-xs text-gray-600 mb-2 pl-2 border-l-2 border-green-200">
-                                <p className="font-medium">{ref.authors || 'Autor desconhecido'} ({ref.year || 'N/A'})</p>
-                                <p className="text-gray-500 line-clamp-2">{ref.citation}</p>
-                                {ref.doi && (
-                                  <a
-                                    href={`https://doi.org/${ref.doi}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline inline-flex items-center gap-1 mt-1"
-                                  >
-                                    <ExternalLink className="h-3 w-3" />
-                                    DOI
-                                  </a>
+                        {sectorResiduos.length > 0 ? (
+                          <ul className="space-y-2 ml-6">
+                            {sectorResiduos.map((residuo: any) => (
+                              <li key={residuo.id} className="text-gray-700 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                <span>{residuo.nome}</span>
+                                {residuo.subsector_nome && (
+                                  <span className="text-xs text-gray-500">
+                                    ({residuo.subsector_nome})
+                                  </span>
                                 )}
-                              </div>
+                              </li>
                             ))}
-                          </div>
-                        ))}
-
-                        {(!residuoDetails.references || residuoDetails.references.length === 0) && (
-                          <p className="text-xs text-gray-500 italic">
-                            Nenhuma referencia cientifica vinculada
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic ml-6">
+                            Nenhum residuo cadastrado neste setor
                           </p>
                         )}
                       </div>
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
-                      <Info className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p className="text-sm text-gray-500">
-                        Selecione um residuo para ver detalhes e referencias cientificas
-                      </p>
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
+
+                {realResiduos.length === 0 && (
+                  <div className="text-center py-8">
+                    <FlaskConical className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-gray-500">Nenhum residuo encontrado na base de dados</p>
+                  </div>
+                )}
               </div>
 
               {/* Conversion Factors */}
@@ -827,8 +755,8 @@ export default function ScientificDatabasePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {kineticsData.map((kinetic) => (
-                        <tr key={kinetic.residue_id} className="hover:bg-gray-50">
+                      {kineticsData.map((kinetic, idx) => (
+                        <tr key={`kinetic-${kinetic.residue_id}-${idx}`} className="hover:bg-gray-50">
                           <td className="py-3 px-4 font-medium text-gray-900">
                             {kinetic.residue_name}
                           </td>
@@ -895,9 +823,36 @@ export default function ScientificDatabasePage() {
           {/* Chemical Data Tab */}
           {viewMode === 'chemical' && (
             <>
+              {/* Backend Connection Error Message */}
+              {!isBackendAvailable && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl shadow-md mb-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                        Conexão com Backend Necessária
+                      </h3>
+                      <p className="text-yellow-700 mb-3">
+                        Os dados de caracterização química requerem conexão com o backend. Por favor, inicie o servidor backend para visualizar os dados reais.
+                      </p>
+                      <div className="bg-yellow-100 rounded-lg p-3 font-mono text-sm text-yellow-800">
+                        <p className="font-semibold mb-1">Para iniciar o backend:</p>
+                        <code className="block">cd backend</code>
+                        <code className="block">uvicorn main:app --reload</code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Chemical Data Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {realResiduos.map((residue) => {
+              {isBackendAvailable && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {realResiduos.map((residue) => {
                   const cnStatus = getCNStatus(residue.chemical_cn_ratio);
                   return (
                     <div
@@ -959,7 +914,8 @@ export default function ScientificDatabasePage() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
             </>
           )}
 
@@ -993,21 +949,26 @@ export default function ScientificDatabasePage() {
                   <div className="mb-4">
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
                     <div className="space-y-2">
-                      {(['agricultural', 'livestock', 'industrial', 'urban'] as SectorType[]).map(sector => (
-                        <label key={sector} className="flex items-center gap-2 text-sm">
+                      {([
+                        { code: 'AG_AGRICULTURA' as SectorCode, label: 'Agrícola' },
+                        { code: 'PC_PECUARIA' as SectorCode, label: 'Pecuária' },
+                        { code: 'IN_INDUSTRIAL' as SectorCode, label: 'Industrial' },
+                        { code: 'UR_URBANO' as SectorCode, label: 'Urbano' }
+                      ]).map(sector => (
+                        <label key={sector.code} className="flex items-center gap-2 text-sm">
                           <input
                             type="checkbox"
-                            checked={selectedSectors.includes(sector)}
+                            checked={selectedSectors.includes(sector.code)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedSectors([...selectedSectors, sector])
+                                setSelectedSectors([...selectedSectors, sector.code])
                               } else {
-                                setSelectedSectors(selectedSectors.filter(s => s !== sector))
+                                setSelectedSectors(selectedSectors.filter(s => s !== sector.code))
                               }
                             }}
                             className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                           />
-                          {SECTOR_LABELS[sector]}
+                          {sector.label}
                         </label>
                       ))}
                     </div>
@@ -1039,7 +1000,7 @@ export default function ScientificDatabasePage() {
               <div className="lg:col-span-3 space-y-4">
                 {filteredReferences.map((ref) => (
                   <div
-                    key={ref.id}
+                    key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
                     className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
                   >
                     <div className="p-5">
@@ -1059,15 +1020,15 @@ export default function ScientificDatabasePage() {
 
                       <div className="flex flex-wrap gap-2 mb-3">
                         <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                          {SECTOR_LABELS[ref.sector]}
+                          {getSectorLabel(ref.sector)}
                         </span>
-                        {ref.residues_studied.slice(0, 2).map(residue => (
-                          <span key={residue} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                        {ref.residues_studied.slice(0, 2).map((residue, idx) => (
+                          <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
                             {residue}
                           </span>
                         ))}
-                        {ref.parameters_measured.slice(0, 2).map(param => (
-                          <span key={param} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                        {ref.parameters_measured.slice(0, 2).map((param, idx) => (
+                          <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
                             {PARAMETER_LABELS[param]}
                           </span>
                         ))}
@@ -1146,7 +1107,7 @@ export default function ScientificDatabasePage() {
                       onClick={() => {
                         if (selectedResidues.includes(residue)) {
                           setSelectedResidues(selectedResidues.filter(r => r !== residue))
-                        } else if (selectedResidues.length < 4) {
+                        } else if (selectedResidues.length < 5) {
                           setSelectedResidues([...selectedResidues, residue])
                         }
                       }}
@@ -1176,23 +1137,17 @@ export default function ScientificDatabasePage() {
                     </h3>
                     <div className="h-[400px]">
                       <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart data={radarData}>
-                          <PolarGrid />
-                          <PolarAngleAxis dataKey="parameter" />
-                          <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                          {selectedResidues.map((residue, idx) => (
-                            <Radar
-                              key={residue}
-                              name={residue}
-                              dataKey={residue}
-                              stroke={residueColors[idx % residueColors.length]}
-                              fill={residueColors[idx % residueColors.length]}
-                              fillOpacity={0.3}
-                            />
-                          ))}
-                          <Legend />
+                        <BarChart data={barChartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="residue" />
+                          <YAxis />
                           <Tooltip />
-                        </RadarChart>
+                          <Legend />
+                          <Bar dataKey="BMP" fill="#1E5128" name="BMP (L/kg SV)" />
+                          <Bar dataKey="VS" fill="#4E9F3D" name="VS (% ST)" />
+                          <Bar dataKey="C:N" fill="#3B82F6" name="C:N" />
+                          <Bar dataKey="CH4" fill="#F59E0B" name="CH4 (%)" />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
@@ -1221,14 +1176,13 @@ export default function ScientificDatabasePage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {[
-                            { key: 'bmp', label: 'BMP (L/kg SV)', higher: true },
-                            { key: 'fde', label: 'FDE (%)', higher: true },
-                            { key: 'vs', label: 'SV (% ST)', higher: true },
-                            { key: 'cn_ratio', label: 'C:N', optimal: [20, 30] },
-                            { key: 'ch4_content', label: 'Teor CH4 (%)', higher: true }
+                            { key: 'bmp_medio', label: 'BMP (L/kg SV)', higher: true },
+                            { key: 'vs_medio', label: 'SV (% ST)', higher: true },
+                            { key: 'chemical_cn_ratio', label: 'C:N', optimal: [20, 30] },
+                            { key: 'chemical_ch4_content', label: 'Teor CH4 (%)', higher: true }
                           ].map(param => {
                             const values = selectedResidues.map(r => {
-                              const data = chemicalData.find(c => c.residue_name === r)
+                              const data = realResiduos.find(res => res.nome === r)
                               return data ? (data as any)[param.key] || 0 : 0
                             })
 
@@ -1282,146 +1236,6 @@ export default function ScientificDatabasePage() {
                 </div>
               )}
             </>
-          )}
-
-          {/* Co-Digestion Tab */}
-          {viewMode === 'codigestion' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Input Panel */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Planejamento de Co-Digestao
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Otimize a relacao C:N misturando residuos complementares
-                  </p>
-
-                  <div className="space-y-4">
-                    {/* Primary Residue */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1.5">
-                        Residuo Principal
-                      </label>
-                      <select
-                        value={primaryResidue}
-                        onChange={(e) => setPrimaryResidue(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      >
-                        <option value="">Selecione...</option>
-                        {chemicalData.map(r => (
-                          <option key={r.residue_id} value={r.residue_name}>
-                            {r.residue_name} (C:N = {r.cn_ratio}:1)
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Target C:N */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1.5">
-                        C:N Alvo: {targetCN}:1
-                      </label>
-                      <input
-                        type="range"
-                        min={15}
-                        max={35}
-                        step={1}
-                        value={targetCN}
-                        onChange={(e) => setTargetCN(Number(e.target.value))}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>15</span>
-                        <span className="text-green-600 font-medium">Otimo: 20-30</span>
-                        <span>35</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={calculateCoDigestion}
-                      disabled={!primaryResidue || loadingCoDigestion}
-                      className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                    >
-                      {loadingCoDigestion ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Calculando...
-                        </>
-                      ) : (
-                        'Calcular Misturas Otimas'
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Results */}
-              <div className="lg:col-span-2 space-y-4">
-                {coDigestionResults.length > 0 ? (
-                  <>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Top {coDigestionResults.length} Combinacoes Recomendadas
-                    </h3>
-                    {coDigestionResults.map((rec, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white rounded-xl shadow-md p-5 border border-gray-100"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-semibold text-gray-900">
-                            #{idx + 1}: {primaryResidue} + {rec.co_substrate}
-                          </h4>
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                            {rec.feasibility.score.toFixed(1)}/10
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-lg font-bold text-gray-900">
-                              {rec.ratio[0]}% / {rec.ratio[1]}%
-                            </div>
-                            <div className="text-xs text-gray-500">Proporcao</div>
-                          </div>
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-lg font-bold text-gray-900">
-                              {rec.final_cn.toFixed(1)}:1
-                            </div>
-                            <div className="text-xs text-gray-500">C:N Final</div>
-                          </div>
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className={`text-lg font-bold ${rec.improvement_pct > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {rec.improvement_pct > 0 ? '+' : ''}{rec.improvement_pct.toFixed(1)}%
-                            </div>
-                            <div className="text-xs text-gray-500">Melhoria BMP</div>
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-gray-600">
-                          <strong>Viabilidade:</strong>
-                          <span className="ml-2">Logistica: {rec.feasibility.logistics}</span>
-                          <span className="mx-2">|</span>
-                          <span>Sazonalidade: {rec.feasibility.seasonality}</span>
-                          <span className="mx-2">|</span>
-                          <span>Custo: {rec.feasibility.cost}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
-                    <Beaker className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-lg font-medium text-gray-900 mb-1">
-                      Selecione um residuo principal
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      E clique em calcular para ver as recomendacoes
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
           )}
         </div>
       </div>

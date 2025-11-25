@@ -253,7 +253,7 @@ export interface ReferencesFilter {
 // VIEW MODES
 // ==========================================
 
-export type ScientificViewMode = 'kinetics' | 'chemical' | 'references' | 'comparison' | 'codigestion'
+export type ScientificViewMode = 'kinetics' | 'chemical' | 'references' | 'comparison'
 
 // ==========================================
 // CONSTANTS
