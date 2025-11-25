@@ -1,5 +1,8 @@
 /**
  * Supabase client for browser (client-side)
+ *
+ * Handles missing environment variables gracefully without hanging.
+ * AuthProvider will detect missing config and skip auth initialization.
  */
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/logger'
@@ -12,8 +15,9 @@ if (typeof window !== 'undefined') {
   logger.debug('[Supabase] URL configured:', !!supabaseUrl)
   logger.debug('[Supabase] Key configured:', !!supabaseAnonKey)
   if (!supabaseUrl || !supabaseAnonKey) {
-    logger.error('[Supabase] Missing environment variables. Check Cloudflare Pages build settings.')
-    logger.error('[Supabase] Expected: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    logger.error('[Supabase] Missing environment variables.')
+    logger.error('[Supabase] Expected NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    logger.error('[Supabase] Check Vercel Project Settings → Environment Variables')
   }
 }
 
@@ -21,20 +25,21 @@ if (typeof window !== 'undefined') {
 let supabase: SupabaseClient
 
 if (supabaseUrl && supabaseAnonKey) {
+  // Valid config - create real client
   supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce'
     }
   })
 } else {
-  // During build time or when env vars are missing, create a dummy client
-  // This allows static page generation to succeed
-  if (typeof window !== 'undefined') {
-    logger.warn('Supabase environment variables not configured. Authentication will not work.')
-  }
-  // Create a placeholder client - auth operations will fail with clear errors
+  // Missing config - create stub client with disabled auth
+  // This prevents hanging and allows app to render
+  // AuthProvider will detect missing config and skip auth
+  logger.warn('[Supabase] Creating stub client - authentication disabled')
+
   supabase = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
     supabaseAnonKey || 'placeholder-key',
@@ -42,6 +47,7 @@ if (supabaseUrl && supabaseAnonKey) {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+        detectSessionInUrl: false
       }
     }
   )
