@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from '@/i18n/navigation';
+import { useRouter } from 'next/navigation';
 import { X, ArrowRight } from 'lucide-react';
 import { useComparison } from '@/contexts/ComparisonContext';
 

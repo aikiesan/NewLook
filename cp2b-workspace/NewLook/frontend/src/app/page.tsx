@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { Link } from '@/i18n/navigation'
+import { Link } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { logger } from '@/lib/logger'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'

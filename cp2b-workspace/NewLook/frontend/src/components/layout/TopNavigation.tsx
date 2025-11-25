@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react'
-import { Link, usePathname } from '@/i18n/navigation'
+import { Link, usePathname } from 'next/navigation'
 import {
   Leaf,
   Map,

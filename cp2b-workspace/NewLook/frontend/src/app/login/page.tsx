@@ -5,7 +5,7 @@
  * WCAG 2.1 AA Compliant
  */
 import { useState } from 'react'
-import { Link, useRouter } from '@/i18n/navigation'
+import { Link, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { LogIn, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
