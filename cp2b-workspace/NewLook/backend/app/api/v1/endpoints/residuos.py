@@ -14,6 +14,7 @@ Date: 2024-11-19
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 import logging
+import traceback
 
 from app.core.database import get_db
 
@@ -80,6 +81,7 @@ async def get_sectors():
 
     except Exception as e:
         logger.error(f"Error fetching sectors: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -146,6 +148,7 @@ async def get_subsectors(sector_codigo: Optional[str] = None):
 
     except Exception as e:
         logger.error(f"Error fetching subsectors: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -260,7 +263,9 @@ async def get_residuos(
                 count_params.append(f"%{search}%")
 
             cursor.execute(count_query, count_params)
-            total = cursor.fetchone()[0]
+            # RealDictCursor returns a dict, get the count value
+            count_result = cursor.fetchone()
+            total = count_result['count'] if count_result else 0
 
             return {
                 "success": True,
@@ -273,6 +278,7 @@ async def get_residuos(
 
     except Exception as e:
         logger.error(f"Error fetching residuos: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -365,6 +371,7 @@ async def get_residuo(residuo_id: int):
         raise
     except Exception as e:
         logger.error(f"Error fetching residuo {residuo_id}: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -442,6 +449,7 @@ async def get_residuo_references(
         raise
     except Exception as e:
         logger.error(f"Error fetching references for residuo {residuo_id}: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -674,4 +682,5 @@ async def compare_residuos(
         raise
     except Exception as e:
         logger.error(f"Error comparing residuos: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
