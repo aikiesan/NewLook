@@ -421,13 +421,17 @@ async def get_all_references(
             """, (limit, offset))
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
 
             references = []
             for row in rows:
-                ref = dict(zip(columns, row))
-                if ref.get('reported_value'):
-                    ref['reported_value'] = float(ref['reported_value'])
+                ref = dict(row)  # RealDictCursor already returns dict-like rows
+                # Safely convert reported_value to float if it exists and is numeric
+                if ref.get('reported_value') is not None:
+                    try:
+                        ref['reported_value'] = float(ref['reported_value'])
+                    except (ValueError, TypeError):
+                        # Keep as-is if conversion fails
+                        pass
                 references.append(ref)
 
             # Get total count
@@ -507,9 +511,14 @@ async def get_residuo_references(
 
             references = []
             for row in rows:
-                ref = dict(row)  # Create a copy
-                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
-                    ref['reported_value'] = float(ref['reported_value'])
+                ref = dict(row)  # RealDictCursor already returns dict-like rows
+                # Safely convert reported_value to float if it exists and is numeric
+                if ref.get('reported_value') is not None:
+                    try:
+                        ref['reported_value'] = float(ref['reported_value'])
+                    except (ValueError, TypeError):
+                        # Keep as-is if conversion fails
+                        pass
                 references.append(ref)
 
             return {
