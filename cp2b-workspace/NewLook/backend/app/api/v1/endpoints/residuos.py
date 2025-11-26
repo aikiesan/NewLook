@@ -211,7 +211,14 @@ async def get_residuos(
                     s.nome as sector_nome,
                     s.emoji as sector_emoji,
                     ss.nome as subsector_nome,
-                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count
+                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count,
+                    (
+                        SELECT citation
+                        FROM residuo_references
+                        WHERE residuo_id = r.id
+                        ORDER BY is_primary DESC, year DESC
+                        LIMIT 1
+                    ) as main_reference
                 FROM residuos r
                 JOIN sectors s ON r.sector_codigo = s.codigo
                 LEFT JOIN subsectors ss ON r.subsector_codigo = ss.codigo
@@ -440,7 +447,7 @@ async def get_residuo_references(
 
             return {
                 "success": True,
-                "residuo_name": residuo[0],
+                "residuo_name": residuo['nome'],  # RealDictCursor returns dict, not tuple
                 "count": len(references),
                 "references": references
             }
