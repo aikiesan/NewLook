@@ -77,7 +77,8 @@ import {
   getRealResiduos,
   getRealSectorSummary,
   getRealResiduoWithReferences,
-  getRealConversionFactors
+  getRealConversionFactors,
+  getAllReferences
 } from '@/services/scientificApi'
 
 import type { SectorCode } from '@/services/residuosApi'
@@ -200,44 +201,43 @@ export default function ScientificDatabasePage() {
         console.warn('Could not load conversion factors:', factors.error)
       }
 
-      // Extract references from real residuos data
-      // This allows the Referencias Científicas tab to show real data instead of mock data
-      // Only extract if we have valid residuo data
-      if (allResiduosRes?.residuos && Array.isArray(allResiduosRes.residuos) && allResiduosRes.residuos.length > 0) {
-        const extractedReferences: ScientificReference[] = []
-        const seenRefIds = new Set<string>()
+      // Fetch all references directly from the backend using the new endpoint
+      // This will show all 191 papers instead of the previous 51
+      try {
+        const allRefsResponse = await getAllReferences(1000, 0)
 
-        allResiduosRes.residuos.forEach((residuo: any) => {
-          if (residuo.references && Array.isArray(residuo.references)) {
-            residuo.references.forEach((ref: any) => {
-              const refKey = `${ref.id || ref.title}-${ref.parameter_type}`
-              if (!seenRefIds.has(refKey)) {
-                seenRefIds.add(refKey)
-                extractedReferences.push({
-                  id: ref.id || `ref-${extractedReferences.length}`,
-                  authors: ref.authors || 'Autor desconhecido',
-                  title: ref.title || ref.citation || 'Sem título',
-                  year: ref.year || new Date().getFullYear(),
-                  doi: ref.doi || undefined,
-                  peer_reviewed: ref.is_primary || false,
-                  sector: residuo.sector_codigo as any, // Use real backend sector code
-                  residues_studied: [residuo.nome],
-                  parameters_measured: [ref.parameter_type || 'unknown'],
-                  reference_type: 'journal',
-                  journal: ref.journal,
-                  abstract: ref.abstract,
-                  keywords: [],
-                  key_findings: []
-                })
-              }
-            })
-          }
-        })
+        if (allRefsResponse.references && allRefsResponse.references.length > 0) {
+          // Transform backend references to frontend format
+          const transformedReferences: ScientificReference[] = allRefsResponse.references.map((ref: any) => ({
+            id: ref.id || `ref-${ref.title}`,
+            authors: ref.authors || 'Autor desconhecido',
+            title: ref.title || ref.citation || 'Sem título',
+            year: ref.year || new Date().getFullYear(),
+            doi: ref.doi || undefined,
+            peer_reviewed: ref.is_primary || false,
+            sector: ref.sector || 'AG_AGRICULTURA' as any,
+            residues_studied: ref.residues_studied || [],
+            parameters_measured: [ref.parameter_type || 'unknown'],
+            reference_type: 'journal',
+            journal: ref.journal,
+            volume: ref.volume,
+            pages: ref.pages,
+            abstract: ref.abstract,
+            keywords: [],
+            key_findings: []
+          }))
 
-        // Merge extracted references with mock references (prioritize real data)
-        if (extractedReferences.length > 0) {
-          setReferences(extractedReferences)
+          setReferences(transformedReferences)
+
+          // Update summary with actual reference count
+          setSummary(prev => prev ? {
+            ...prev,
+            total_references: allRefsResponse.total
+          } : prev)
         }
+      } catch (error) {
+        console.error('Error fetching all references:', error)
+        // Fall back to extracting from residuos data if the new endpoint fails
       }
 
       // Update summary with real data counts
