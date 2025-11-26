@@ -201,7 +201,12 @@ async def get_residuos(
                     s.nome as sector_nome,
                     s.emoji as sector_emoji,
                     ss.nome as subsector_nome,
-                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count
+                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count,
+                    (SELECT CONCAT(authors, ' (', year, ')')
+                     FROM residuo_references rr
+                     WHERE rr.residuo_id = r.id
+                     ORDER BY is_primary DESC, year DESC
+                     LIMIT 1) as main_reference
                 FROM residuos r
                 JOIN sectors s ON r.sector_codigo = s.codigo
                 LEFT JOIN subsectors ss ON r.subsector_codigo = ss.codigo
@@ -361,6 +366,74 @@ async def get_residuo(residuo_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/references/all")
+async def get_all_references(
+    limit: int = Query(default=1000, le=1000),
+    offset: int = Query(default=0, ge=0)
+):
+    """
+    Get all scientific references from the database.
+
+    Args:
+        limit: Max results (default 1000, max 1000)
+        offset: Pagination offset
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get all unique references
+            cursor.execute("""
+                SELECT DISTINCT
+                    id,
+                    parameter_type,
+                    citation,
+                    authors,
+                    title,
+                    journal,
+                    year,
+                    volume,
+                    pages,
+                    doi,
+                    url,
+                    reported_value,
+                    reported_unit,
+                    is_primary,
+                    validation_status,
+                    residuo_id
+                FROM residuo_references
+                ORDER BY year DESC, authors
+                LIMIT %s OFFSET %s
+            """, (limit, offset))
+
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+
+            references = []
+            for row in rows:
+                ref = dict(zip(columns, row))
+                if ref.get('reported_value'):
+                    ref['reported_value'] = float(ref['reported_value'])
+                references.append(ref)
+
+            # Get total count
+            cursor.execute("SELECT COUNT(DISTINCT id) FROM residuo_references")
+            total = cursor.fetchone()[0]
+
+            return {
+                "success": True,
+                "count": len(references),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "references": references
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching all references: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{residuo_id}/references")
 async def get_residuo_references(
     residuo_id: int,
@@ -371,7 +444,8 @@ async def get_residuo_references(
 
     Args:
         residuo_id: ID of the residue
-        parameter_type: Filter by parameter type (bmp, ts, vs, cn_ratio, ch4_content)
+        parameter_type: Optional filter by parameter type (bmp, ts, vs, cn_ratio, ch4_content)
+                       If not provided, returns all references for this residue
     """
     try:
         with get_db() as conn:
