@@ -55,10 +55,9 @@
       "Bash(copy:*)",
       "Bash(powershell:*)",
       "Bash(if exist .next rmdir /s /q .next)",
-      "Bash(gh pr create:*)",
-      "Bash(git remote:*)",
-      "Bash(npm install:*)",
-      "Bash(timeout 20 npm run dev:*)"
+      "Bash(timeout:*)",
+      "Bash(NUL)",
+      "Bash(uvicorn app.main:app:*)"
     ],
     "deny": [],
     "ask": []
