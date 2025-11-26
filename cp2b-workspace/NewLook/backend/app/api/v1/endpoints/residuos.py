@@ -14,6 +14,7 @@ Date: 2024-11-19
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 import logging
+import traceback
 
 from app.core.database import get_db
 
@@ -55,15 +56,21 @@ async def get_sectors():
             """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries, no need for zip()
 
             sectors = []
             for row in rows:
-                sector = dict(zip(columns, row))
+                # row is already a dict from RealDictCursor
+                sector = dict(row)  # Create a copy
                 # Convert Decimal to float for JSON serialization
                 for key in ['avg_bmp', 'avg_ts', 'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
-                    if sector.get(key):
-                        sector[key] = float(sector[key])
+                    if key in sector and sector[key] is not None:
+                        try:
+                            if hasattr(sector[key], '__float__'):
+                                sector[key] = float(sector[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={sector[key]} to float: {e}")
+                            sector[key] = None
                 sectors.append(sector)
 
             return {
@@ -74,6 +81,7 @@ async def get_sectors():
 
     except Exception as e:
         logger.error(f"Error fetching sectors: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -128,9 +136,9 @@ async def get_subsectors(sector_codigo: Optional[str] = None):
                 """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
-            subsectors = [dict(zip(columns, row)) for row in rows]
+            subsectors = [dict(row) for row in rows]  # Create copies
 
             return {
                 "success": True,
@@ -140,6 +148,7 @@ async def get_subsectors(sector_codigo: Optional[str] = None):
 
     except Exception as e:
         logger.error(f"Error fetching subsectors: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -162,6 +171,7 @@ async def get_residuos(
         offset: Pagination offset
     """
     try:
+        logger.info(f"Fetching residuos: sector={sector_codigo}, subsector={subsector_codigo}, search={search}")
         with get_db() as conn:
             cursor = conn.cursor()
 
@@ -233,11 +243,11 @@ async def get_residuos(
             cursor.execute(query, params)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             residuos = []
             for row in rows:
-                residuo = dict(zip(columns, row))
+                residuo = dict(row)  # Create a copy
                 # Convert any Decimal to float
                 for key, value in residuo.items():
                     if hasattr(value, '__float__'):
@@ -258,7 +268,9 @@ async def get_residuos(
                 count_params.append(f"%{search}%")
 
             cursor.execute(count_query, count_params)
-            total = cursor.fetchone()[0]
+            # RealDictCursor returns a dict, get the count value
+            count_result = cursor.fetchone()
+            total = count_result['count'] if count_result else 0
 
             return {
                 "success": True,
@@ -271,6 +283,7 @@ async def get_residuos(
 
     except Exception as e:
         logger.error(f"Error fetching residuos: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -301,8 +314,8 @@ async def get_residuo(residuo_id: int):
             if not row:
                 raise HTTPException(status_code=404, detail="Residue not found")
 
-            columns = [desc[0] for desc in cursor.description]
-            residuo = dict(zip(columns, row))
+            # RealDictCursor already returns a dictionary
+            residuo = dict(row)  # Create a copy
 
             # Convert Decimal to float
             for key, value in residuo.items():
@@ -333,12 +346,12 @@ async def get_residuo(residuo_id: int):
             """, (residuo_id,))
 
             ref_rows = cursor.fetchall()
-            ref_columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             references = []
             for ref_row in ref_rows:
-                ref = dict(zip(ref_columns, ref_row))
-                if ref.get('reported_value'):
+                ref = dict(ref_row)  # Create a copy
+                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
                     ref['reported_value'] = float(ref['reported_value'])
                 references.append(ref)
 
@@ -363,6 +376,7 @@ async def get_residuo(residuo_id: int):
         raise
     except Exception as e:
         logger.error(f"Error fetching residuo {residuo_id}: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -489,18 +503,18 @@ async def get_residuo_references(
             cursor.execute(query, params)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             references = []
             for row in rows:
-                ref = dict(zip(columns, row))
-                if ref.get('reported_value'):
+                ref = dict(row)  # Create a copy
+                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
                     ref['reported_value'] = float(ref['reported_value'])
                 references.append(ref)
 
             return {
                 "success": True,
-                "residuo_name": residuo[0],
+                "residuo_name": residuo['nome'],  # RealDictCursor returns dict, not tuple
                 "count": len(references),
                 "references": references
             }
@@ -509,6 +523,7 @@ async def get_residuo_references(
         raise
     except Exception as e:
         logger.error(f"Error fetching references for residuo {residuo_id}: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -521,9 +536,11 @@ async def get_conversion_factors(category: Optional[str] = None):
         category: Filter by category (e.g., 'Pecuária', 'Culturas')
     """
     try:
+        logger.info(f"Fetching conversion factors, category filter: {category}")
         with get_db() as conn:
             cursor = conn.cursor()
 
+            # Query matches the exact schema from 001_create_residuos_tables.sql
             if category:
                 cursor.execute("""
                     SELECT
@@ -561,15 +578,21 @@ async def get_conversion_factors(category: Optional[str] = None):
                 """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
+            logger.info(f"Found {len(rows)} conversion factors")
 
             factors = []
             for row in rows:
-                factor = dict(zip(columns, row))
-                # Convert Decimal to float
+                factor = dict(row)  # Create a copy
+                # Convert Decimal to float, handle None values
                 for key in ['factor_value', 'safety_margin_percent', 'final_factor']:
-                    if factor.get(key):
-                        factor[key] = float(factor[key])
+                    if key in factor and factor[key] is not None:
+                        try:
+                            if hasattr(factor[key], '__float__'):
+                                factor[key] = float(factor[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={factor[key]} to float: {e}")
+                            factor[key] = None
                 factors.append(factor)
 
             return {
@@ -579,8 +602,11 @@ async def get_conversion_factors(category: Optional[str] = None):
             }
 
     except Exception as e:
-        logger.error(f"Error fetching conversion factors: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching conversion factors: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
 
 
 @router.get("/summary/by-sector")
@@ -591,16 +617,18 @@ async def get_summary_by_sector():
     Returns residue counts, average BMP, and total references per sector.
     """
     try:
+        logger.info("Fetching sector summary...")
         with get_db() as conn:
             cursor = conn.cursor()
 
+            # Query matches the exact schema from 001_create_residuos_tables.sql
             cursor.execute("""
                 SELECT
                     s.codigo,
                     s.nome,
                     s.emoji,
                     s.ordem,
-                    COUNT(r.id) as num_residuos,
+                    COUNT(DISTINCT r.id) as num_residuos,
                     ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
                     ROUND(MIN(r.bmp_medio)::numeric, 2) as min_bmp,
                     ROUND(MAX(r.bmp_medio)::numeric, 2) as max_bmp,
@@ -608,7 +636,7 @@ async def get_summary_by_sector():
                     ROUND(AVG(r.vs_medio)::numeric, 2) as avg_vs,
                     ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
                     ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content,
-                    COUNT(rr.id) as total_references
+                    COUNT(DISTINCT rr.id) as total_references
                 FROM sectors s
                 LEFT JOIN residuos r ON s.codigo = r.sector_codigo
                 LEFT JOIN residuo_references rr ON r.id = rr.residuo_id
@@ -617,26 +645,37 @@ async def get_summary_by_sector():
             """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
+            logger.info(f"Found {len(rows)} sectors")
 
             summary = []
             for row in rows:
-                item = dict(zip(columns, row))
-                # Convert Decimal to float
+                item = dict(row)  # Create a copy
+                # Convert Decimal to float, handle None values
                 for key in ['avg_bmp', 'min_bmp', 'max_bmp', 'avg_ts',
                            'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
-                    if item.get(key):
-                        item[key] = float(item[key])
+                    if key in item and item[key] is not None:
+                        try:
+                            # Only convert if it's a numeric type (Decimal, int, float)
+                            if hasattr(item[key], '__float__'):
+                                item[key] = float(item[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={item[key]} to float: {e}")
+                            item[key] = None
                 summary.append(item)
 
             return {
                 "success": True,
+                "count": len(summary),
                 "summary": summary
             }
 
     except Exception as e:
-        logger.error(f"Error fetching sector summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching sector summary: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
 
 
 @router.get("/compare")
@@ -689,11 +728,11 @@ async def compare_residuos(
             """, id_list)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             residuos = []
             for row in rows:
-                residuo = dict(zip(columns, row))
+                residuo = dict(row)  # Create a copy
                 for key, value in residuo.items():
                     if hasattr(value, '__float__'):
                         residuo[key] = float(value)
@@ -717,4 +756,5 @@ async def compare_residuos(
         raise
     except Exception as e:
         logger.error(f"Error comparing residuos: {e}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))

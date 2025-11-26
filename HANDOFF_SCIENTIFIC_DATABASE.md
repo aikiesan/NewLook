@@ -76,11 +76,12 @@ Modern web platform for biogas potential analysis in São Paulo, Brazil
 - **Issue**: Missing Supabase API keys causing 401 "Invalid API key"
 - **Required Env Vars** (add in Vercel dashboard):
   ```
-  NEXT_PUBLIC_SUPABASE_URL=https://zyuxkzfhkueeipokyhgw.supabase.co
-  NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5dXhremZoa3VlZWlwb2t5aGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDI3OTEsImV4cCI6MjA3ODkxODc5MX0.hDozt0JQVQdXf_QcZabJM_SCf4HbARGIawmgUDquOLA
+  NEXT_PUBLIC_SUPABASE_URL=[Get from Supabase dashboard]
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=[Get from Supabase dashboard - Settings > API]
   NEXT_PUBLIC_API_URL=https://newlook-production.up.railway.app
   NEXT_PUBLIC_USE_SUPABASE=true
   ```
+  **Note**: Never commit actual API keys to git. Store them securely in deployment platform environment variables.
 
 ### Railway (Backend)
 - **URL**: https://newlook-production.up.railway.app
@@ -102,11 +103,11 @@ Modern web platform for biogas potential analysis in São Paulo, Brazil
 
 **Solution**: Update Railway environment variable
 ```bash
-# Current (has issues):
-DATABASE_URL=postgresql://postgres.zyuxkzfhkueeipokyhgw:Bauzi%23S%239285@aws-1-us-east-2.pooler.supabase.com:5432/postgres
+# Use the DATABASE_URL from your Supabase dashboard
+# Format: postgresql://postgres.[PROJECT_REF]:[PASSWORD]@[HOST]:5432/postgres
+DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:5432/postgres
 
-# Try without URL encoding:
-DATABASE_URL=postgresql://postgres.zyuxkzfhkueeipokyhgw:Bauzi#S#9285@aws-1-us-east-2.pooler.supabase.com:5432/postgres
+# Note: Password should NOT be URL-encoded when using dsn parameter in psycopg2
 ```
 
 **How to Fix**:
@@ -298,9 +299,9 @@ git push origin main
 ## 🔑 CREDENTIALS & ACCESS
 
 ### Supabase
-- **URL**: https://zyuxkzfhkueeipokyhgw.supabase.co
-- **Dashboard**: https://supabase.com/dashboard/project/zyuxkzfhkueeipokyhgw
-- **Password**: Bauzi#S#9285
+- **URL**: [Available in Railway/Vercel environment variables]
+- **Dashboard**: [Check Supabase dashboard for project settings]
+- **Password**: [Stored securely in environment variables]
 - **Database**: PostgreSQL (pooler required for IPv4 access)
 
 ### Railway

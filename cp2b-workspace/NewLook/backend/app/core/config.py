@@ -34,13 +34,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3003",
         "http://127.0.0.1:3004",
     ]
-    # Production origins - comma-separated, includes main and preview deployments (Cloudflare Pages)
-    PRODUCTION_ORIGINS: str = "https://cp2bmaps.pages.dev,https://541792a2.cp2bmaps.pages.dev"
+    # Production origins - comma-separated, includes main and preview deployments
+    # Supports both Vercel and Cloudflare Pages deployments
+    PRODUCTION_ORIGINS: str = "https://new-look-nu.vercel.app,https://cp2bmaps.pages.dev,https://541792a2.cp2bmaps.pages.dev"
     ALLOWED_HOSTS: List[str] = [
         "localhost",
         "127.0.0.1",
         "0.0.0.0",
         "newlook-production.up.railway.app",
+        "*.vercel.app",  # Vercel (all deployments)
         "*.pages.dev",  # Cloudflare Pages (all deployments)
     ]
 
