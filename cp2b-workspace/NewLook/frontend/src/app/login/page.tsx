@@ -31,8 +31,10 @@ export default function LoginPage() {
 
     try {
       await login({ email, password })
-      // Use window.location for static export compatibility
-      window.location.href = '/dashboard'
+
+      // Use Next.js router for client-side navigation
+      // This prevents full page reload and maintains auth state
+      router.push('/dashboard')
     } catch (err: unknown) {
       setError(getErrorMessage(err) || 'Falha no login. Verifique suas credenciais.')
     }

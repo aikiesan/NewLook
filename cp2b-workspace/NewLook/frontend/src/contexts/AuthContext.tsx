@@ -65,6 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // If we got a valid session (not timeout), fetch profile
         if (session && 'user' in session) {
           await fetchUserProfile(session.user.id, session.access_token)
+        } else {
+          logger.debug('[Auth] No session found')
         }
       } catch (error) {
         logger.error('Error in auth initialization:', error)
@@ -90,11 +92,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null)
       }
-      setLoading(false)
+
+      if (isMounted) setLoading(false)
     })
 
+    // Cleanup function
     return () => {
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
+      logger.debug('[Auth] Cleanup complete')
     }
   }, [])
 
@@ -188,6 +195,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Login user
   const login = async (credentials: LoginCredentials) => {
+    logger.debug('[Auth] Login attempt:', credentials.email)
+
     try {
       setLoading(true)
 
@@ -199,21 +208,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Sign in with timeout (10 seconds for login operation)
+      const loginPromise = supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
       })
 
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          logger.error('[Auth] Login timeout after 10s')
+          reject(
+            createAuthError(
+              'Timeout: A autenticação demorou muito. Verifique sua conexão e tente novamente.',
+              'AUTH_FAILED'
+            )
+          )
+        }, 10000) // 10 second timeout for login
+      })
+
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise])
+
       if (error) throw error
 
       if (data.user && data.session) {
+        logger.debug('[Auth] Login successful, fetching profile...')
         await fetchUserProfile(data.user.id, data.session.access_token)
+        logger.debug('[Auth] Profile fetched successfully')
       }
+
+      return data
     } catch (error: unknown) {
       const appError = toAppError(error)
-      logger.error('Login error:', appError)
+      logger.error('[Auth] Login failed:', appError)
       throw createAuthError(
-        getErrorMessage(error) || 'Login failed',
+        getErrorMessage(error) || 'Falha no login. Verifique suas credenciais.',
         'INVALID_CREDENTIALS'
       )
     } finally {

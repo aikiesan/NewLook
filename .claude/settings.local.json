@@ -58,7 +58,8 @@
       "Bash(timeout:*)",
       "Bash(NUL)",
       "Bash(uvicorn app.main:app:*)",
-      "Bash(gh pr create:*)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
