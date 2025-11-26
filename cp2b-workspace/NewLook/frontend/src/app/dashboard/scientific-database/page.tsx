@@ -913,6 +913,29 @@ export default function ScientificDatabasePage() {
                             value={`${residue.chemical_ch4_content}%`}
                           />
                         )}
+
+                        {/* References Button */}
+                        {residue.reference_count && residue.reference_count > 0 && (
+                          <button
+                            onClick={() => {
+                              setSelectedResiduoId(residue.id)
+                              fetchResiduoDetails(residue.id)
+                            }}
+                            className="w-full flex items-start gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                          >
+                            <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
+                            <div className="flex flex-col items-start overflow-hidden flex-1">
+                              <span className="text-xs font-semibold text-gray-900">
+                                Referências ({residue.reference_count})
+                              </span>
+                              {residue.main_reference && (
+                                <span className="text-[10px] text-gray-500 truncate w-full" title={residue.main_reference}>
+                                  {residue.main_reference}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
