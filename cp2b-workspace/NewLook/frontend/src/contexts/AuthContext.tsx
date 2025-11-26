@@ -23,20 +23,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+
+    // Check if Supabase is configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      // Env vars missing - skip auth and show login
+      logger.warn('[Auth] Supabase not configured - auth disabled')
+      setLoading(false)
+      return
+    }
+
     // Load user from session
     const loadUser = async () => {
       try {
-        const {
-          data: { session }
-        } = await supabase.auth.getSession()
+        logger.debug('[Auth] Starting session check...')
 
-        if (session?.user) {
+        // Safety timeout - 5 second max wait
+        const timeoutPromise = new Promise<null>((resolve) => {
+          timeoutId = setTimeout(() => {
+            logger.warn('[Auth] Session check timeout (5s)')
+            if (isMounted) setLoading(false)
+            resolve(null)
+          }, 5000)
+        })
+
+        // Race: Supabase vs Timeout
+        const sessionPromise = (async () => {
+          try {
+            const {
+              data: { session }
+            } = await supabase.auth.getSession()
+
+            // Check if component still mounted before proceeding
+            if (!isMounted) return null
+
+            return session
+          } catch (error) {
+            logger.error('[Auth] Error loading session:', error)
+            return null
+          }
+        })()
+
+        const session = await Promise.race([sessionPromise, timeoutPromise])
+
+        // Check if still mounted before updating state
+        if (!isMounted) return
+
+        // If we got a session, fetch profile
+        if (session && 'user' in session) {
+          logger.debug('[Auth] Session found, fetching profile...')
           await fetchUserProfile(session.user.id, session.access_token)
+        } else {
+          logger.debug('[Auth] No session found')
         }
       } catch (error) {
-        logger.error('Error loading user:', error)
+        logger.error('[Auth] Unexpected error:', error)
       } finally {
-        setLoading(false)
+        // Always clear timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        // Only update state if component still mounted
+        if (isMounted) {
+          logger.debug('[Auth] Auth check complete')
+          setLoading(false)
+        }
       }
     }
 
@@ -46,16 +101,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Don't process if component unmounted
+      if (!isMounted) return
+
+      logger.debug(`[Auth] State change: ${event}`)
+
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
       } else {
         setUser(null)
       }
-      setLoading(false)
+
+      if (isMounted) setLoading(false)
     })
 
+    // Cleanup function
     return () => {
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
+      logger.debug('[Auth] Cleanup complete')
     }
   }, [])
 
@@ -149,6 +214,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Login user
   const login = async (credentials: LoginCredentials) => {
+    logger.debug('[Auth] Login attempt:', credentials.email)
+
     try {
       setLoading(true)
 
@@ -160,21 +227,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Sign in with timeout (10 seconds for login operation)
+      const loginPromise = supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
       })
 
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          logger.error('[Auth] Login timeout after 10s')
+          reject(
+            createAuthError(
+              'Timeout: A autenticação demorou muito. Verifique sua conexão e tente novamente.',
+              'AUTH_FAILED'
+            )
+          )
+        }, 10000) // 10 second timeout for login
+      })
+
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise])
+
       if (error) throw error
 
       if (data.user && data.session) {
+        logger.debug('[Auth] Login successful, fetching profile...')
         await fetchUserProfile(data.user.id, data.session.access_token)
+        logger.debug('[Auth] Profile fetched successfully')
       }
+
+      return data
     } catch (error: unknown) {
       const appError = toAppError(error)
-      logger.error('Login error:', appError)
+      logger.error('[Auth] Login failed:', appError)
       throw createAuthError(
-        getErrorMessage(error) || 'Login failed',
+        getErrorMessage(error) || 'Falha no login. Verifique suas credenciais.',
         'INVALID_CREDENTIALS'
       )
     } finally {
