@@ -62,8 +62,13 @@ async def get_sectors():
                 sector = dict(zip(columns, row))
                 # Convert Decimal to float for JSON serialization
                 for key in ['avg_bmp', 'avg_ts', 'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
-                    if sector.get(key):
-                        sector[key] = float(sector[key])
+                    if key in sector and sector[key] is not None:
+                        try:
+                            if hasattr(sector[key], '__float__'):
+                                sector[key] = float(sector[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={sector[key]} to float: {e}")
+                            sector[key] = None
                 sectors.append(sector)
 
             return {
@@ -498,8 +503,13 @@ async def get_conversion_factors(category: Optional[str] = None):
                 factor = dict(zip(columns, row))
                 # Convert Decimal to float, handle None values
                 for key in ['factor_value', 'safety_margin_percent', 'final_factor']:
-                    if factor.get(key) is not None:
-                        factor[key] = float(factor[key])
+                    if key in factor and factor[key] is not None:
+                        try:
+                            if hasattr(factor[key], '__float__'):
+                                factor[key] = float(factor[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={factor[key]} to float: {e}")
+                            factor[key] = None
                 factors.append(factor)
 
             return {
@@ -561,8 +571,14 @@ async def get_summary_by_sector():
                 # Convert Decimal to float, handle None values
                 for key in ['avg_bmp', 'min_bmp', 'max_bmp', 'avg_ts',
                            'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
-                    if item.get(key) is not None:
-                        item[key] = float(item[key])
+                    if key in item and item[key] is not None:
+                        try:
+                            # Only convert if it's a numeric type (Decimal, int, float)
+                            if hasattr(item[key], '__float__'):
+                                item[key] = float(item[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={item[key]} to float: {e}")
+                            item[key] = None
                 summary.append(item)
 
             return {
