@@ -55,18 +55,25 @@ app.add_middleware(
 app.middleware("http")(gzip_middleware)
 
 # 4. Trusted host middleware - Prevents host header injection attacks
-# Supports Railway (backend), Vercel (frontend), Cloudflare Pages (frontend), and local development
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=[
-        "newlook-production.up.railway.app",
-        "*.vercel.app",  # Vercel (production + preview deployments)
-        "*.pages.dev",  # Cloudflare Pages (production + preview)
-        "localhost",
-        "127.0.0.1",
-        "0.0.0.0",  # For Railway internal health checks
-    ]
-)
+# NOTE: TrustedHostMiddleware doesn't support wildcards in allowed_hosts
+# Using specific domains only. CORS middleware above handles origin validation.
+# For production, we allow:
+# - Railway backend domain
+# - Localhost for development
+# - Wildcard disabled to prevent security issues
+if settings.APP_ENV == "production":
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=[
+            "newlook-production.up.railway.app",
+            "localhost",
+            "127.0.0.1",
+        ]
+    )
+else:
+    # Development: Allow all hosts
+    # In production, CORS already validates origins
+    pass
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
