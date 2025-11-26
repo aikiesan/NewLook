@@ -57,7 +57,8 @@
       "Bash(if exist .next rmdir /s /q .next)",
       "Bash(timeout:*)",
       "Bash(NUL)",
-      "Bash(uvicorn app.main:app:*)"
+      "Bash(uvicorn app.main:app:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
