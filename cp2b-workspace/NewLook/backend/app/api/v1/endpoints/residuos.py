@@ -55,11 +55,12 @@ async def get_sectors():
             """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries, no need for zip()
 
             sectors = []
             for row in rows:
-                sector = dict(zip(columns, row))
+                # row is already a dict from RealDictCursor
+                sector = dict(row)  # Create a copy
                 # Convert Decimal to float for JSON serialization
                 for key in ['avg_bmp', 'avg_ts', 'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
                     if key in sector and sector[key] is not None:
@@ -133,9 +134,9 @@ async def get_subsectors(sector_codigo: Optional[str] = None):
                 """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
-            subsectors = [dict(zip(columns, row)) for row in rows]
+            subsectors = [dict(row) for row in rows]  # Create copies
 
             return {
                 "success": True,
@@ -234,11 +235,11 @@ async def get_residuos(
             cursor.execute(query, params)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             residuos = []
             for row in rows:
-                residuo = dict(zip(columns, row))
+                residuo = dict(row)  # Create a copy
                 # Convert any Decimal to float
                 for key, value in residuo.items():
                     if hasattr(value, '__float__'):
@@ -302,8 +303,8 @@ async def get_residuo(residuo_id: int):
             if not row:
                 raise HTTPException(status_code=404, detail="Residue not found")
 
-            columns = [desc[0] for desc in cursor.description]
-            residuo = dict(zip(columns, row))
+            # RealDictCursor already returns a dictionary
+            residuo = dict(row)  # Create a copy
 
             # Convert Decimal to float
             for key, value in residuo.items():
@@ -334,12 +335,12 @@ async def get_residuo(residuo_id: int):
             """, (residuo_id,))
 
             ref_rows = cursor.fetchall()
-            ref_columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             references = []
             for ref_row in ref_rows:
-                ref = dict(zip(ref_columns, ref_row))
-                if ref.get('reported_value'):
+                ref = dict(ref_row)  # Create a copy
+                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
                     ref['reported_value'] = float(ref['reported_value'])
                 references.append(ref)
 
@@ -421,12 +422,12 @@ async def get_residuo_references(
             cursor.execute(query, params)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             references = []
             for row in rows:
-                ref = dict(zip(columns, row))
-                if ref.get('reported_value'):
+                ref = dict(row)  # Create a copy
+                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
                     ref['reported_value'] = float(ref['reported_value'])
                 references.append(ref)
 
@@ -495,12 +496,12 @@ async def get_conversion_factors(category: Optional[str] = None):
                 """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
             logger.info(f"Found {len(rows)} conversion factors")
 
             factors = []
             for row in rows:
-                factor = dict(zip(columns, row))
+                factor = dict(row)  # Create a copy
                 # Convert Decimal to float, handle None values
                 for key in ['factor_value', 'safety_margin_percent', 'final_factor']:
                     if key in factor and factor[key] is not None:
@@ -562,12 +563,12 @@ async def get_summary_by_sector():
             """)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
             logger.info(f"Found {len(rows)} sectors")
 
             summary = []
             for row in rows:
-                item = dict(zip(columns, row))
+                item = dict(row)  # Create a copy
                 # Convert Decimal to float, handle None values
                 for key in ['avg_bmp', 'min_bmp', 'max_bmp', 'avg_ts',
                            'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
@@ -645,11 +646,11 @@ async def compare_residuos(
             """, id_list)
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             residuos = []
             for row in rows:
-                residuo = dict(zip(columns, row))
+                residuo = dict(row)  # Create a copy
                 for key, value in residuo.items():
                     if hasattr(value, '__float__'):
                         residuo[key] = float(value)
