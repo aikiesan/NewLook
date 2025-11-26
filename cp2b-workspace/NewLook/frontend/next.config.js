@@ -1,14 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export only for production builds (Cloudflare Pages)
-  // For local development, use dynamic rendering
-  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true'
-    ? { output: 'export' }
-    : {}),
+  // IMPORTANT: Removed static export for Vercel deployment
+  // Vercel supports full Next.js features including:
+  // - Middleware (for authentication)
+  // - Server-side rendering
+  // - API routes
+  // - Dynamic routes
+  // If you need static export for Cloudflare Pages, set STATIC_EXPORT=true
 
-  // Disable image optimization (not supported in static export)
+  // Enable image optimization on Vercel (supports it natively)
+  // Only disable if STATIC_EXPORT=true
   images: {
-    unoptimized: true,
+    unoptimized: process.env.STATIC_EXPORT === 'true',
   },
 
   // Disabled React Strict Mode due to known incompatibility with Leaflet
@@ -17,11 +20,8 @@ const nextConfig = {
   // This only affects development; production builds work fine
   reactStrictMode: false,
 
-  // Trailing slash disabled for Cloudflare Pages compatibility
+  // Vercel handles trailing slashes automatically
   trailingSlash: false,
-
-  // Skip trailing slash redirect for static export
-  skipTrailingSlashRedirect: true,
 
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -29,7 +29,7 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://newlook-production.up.railway.app',
   },
 
-  // Relax strict checks for static export compatibility
+  // Keep relaxed checks for faster builds
   typescript: {
     ignoreBuildErrors: true,
   },

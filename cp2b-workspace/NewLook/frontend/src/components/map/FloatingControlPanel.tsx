@@ -37,7 +37,7 @@ export default function FloatingControlPanel({
   onLayerToggle
 }: FloatingControlPanelProps) {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showLayers, setShowLayers] = useState(false);
+  const [showLayers, setShowLayers] = useState(true);
 
   const biomassOptions = [
     { value: 'total', label: 'Potencial Total', icon: '⚡' },

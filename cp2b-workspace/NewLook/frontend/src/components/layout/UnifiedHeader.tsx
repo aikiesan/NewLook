@@ -86,7 +86,7 @@ const authenticatedNavItems: NavItem[] = [
     icon: <Target className="h-4 w-4" />,
   },
   {
-    href: '/dashboard/about',
+    href: 'https://nipe.unicamp.br/cp2b/',
     label: 'Sobre',
     icon: <Info className="h-4 w-4" />,
   },

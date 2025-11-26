@@ -23,75 +23,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
-    let isMounted = true
-    let timeoutId: NodeJS.Timeout | null = null
-
-    // Check if Supabase is configured
+    // Check if Supabase is properly configured
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseKey) {
-      // Env vars missing - skip auth and show login
-      logger.warn('[Auth] Supabase not configured - auth disabled')
+      logger.warn('Supabase not configured - auth disabled')
       setLoading(false)
       return
     }
 
-    // Load user from session
+    // Load user from session with safety timeout
     const loadUser = async () => {
-      try {
-        logger.debug('[Auth] Starting session check...')
+      let timeoutId: NodeJS.Timeout | null = null
 
-        // Safety timeout - 5 second max wait
-        const timeoutPromise = new Promise<null>((resolve) => {
+      try {
+        // Safety timeout - if Supabase doesn't respond in 5 seconds, allow UI to render
+        const timeoutPromise = new Promise((resolve) => {
           timeoutId = setTimeout(() => {
-            logger.warn('[Auth] Session check timeout (5s)')
-            if (isMounted) setLoading(false)
+            logger.warn('[AuthContext] Session check timeout - forcing loading to false')
+            setLoading(false)
             resolve(null)
           }, 5000)
         })
 
-        // Race: Supabase vs Timeout
+        // Race between Supabase and timeout
         const sessionPromise = (async () => {
           try {
             const {
               data: { session }
             } = await supabase.auth.getSession()
-
-            // Check if component still mounted before proceeding
-            if (!isMounted) return null
-
             return session
           } catch (error) {
-            logger.error('[Auth] Error loading session:', error)
+            logger.error('Error loading user session:', error)
             return null
           }
         })()
 
         const session = await Promise.race([sessionPromise, timeoutPromise])
 
-        // Check if still mounted before updating state
-        if (!isMounted) return
-
-        // If we got a session, fetch profile
+        // If we got a valid session (not timeout), fetch profile
         if (session && 'user' in session) {
-          logger.debug('[Auth] Session found, fetching profile...')
           await fetchUserProfile(session.user.id, session.access_token)
         } else {
           logger.debug('[Auth] No session found')
         }
       } catch (error) {
-        logger.error('[Auth] Unexpected error:', error)
+        logger.error('Error in auth initialization:', error)
       } finally {
-        // Always clear timeout
+        // Clear timeout if it hasn't fired yet
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
-        // Only update state if component still mounted
-        if (isMounted) {
-          logger.debug('[Auth] Auth check complete')
-          setLoading(false)
-        }
+        setLoading(false)
       }
     }
 
@@ -101,10 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Don't process if component unmounted
-      if (!isMounted) return
-
-      logger.debug(`[Auth] State change: ${event}`)
+      logger.debug('[AuthContext] Auth state change:', event)
 
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
@@ -180,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }
@@ -222,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }

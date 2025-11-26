@@ -23,7 +23,8 @@ import {
   MapPin,
   GitBranch,
   Layers,
-  BookOpen
+  BookOpen,
+  FileText
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -43,6 +44,7 @@ import ScenarioComparator from '@/components/analysis/ScenarioComparator'
 import MethodologyPanel from '@/components/analysis/MethodologyPanel'
 import PerResidueFactorEditor from '@/components/analysis/PerResidueFactorEditor'
 import ScenarioSelector from '@/components/analysis/ScenarioSelector'
+import ReferencesModal from '@/components/analysis/ReferencesModal'
 
 // API
 import {
@@ -95,8 +97,9 @@ export default function AdvancedAnalysisPage() {
   // Legacy correction factors state (for backward compatibility)
   const [factors, setFactors] = useState<CorrectionFactors>(DEFAULT_FACTORS)
 
-  // Methodology panel state
+  // Methodology and References panel state
   const [showMethodology, setShowMethodology] = useState(false)
+  const [showReferences, setShowReferences] = useState(false)
 
   // State for data
   const [topMunicipalities, setTopMunicipalities] = useState<Municipality[]>([])
@@ -432,6 +435,13 @@ export default function AdvancedAnalysisPage() {
                 Metodologia
               </button>
               <button
+                onClick={() => setShowReferences(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
+              >
+                <FileText className="h-4 w-4" />
+                Referências
+              </button>
+              <button
                 onClick={fetchAllData}
                 disabled={loadingMunicipalities || loadingStats}
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
@@ -538,9 +548,9 @@ export default function AdvancedAnalysisPage() {
         )}
 
         {/* Main Content - Graphs Front and Center */}
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar - Compact Residue & Category Selector */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-3">
             <div className="space-y-4 sticky top-6">
               {/* Simple Residue Selector */}
               <SimpleResidueSelector
@@ -588,8 +598,8 @@ export default function AdvancedAnalysisPage() {
             </div>
           </div>
 
-          {/* Center - Main Visualization Area (5/6 width) */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* Center - Main Visualization Area (9/12 width = 75%) */}
+          <div className="lg:col-span-9 space-y-4">
             {/* Scenario Selector - Integrated with View Controls */}
             <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -915,6 +925,12 @@ export default function AdvancedAnalysisPage() {
         factors={effectiveFactors}
         isOpen={showMethodology}
         onClose={() => setShowMethodology(false)}
+      />
+
+      {/* References Modal */}
+      <ReferencesModal
+        isOpen={showReferences}
+        onClose={() => setShowReferences(false)}
       />
     </div>
   )

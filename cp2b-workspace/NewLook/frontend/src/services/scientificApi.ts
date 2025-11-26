@@ -178,6 +178,27 @@ export async function getRealConversionFactors(): Promise<any> {
 }
 
 /**
+ * Fetch all references for a specific residue (no parameter filter)
+ */
+export async function getAllReferencesForResidue(residuoId: number): Promise<ScientificReference[]> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/residuos/${residuoId}/references`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return [];
+      }
+      throw new Error('Failed to fetch references for residue');
+    }
+    const data = await response.json();
+    return data.references || data || [];
+  } catch (error) {
+    logger.error(`Error fetching references for residue ${residuoId}:`, error);
+    return [];
+  }
+}
+
+/**
  * Fetch references for a specific residue and parameter
  */
 export async function getReferencesForParameter(residuoId: number, parameterType: string): Promise<ScientificReference[]> {
@@ -195,6 +216,32 @@ export async function getReferencesForParameter(residuoId: number, parameterType
   } catch (error) {
     logger.error(`Error fetching references for residue ${residuoId}, parameter ${parameterType}:`, error);
     return [];
+  }
+}
+
+/**
+ * Fetch all scientific references from the database
+ */
+export async function getAllReferences(limit: number = 1000, offset: number = 0): Promise<{
+  references: ScientificReference[]
+  total: number
+  count: number
+}> {
+  try {
+    const url = `${API_BASE_URL}/api/v1/residuos/references/all?limit=${limit}&offset=${offset}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch all references');
+    }
+    const data = await response.json();
+    return {
+      references: data.references || [],
+      total: data.total || 0,
+      count: data.count || 0
+    };
+  } catch (error) {
+    logger.error('Error fetching all references:', error);
+    return { references: [], total: 0, count: 0 };
   }
 }
 
