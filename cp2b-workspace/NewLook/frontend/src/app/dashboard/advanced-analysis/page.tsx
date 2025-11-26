@@ -550,7 +550,7 @@ export default function AdvancedAnalysisPage() {
         {/* Main Content - Graphs Front and Center */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar - Compact Residue & Category Selector */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <div className="space-y-4 sticky top-6">
               {/* Simple Residue Selector */}
               <SimpleResidueSelector
@@ -598,8 +598,8 @@ export default function AdvancedAnalysisPage() {
             </div>
           </div>
 
-          {/* Center - Main Visualization Area (8/12 width = ~67%) */}
-          <div className="lg:col-span-8 space-y-4">
+          {/* Center - Main Visualization Area (9/12 width = 75%) */}
+          <div className="lg:col-span-9 space-y-4">
             {/* Scenario Selector - Integrated with View Controls */}
             <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

@@ -135,12 +135,6 @@ const REFERENCES: ReferenceCategory[] = [
         authors: 'CETESB',
         year: 2018,
         description: 'Guia Técnico Ambiental de Inventário de Emissões de Gases de Efeito Estufa'
-      },
-      {
-        residue: 'Fatores de Disponibilidade',
-        authors: 'Cerejo, L.N.',
-        year: 2024,
-        description: 'Tese de Doutorado - PUC-Campinas: Mapeamento do potencial de biogás no Estado de São Paulo'
       }
     ]
   }
