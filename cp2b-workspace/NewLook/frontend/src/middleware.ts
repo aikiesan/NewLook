@@ -1,67 +1,64 @@
-import { NextResponse, type NextRequest } from 'next/server'
-
 /**
- * Edge Runtime Safe Middleware
+ * CP2B Maps V3 - Edge-Runtime Safe Middleware
  *
- * Bulletproof authentication check for protected routes.
- * Wrapped in try-catch to prevent 500 errors.
- * Falls through to client-side auth if middleware fails.
+ * Protects authenticated routes while allowing public access to:
+ * - Landing page (/)
+ * - Public map (/map)
+ * - Login/Register pages
+ *
+ * Cookie-based auth check (Edge Runtime compatible)
  */
+
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
 export function middleware(request: NextRequest) {
-  try {
-    const pathname = request.nextUrl.pathname
+  const { pathname } = request.nextUrl
 
-    // Only run auth check for protected routes (/dashboard/*)
-    if (!pathname.startsWith('/dashboard')) {
-      return NextResponse.next()
-    }
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    '/',
+    '/login',
+    '/register',
+    '/map',  // Public map page - NEW: allows unauthenticated access
+    '/api',
+    '/_next',
+    '/favicon.ico',
+  ]
 
-    // Safe cookie checking - use standard methods only
-    // Supabase sets auth-related cookies with 'sb-' prefix
-    let hasAuthToken = false
+  // Check if current path is a public route
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
-    try {
-      // Method 1: Check for known Supabase auth cookies
-      hasAuthToken =
-        request.cookies.has('sb-auth-token') ||
-        request.cookies.has('sb-session-token')
-
-      // Method 2: If not found, check all cookies for 'sb-' prefix (safe fallback)
-      if (!hasAuthToken) {
-        const cookies = request.cookies.getAll()
-        if (Array.isArray(cookies)) {
-          hasAuthToken = cookies.some(
-            (cookie) => cookie.name && cookie.name.startsWith('sb-')
-          )
-        }
-      }
-    } catch (cookieError) {
-      // If cookie reading fails, log and allow through (fail-open)
-      console.error('[Middleware] Cookie read error:', cookieError)
-      return NextResponse.next()
-    }
-
-    // If no auth token found, redirect to login
-    if (!hasAuthToken) {
-      // Safely construct redirect URL
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      loginUrl.search = `?redirect=${encodeURIComponent(pathname)}`
-
-      return NextResponse.redirect(loginUrl)
-    }
-
-    // Allow access to dashboard
-    return NextResponse.next()
-  } catch (error) {
-    // Catch-all: if middleware errors, allow request to proceed
-    // Client-side auth will validate and redirect if needed
-    console.error('[Middleware] Unexpected error:', error)
+  if (isPublicRoute) {
     return NextResponse.next()
   }
+
+  // Protected routes (dashboard and sub-routes)
+  if (pathname.startsWith('/dashboard')) {
+    // Check for Supabase auth cookies (Edge-safe)
+    const hasAuthToken =
+      request.cookies.has('sb-auth-token') ||
+      Array.from(request.cookies.keys()).some(key => key.startsWith('sb-'))
+
+    // Redirect to login if no auth cookie found
+    if (!hasAuthToken) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
-  // Only match dashboard routes
-  matcher: ['/dashboard/:path*'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 }
