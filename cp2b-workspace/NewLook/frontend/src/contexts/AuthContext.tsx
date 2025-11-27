@@ -182,18 +182,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      if (authData.user && authData.session) {
-        await fetchUserProfile(authData.user.id, authData.session.access_token)
-      }
+      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
+      logger.debug('[Auth] Registration successful - onAuthStateChange will handle profile fetch')
+      setLoading(false)
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('Registration error:', appError)
+      setLoading(false)
       throw createAuthError(
         getErrorMessage(error) || 'Registration failed',
         'REGISTRATION_FAILED'
       )
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -220,20 +219,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      if (data.user && data.session) {
-        logger.debug('[Auth] Login successful, fetching profile...')
-        await fetchUserProfile(data.user.id, data.session.access_token)
-        logger.debug('[Auth] Profile fetched successfully')
-      }
+      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
+      // to avoid race conditions and double fetching
+      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch')
+
+      // Set loading to false immediately after successful auth
+      // onAuthStateChange will fire but we want to allow navigation immediately
+      setLoading(false)
+      logger.debug('[Auth] Login complete, ready for navigation')
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)
+      setLoading(false)
       throw createAuthError(
         getErrorMessage(error) || 'Falha no login. Verifique suas credenciais.',
         'INVALID_CREDENTIALS'
       )
-    } finally {
-      setLoading(false)
     }
   }
 
