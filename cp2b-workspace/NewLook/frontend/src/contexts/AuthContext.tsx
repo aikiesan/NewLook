@@ -208,25 +208,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
-      // Sign in with timeout (10 seconds for login operation)
-      const loginPromise = supabase.auth.signInWithPassword({
+      // Sign in with Supabase (let Supabase handle its own timeouts)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
       })
-
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          logger.error('[Auth] Login timeout after 10s')
-          reject(
-            createAuthError(
-              'Timeout: A autenticação demorou muito. Verifique sua conexão e tente novamente.',
-              'AUTH_FAILED'
-            )
-          )
-        }, 10000) // 10 second timeout for login
-      })
-
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise])
 
       if (error) throw error
 
