@@ -23,6 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+
     // Check if Supabase is properly configured
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -35,14 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Load user from session with safety timeout
     const loadUser = async () => {
-      let timeoutId: NodeJS.Timeout | null = null
-
       try {
         // Safety timeout - if Supabase doesn't respond in 5 seconds, allow UI to render
         const timeoutPromise = new Promise((resolve) => {
           timeoutId = setTimeout(() => {
             logger.warn('[AuthContext] Session check timeout - forcing loading to false')
-            setLoading(false)
+            if (isMounted) setLoading(false)
             resolve(null)
           }, 5000)
         })
@@ -63,8 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const session = await Promise.race([sessionPromise, timeoutPromise])
 
         // If we got a valid session (not timeout), fetch profile
-        if (session && 'user' in session) {
-          await fetchUserProfile(session.user.id, session.access_token)
+        if (session && session !== null && typeof session === 'object' && 'user' in session && isMounted) {
+          const { user, access_token } = session as { user: { id: string }; access_token: string }
+          await fetchUserProfile(user.id, access_token)
         } else {
           logger.debug('[Auth] No session found')
         }
@@ -75,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
     }
 
@@ -85,6 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return
+
       logger.debug('[AuthContext] Auth state change:', event)
 
       if (session?.user) {
@@ -221,8 +225,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(data.user.id, data.session.access_token)
         logger.debug('[Auth] Profile fetched successfully')
       }
-
-      return data
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)
