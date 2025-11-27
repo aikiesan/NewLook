@@ -24,6 +24,7 @@ export interface DataSource {
   name: string
   year: number
   type: 'Official Census' | 'Technical Report' | 'Industry Report' | 'Research' | 'Regulatory Norm' | 'Operational Data' | 'Government Agency' | 'Government Program' | 'Industry Association' | 'Regional Statistics'
+  organization?: string
   reference?: string
   url?: string
 }
@@ -36,7 +37,10 @@ export interface AlternativePathway {
 }
 
 export interface AlternativePathways {
-  [key: string]: AlternativePathway
+  competing_uses: Record<string, number>
+  total_unavailable: number
+  reasons: string[]
+  [key: string]: any // Allow additional pathway data
 }
 
 export interface FDEMetadata {
@@ -72,6 +76,9 @@ export interface FDEData {
   competing_uses_total: number // 0-1
   collection_feasibility: number // 0-1
   conversion_efficiency: number // 0-1
+
+  // Technical Data
+  bmp_value?: number // Biochemical Methane Potential (m³ CH₄/Mg VS)
 
   // Documentation
   methodology_notes: string | null
@@ -219,6 +226,11 @@ export function getConfidenceLevelColor(confidence: ConfidenceLevel): string {
 export function formatFDE(fde: number, decimals: number = 2): string {
   return `${(fde * 100).toFixed(decimals)}%`
 }
+
+/**
+ * Alias for formatFDE for backward compatibility
+ */
+export const formatPercentage = formatFDE
 
 /**
  * Helper function to calculate energy potential

@@ -132,7 +132,7 @@ export default function ScientificDatabasePage() {
   // Selection states
   const [selectedResidues, setSelectedResidues] = useState<string[]>([])
   const [selectedKineticClass, setSelectedKineticClass] = useState<KineticClassification | ''>('')
-  const [selectedSectors, setSelectedSectors] = useState<SectorCode[]>([])
+  const [selectedSectors, setSelectedSectors] = useState<SectorType[]>([])
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
@@ -980,10 +980,10 @@ export default function ScientificDatabasePage() {
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
                     <div className="space-y-2">
                       {([
-                        { code: 'AG_AGRICULTURA' as SectorCode, label: 'Agrícola' },
-                        { code: 'PC_PECUARIA' as SectorCode, label: 'Pecuária' },
-                        { code: 'IN_INDUSTRIAL' as SectorCode, label: 'Industrial' },
-                        { code: 'UR_URBANO' as SectorCode, label: 'Urbano' }
+                        { code: 'agricultural' as SectorType, label: 'Agrícola' },
+                        { code: 'livestock' as SectorType, label: 'Pecuária' },
+                        { code: 'industrial' as SectorType, label: 'Industrial' },
+                        { code: 'urban' as SectorType, label: 'Urbano' }
                       ]).map(sector => (
                         <label key={sector.code} className="flex items-center gap-2 text-sm">
                           <input

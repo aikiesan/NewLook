@@ -255,7 +255,7 @@ export default function AdvancedAnalysisPage() {
       // For now, we pass the residue codes as residueTypes
       // In production, backend should be updated to handle specific codes
       const residueCodes = JSON.parse(stableResidueCodesRef.current) as string[]
-      const residueResponse = await getAnalysisByResidue(selectedCategory, {
+      const residueResponse = await getAnalysisByResidue(toApiCategory(selectedCategory)!, {
         residueTypes: residueCodes.length > 0 ? residueCodes : undefined,
         limit: 20
       })
