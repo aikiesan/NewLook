@@ -30,7 +30,8 @@ def get_connection_pool():
     Pool configuration:
     - minconn: Minimum number of connections to keep open
     - maxconn: Maximum number of connections allowed
-    -
+    - Uses DATABASE_URL as DSN to avoid duplicate SASL authentication
+
     Returns:
         psycopg2.pool.ThreadedConnectionPool
     """
@@ -41,18 +42,15 @@ def get_connection_pool():
             # Double-check locking pattern
             if _connection_pool is None:
                 try:
+                    # Use DATABASE_URL as DSN to avoid duplicate authentication
+                    # Only pass additional options that are NOT in the DSN
                     _connection_pool = pool.ThreadedConnectionPool(
                         minconn=2,  # Minimum connections
                         maxconn=20,  # Maximum connections
-                        dbname=settings.POSTGRES_DB,
-                        user=settings.POSTGRES_USER,
-                        password=settings.POSTGRES_PASSWORD,
-                        host=settings.POSTGRES_HOST,
-                        port=settings.POSTGRES_PORT,
+                        dsn=settings.DATABASE_URL,  # Use DSN instead of individual params
                         cursor_factory=RealDictCursor,
                         connect_timeout=10,
-                        options='-c statement_timeout=30000 -c client_encoding=UTF8',
-                        sslmode='require'
+                        options='-c statement_timeout=30000 -c client_encoding=UTF8'
                     )
                     logger.info("✅ Database connection pool initialized (min=2, max=20)")
                 except psycopg2.Error as e:
@@ -64,24 +62,19 @@ def get_connection_pool():
 
 def get_db_connection():
     """
-    Get PostgreSQL database connection
+    Get PostgreSQL database connection (LEGACY - prefer get_db()).
+    Uses DATABASE_URL as DSN to avoid duplicate SASL authentication.
 
     Returns:
         psycopg2 connection object
     """
     try:
-        # Use port from settings - Supabase pooler configuration handles this
+        # Use DATABASE_URL as DSN to avoid duplicate authentication
         conn = psycopg2.connect(
-            dbname=settings.POSTGRES_DB,
-            user=settings.POSTGRES_USER,
-            password=settings.POSTGRES_PASSWORD,
-            host=settings.POSTGRES_HOST,
-            port=settings.POSTGRES_PORT,
+            dsn=settings.DATABASE_URL,
             cursor_factory=RealDictCursor,  # Return rows as dictionaries
             connect_timeout=10,
-            options='-c statement_timeout=30000',
-            sslmode='require',  # Required for Supabase
-            client_encoding='utf8'  # Explicitly set UTF-8 encoding
+            options='-c statement_timeout=30000 -c client_encoding=UTF8'
         )
         # Ensure UTF-8 encoding
         conn.set_client_encoding('UTF8')

@@ -656,34 +656,6 @@ function ProximityAnalysisContent() {
                   )}
                 </div>
               )}
-
-              {/* Municipalities List - Compact */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <MapPin className="h-5 w-5 mr-2 text-blue-500" />
-                  Municípios no Raio ({analysisResult.results?.municipalities?.length || 0})
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {(analysisResult.results?.municipalities || [])
-                    .slice(0, 12)
-                    .map((mun: any, index: number) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">
-                          {(mun.distance_km || 0).toFixed(0)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">{mun.name || 'N/A'}</p>
-                          <p className="text-xs text-gray-500">{(mun.distance_km || 0).toFixed(1)} km</p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-                {(analysisResult.results?.municipalities?.length || 0) > 12 && (
-                  <p className="text-sm text-gray-500 mt-3 text-center">
-                    + {(analysisResult.results?.municipalities?.length || 0) - 12} municípios adicionais
-                  </p>
-                )}
-              </div>
             </div>
           </div>
         )}

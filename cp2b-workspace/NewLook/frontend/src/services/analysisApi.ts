@@ -6,6 +6,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Types
+// Note: API only supports 3 categories (agricultural, livestock, urban)
+// "industrial" is defined in UI but not yet supported by backend
+export type ApiCategory = 'agricultural' | 'livestock' | 'urban';
+export type ResidueCategory = ApiCategory | 'industrial';
 export interface Municipality {
   id: number;
   municipality_name: string;
@@ -157,7 +161,7 @@ export async function getStatisticsByCategory(): Promise<StatisticsByCategoryRes
  * Get statistics by region
  */
 export async function getStatisticsByRegion(
-  category?: 'agricultural' | 'livestock' | 'urban'
+  category?: ApiCategory
 ): Promise<StatisticsByRegionResponse> {
   const params = new URLSearchParams();
   if (category) {
@@ -177,7 +181,7 @@ export async function getStatisticsByRegion(
  * Get distribution data for histogram
  */
 export async function getDistribution(
-  category?: 'agricultural' | 'livestock' | 'urban',
+  category?: ApiCategory,
   bins?: number
 ): Promise<DistributionResponse> {
   const params = new URLSearchParams();
