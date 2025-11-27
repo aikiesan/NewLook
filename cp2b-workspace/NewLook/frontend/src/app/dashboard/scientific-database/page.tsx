@@ -149,11 +149,6 @@ export default function ScientificDatabasePage() {
     setLoading(true)
     setError(null)
 
-    // Clear all state first to prevent duplicates
-    setRealResiduos([])
-    setSectorSummary([])
-    setConversionFactors([])
-
     try {
       const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.all([
         getKineticsData(),
@@ -170,7 +165,6 @@ export default function ScientificDatabasePage() {
       setSummary(summaryData)
 
       // Also fetch real residuos data from Panorama_CP2B
-      // Only fetch ONCE (not twice) to avoid duplicates
       const [sectorSum, factors, allResiduosRes] = await Promise.all([
         getRealSectorSummary(),
         getRealConversionFactors(),
@@ -185,6 +179,7 @@ export default function ScientificDatabasePage() {
         index === self.findIndex((r: any) => r.id === residuo.id)
       )
 
+      // CRITICAL FIX: Only set state ONCE after all processing is done
       setRealResiduos(deduplicatedResiduos)
       setSectorSummary(sectorSum?.summary || [])
       setConversionFactors(factors?.factors || [])
@@ -308,6 +303,11 @@ export default function ScientificDatabasePage() {
       return point
     })
   }, [kineticsData, selectedResidues])
+
+  // Get real residue names for selector (use realResiduos instead of mock data)
+  const realResidueNames = useMemo(() => {
+    return realResiduos.map(r => r.nome).sort()
+  }, [realResiduos])
 
   // Bar chart data for chemical comparison (updated to use realResiduos and remove FDE/pH)
   const barChartData = useMemo(() => {
@@ -924,6 +924,31 @@ export default function ScientificDatabasePage() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Filters Sidebar */}
               <div className="lg:col-span-1 space-y-4">
+                {/* Statistics Summary */}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md p-5 border border-green-200">
+                  <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Base de Conhecimento
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Total Referências</span>
+                      <span className="font-bold text-green-900">{references.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Resíduos</span>
+                      <span className="font-bold text-green-900">{realResiduos.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Peer-Reviewed</span>
+                      <span className="font-bold text-green-900">
+                        {references.filter(r => r.peer_reviewed).length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters */}
                 <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
                   <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Filter className="h-4 w-4" />
@@ -938,7 +963,7 @@ export default function ScientificDatabasePage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Titulo, autor, keyword..."
+                        placeholder="Título, autor, keyword..."
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-8"
                       />
                       <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -950,27 +975,33 @@ export default function ScientificDatabasePage() {
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
                     <div className="space-y-2">
                       {([
-                        { code: 'AG_AGRICULTURA' as SectorCode, label: 'Agrícola' },
-                        { code: 'PC_PECUARIA' as SectorCode, label: 'Pecuária' },
-                        { code: 'IN_INDUSTRIAL' as SectorCode, label: 'Industrial' },
-                        { code: 'UR_URBANO' as SectorCode, label: 'Urbano' }
-                      ]).map(sector => (
-                        <label key={sector.code} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={selectedSectors.includes(sector.code)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedSectors([...selectedSectors, sector.code])
-                              } else {
-                                setSelectedSectors(selectedSectors.filter(s => s !== sector.code))
-                              }
-                            }}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                          {sector.label}
-                        </label>
-                      ))}
+                        { code: 'AG_AGRICULTURA' as SectorCode, label: '🌾 Agrícola', color: 'green' },
+                        { code: 'PC_PECUARIA' as SectorCode, label: '🐄 Pecuária', color: 'amber' },
+                        { code: 'IN_INDUSTRIAL' as SectorCode, label: '🏭 Industrial', color: 'blue' },
+                        { code: 'UR_URBANO' as SectorCode, label: '🏙️ Urbano', color: 'gray' }
+                      ]).map(sector => {
+                        const count = references.filter(r => r.sector === sector.code).length
+                        return (
+                          <label key={sector.code} className="flex items-center justify-between gap-2 text-sm group">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedSectors.includes(sector.code)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedSectors([...selectedSectors, sector.code])
+                                  } else {
+                                    setSelectedSectors(selectedSectors.filter(s => s !== sector.code))
+                                  }
+                                }}
+                                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              />
+                              <span className="group-hover:text-gray-900">{sector.label}</span>
+                            </div>
+                            <span className="text-xs text-gray-400">{count}</span>
+                          </label>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -987,107 +1018,173 @@ export default function ScientificDatabasePage() {
                     </label>
                   </div>
 
+                  {/* Clear Filters */}
+                  {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('')
+                        setSelectedSectors([])
+                        setPeerReviewedOnly(false)
+                      }}
+                      className="w-full py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+
                   {/* Results count */}
-                  <div className="pt-3 border-t border-gray-100">
-                    <span className="text-sm text-gray-600">
-                      {filteredReferences.length} resultado(s)
-                    </span>
+                  <div className="pt-3 mt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        {filteredReferences.length} resultado{filteredReferences.length !== 1 ? 's' : ''}
+                      </span>
+                      {filteredReferences.length < references.length && (
+                        <span className="text-xs text-gray-400">
+                          de {references.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* References List */}
               <div className="lg:col-span-3 space-y-4">
-                {filteredReferences.map((ref) => (
-                  <div
-                    key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
-                    className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
-                  >
-                    <div className="p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-1">{ref.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {ref.authors} ({ref.year})
-                          </p>
-                        </div>
-                        {ref.peer_reviewed && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
-                            Peer-Reviewed
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                          {getSectorLabel(ref.sector)}
-                        </span>
-                        {ref.residues_studied.slice(0, 2).map((residue, idx) => (
-                          <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                            {residue}
-                          </span>
-                        ))}
-                        {ref.parameters_measured.slice(0, 2).map((param, idx) => (
-                          <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
-                            {PARAMETER_LABELS[param]}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Expandable Content */}
+                {filteredReferences.length === 0 ? (
+                  <div className="bg-white rounded-xl shadow-md p-12 border border-gray-100 text-center">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Nenhuma referência encontrada
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Tente ajustar seus filtros de busca
+                    </p>
+                    {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
                       <button
-                        onClick={() => toggleRefExpansion(ref.id)}
-                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                        onClick={() => {
+                          setSearchQuery('')
+                          setSelectedSectors([])
+                          setPeerReviewedOnly(false)
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        {expandedRefs.has(ref.id) ? (
-                          <>
-                            <ChevronUp className="h-4 w-4" />
-                            Ver menos
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4" />
-                            Ver mais
-                          </>
-                        )}
+                        Limpar filtros
                       </button>
-
-                      {expandedRefs.has(ref.id) && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                          {ref.abstract && (
-                            <div>
-                              <h5 className="text-xs font-semibold text-gray-700 mb-1">Resumo</h5>
-                              <p className="text-sm text-gray-600">{ref.abstract}</p>
-                            </div>
+                    )}
+                  </div>
+                ) : (
+                  filteredReferences.map((ref) => (
+                    <div
+                      key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
+                      className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+                    >
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-1 leading-snug">{ref.title}</h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              {ref.authors} ({ref.year})
+                            </p>
+                            {ref.journal && (
+                              <p className="text-xs text-gray-500 italic mb-3">
+                                {ref.journal}
+                              </p>
+                            )}
+                          </div>
+                          {ref.peer_reviewed && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
+                              ✓ Peer-Reviewed
+                            </span>
                           )}
+                        </div>
 
-                          {ref.key_findings && ref.key_findings.length > 0 && (
-                            <div>
-                              <h5 className="text-xs font-semibold text-gray-700 mb-1">Principais Achados</h5>
-                              <ul className="list-disc ml-5 text-sm text-gray-600">
-                                {ref.key_findings.map((finding, idx) => (
-                                  <li key={idx}>{finding}</li>
-                                ))}
-                              </ul>
-                            </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                            {getSectorLabel(ref.sector)}
+                          </span>
+                          {ref.residues_studied.slice(0, 3).map((residue, idx) => (
+                            <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                              {residue}
+                            </span>
+                          ))}
+                          {ref.residues_studied.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded text-xs">
+                              +{ref.residues_studied.length - 3} mais
+                            </span>
                           )}
+                          {ref.parameters_measured.slice(0, 2).map((param, idx) => (
+                            <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                              {PARAMETER_LABELS[param] || param}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Expandable Content */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => toggleRefExpansion(ref.id)}
+                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 font-medium"
+                          >
+                            {expandedRefs.has(ref.id) ? (
+                              <>
+                                <ChevronUp className="h-4 w-4" />
+                                Ver menos
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4" />
+                                Ver detalhes
+                              </>
+                            )}
+                          </button>
 
                           {ref.doi && (
                             <a
                               href={`https://doi.org/${ref.doi}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
-                              Abrir DOI
+                              DOI
                             </a>
                           )}
                         </div>
-                      )}
+
+                        {expandedRefs.has(ref.id) && (
+                          <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                            {ref.abstract && (
+                              <div>
+                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">📄 Resumo</h5>
+                                <p className="text-sm text-gray-600 leading-relaxed">{ref.abstract}</p>
+                              </div>
+                            )}
+
+                            {ref.key_findings && ref.key_findings.length > 0 && (
+                              <div>
+                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">🔍 Principais Achados</h5>
+                                <ul className="list-disc ml-5 text-sm text-gray-600 space-y-1">
+                                  {ref.key_findings.map((finding, idx) => (
+                                    <li key={idx}>{finding}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-500">
+                              {ref.reference_type && (
+                                <span>Tipo: <span className="font-medium text-gray-700">{ref.reference_type}</span></span>
+                              )}
+                              {(ref as any).cited_by && (
+                                <span>Citações: <span className="font-medium text-gray-700">{(ref as any).cited_by}</span></span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -1101,7 +1198,7 @@ export default function ScientificDatabasePage() {
                   Selecione residuos para comparar
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {residueList.map((residue, idx) => (
+                  {realResidueNames.map((residue, idx) => (
                     <button
                       key={residue}
                       onClick={() => {
