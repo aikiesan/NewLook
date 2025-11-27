@@ -56,7 +56,8 @@ import {
   StatisticsByCategoryResponse,
   RegionData,
   HistogramBin,
-  DistributionStatistics
+  DistributionStatistics,
+  ApiCategory
 } from '@/services/analysisApi'
 
 // Types
@@ -79,6 +80,15 @@ import { getResidueByCode, DETAILED_RESIDUES } from '@/data/residueFactors'
 export default function AdvancedAnalysisPage() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
+
+  // Helper to convert ResidueCategory to ApiCategory (filters out "industrial")
+  const toApiCategory = (category: ResidueCategory): ApiCategory | undefined => {
+    if (category === 'industrial') {
+      // Industrial not supported by API yet, fallback to agricultural
+      return 'agricultural';
+    }
+    return category as ApiCategory;
+  }
 
   // State for filters
   const [selectedCategory, setSelectedCategory] = useState<ResidueCategory>('agricultural')
@@ -120,7 +130,10 @@ export default function AdvancedAnalysisPage() {
   // Calculate TOTAL theoretical potential (all residues in category)
   const totalTheoreticalPotential = useMemo(() => {
     if (!categoryStats) return 0
-    return categoryStats.categories[selectedCategory]?.total || 0
+    // Handle industrial category (not in API yet)
+    const apiCategory = toApiCategory(selectedCategory)
+    if (!apiCategory) return 0
+    return categoryStats.categories[apiCategory]?.total || 0
   }, [categoryStats, selectedCategory])
 
   // Calculate FILTERED theoretical potential (only selected residues)
@@ -242,7 +255,7 @@ export default function AdvancedAnalysisPage() {
       // For now, we pass the residue codes as residueTypes
       // In production, backend should be updated to handle specific codes
       const residueCodes = JSON.parse(stableResidueCodesRef.current) as string[]
-      const residueResponse = await getAnalysisByResidue(selectedCategory, {
+      const residueResponse = await getAnalysisByResidue(toApiCategory(selectedCategory)!, {
         residueTypes: residueCodes.length > 0 ? residueCodes : undefined,
         limit: 20
       })
@@ -268,7 +281,8 @@ export default function AdvancedAnalysisPage() {
     // Fetch regional data
     setLoadingRegion(true)
     try {
-      const regionResponse = await getStatisticsByRegion(selectedCategory)
+      const apiCategory = toApiCategory(selectedCategory)
+      const regionResponse = await getStatisticsByRegion(apiCategory)
       setRegionData(regionResponse.regions)
     } catch (err) {
       console.error('Error fetching regional data:', err)
@@ -279,7 +293,8 @@ export default function AdvancedAnalysisPage() {
     // Fetch distribution
     setLoadingDistribution(true)
     try {
-      const distResponse = await getDistribution(selectedCategory, 15)
+      const apiCategory = toApiCategory(selectedCategory)
+      const distResponse = await getDistribution(apiCategory, 15)
       setHistogramData(distResponse.histogram)
       setDistributionStats(distResponse.statistics)
     } catch (err) {

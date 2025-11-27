@@ -5,7 +5,7 @@
  * Displays competing uses and alternative utilization pathways for residues
  */
 import React from 'react'
-import { GitBranch, TrendingUp, Factory, Leaf, Truck, AlertTriangle } from 'lucide-react'
+import { GitBranch, TrendingUp, Factory, Leaf, Truck, AlertTriangle, Zap } from 'lucide-react'
 import type { AlternativePathways as AlternativePathwaysType } from '@/types/fde'
 
 export interface AlternativePathwaysProps {
