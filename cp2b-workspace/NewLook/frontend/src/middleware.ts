@@ -36,9 +36,10 @@ export function middleware(request: NextRequest) {
   // Protected routes (dashboard and sub-routes)
   if (pathname.startsWith('/dashboard')) {
     // Check for Supabase auth cookies (Edge-safe)
+    // RequestCookies API: use getAll() to iterate over cookies
     const hasAuthToken =
       request.cookies.has('sb-auth-token') ||
-      Array.from(request.cookies.keys()).some(key => key.startsWith('sb-'))
+      request.cookies.getAll().some(cookie => cookie.name.startsWith('sb-'))
 
     // Redirect to login if no auth cookie found
     if (!hasAuthToken) {
