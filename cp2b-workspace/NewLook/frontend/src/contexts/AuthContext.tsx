@@ -64,8 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const session = await Promise.race([sessionPromise, timeoutPromise])
 
         // If we got a valid session (not timeout), fetch profile
-        if (session && 'user' in session && isMounted) {
-          await fetchUserProfile(session.user.id, session.access_token)
+        if (session && session !== null && typeof session === 'object' && 'user' in session && isMounted) {
+          const { user, access_token } = session as { user: { id: string }; access_token: string }
+          await fetchUserProfile(user.id, access_token)
         } else {
           logger.debug('[Auth] No session found')
         }
@@ -224,8 +225,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(data.user.id, data.session.access_token)
         logger.debug('[Auth] Profile fetched successfully')
       }
-
-      return data
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)
