@@ -803,48 +803,76 @@ export async function getChemicalData(
 export async function getReferences(
   filters?: ReferencesFilter
 ): Promise<ReferencesResponse> {
-  // TODO: Replace with real API call
+  try {
+    // Fetch all references from the API (up to 5000)
+    const result = await getAllReferences(5000, 0)
 
-  let filteredData = [...MOCK_REFERENCES]
+    // Convert API references to ScientificReference format
+    let filteredData: ScientificReference[] = result.references.map((ref: any) => ({
+      id: ref.id || 0,
+      authors: ref.authors || 'Unknown',
+      title: ref.title || ref.citation || 'No title',
+      year: ref.year || new Date().getFullYear(),
+      doi: ref.doi,
+      peer_reviewed: ref.is_primary || false,
+      sector: ref.sector_codigo || 'unknown',
+      residues_studied: ref.residuo_nome ? [ref.residuo_nome] : [],
+      parameters_measured: ref.parameter_type ? [ref.parameter_type] : [],
+      reference_type: 'journal' as const,
+      journal: ref.journal,
+      abstract: ref.abstract,
+      keywords: [],
+      key_findings: []
+    }))
 
-  if (filters?.sector && filters.sector.length > 0) {
-    filteredData = filteredData.filter(d =>
-      filters.sector!.includes(d.sector)
-    )
-  }
+    // Apply filters
+    if (filters?.sector && filters.sector.length > 0) {
+      filteredData = filteredData.filter(d =>
+        filters.sector!.includes(d.sector)
+      )
+    }
 
-  if (filters?.residue && filters.residue.length > 0) {
-    filteredData = filteredData.filter(d =>
-      d.residues_studied.some(r =>
-        filters.residue!.some(fr =>
-          r.toLowerCase().includes(fr.toLowerCase())
+    if (filters?.residue && filters.residue.length > 0) {
+      filteredData = filteredData.filter(d =>
+        d.residues_studied.some(r =>
+          filters.residue!.some(fr =>
+            r.toLowerCase().includes(fr.toLowerCase())
+          )
         )
       )
-    )
-  }
+    }
 
-  if (filters?.parameter && filters.parameter.length > 0) {
-    filteredData = filteredData.filter(d =>
-      d.parameters_measured.some(p =>
-        filters.parameter!.includes(p as ParameterType)
+    if (filters?.parameter && filters.parameter.length > 0) {
+      filteredData = filteredData.filter(d =>
+        d.parameters_measured.some(p =>
+          filters.parameter!.includes(p as ParameterType)
+        )
       )
-    )
-  }
+    }
 
-  if (filters?.year_range) {
-    filteredData = filteredData.filter(d =>
-      d.year >= filters.year_range![0] && d.year <= filters.year_range![1]
-    )
-  }
+    if (filters?.year_range) {
+      filteredData = filteredData.filter(d =>
+        d.year >= filters.year_range![0] && d.year <= filters.year_range![1]
+      )
+    }
 
-  if (filters?.peer_reviewed !== undefined) {
-    filteredData = filteredData.filter(d => d.peer_reviewed === filters.peer_reviewed)
-  }
+    if (filters?.peer_reviewed !== undefined) {
+      filteredData = filteredData.filter(d => d.peer_reviewed === filters.peer_reviewed)
+    }
 
-  return {
-    data: filteredData,
-    total: filteredData.length,
-    filters_applied: filters || {}
+    return {
+      data: filteredData,
+      total: filteredData.length,
+      filters_applied: filters || {}
+    }
+  } catch (error) {
+    logger.error('Error in getReferences:', error)
+    // Fallback to mock data if API fails
+    return {
+      data: MOCK_REFERENCES,
+      total: MOCK_REFERENCES.length,
+      filters_applied: filters || {}
+    }
   }
 }
 

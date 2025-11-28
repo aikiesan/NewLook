@@ -382,80 +382,6 @@ async def get_residuo(residuo_id: int):
 
 @router.get("/references/all")
 async def get_all_references(
-    limit: int = Query(default=1000, le=1000),
-    offset: int = Query(default=0, ge=0)
-):
-    """
-    Get all scientific references from the database.
-
-    Args:
-        limit: Max results (default 1000, max 1000)
-        offset: Pagination offset
-    """
-    try:
-        with get_db() as conn:
-            cursor = conn.cursor()
-
-            # Get all unique references
-            cursor.execute("""
-                SELECT DISTINCT
-                    id,
-                    parameter_type,
-                    citation,
-                    authors,
-                    title,
-                    journal,
-                    year,
-                    volume,
-                    pages,
-                    doi,
-                    url,
-                    reported_value,
-                    reported_unit,
-                    is_primary,
-                    validation_status,
-                    residuo_id
-                FROM residuo_references
-                ORDER BY year DESC, authors
-                LIMIT %s OFFSET %s
-            """, (limit, offset))
-
-            rows = cursor.fetchall()
-
-            references = []
-            for row in rows:
-                ref = dict(row)  # RealDictCursor already returns dict-like rows
-                # Bulletproof float conversion for reported_value
-                val = ref.get('reported_value')
-                if val is not None and val != '':
-                    try:
-                        ref['reported_value'] = float(val)
-                    except (ValueError, TypeError):
-                        ref['reported_value'] = None
-                else:
-                    ref['reported_value'] = None
-                references.append(ref)
-
-            # Get total count
-            cursor.execute("SELECT COUNT(DISTINCT id) FROM residuo_references")
-            total = cursor.fetchone()[0]
-
-            return {
-                "success": True,
-                "count": len(references),
-                "total": total,
-                "limit": limit,
-                "offset": offset,
-                "references": references
-            }
-
-    except Exception as e:
-        logger.error(f"Error fetching all references: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/references/all")
-async def get_all_references(
     limit: int = Query(default=1000, le=5000),
     offset: int = Query(default=0, ge=0)
 ):
@@ -711,13 +637,14 @@ async def get_summary_by_sector():
             cursor = conn.cursor()
 
             # Query matches the exact schema from 001_create_residuos_tables.sql
+            # Use subquery to avoid duplicate rows from multiple references per residue
             cursor.execute("""
                 SELECT
                     s.codigo,
                     s.nome,
                     s.emoji,
                     s.ordem,
-                    COUNT(DISTINCT r.id) as num_residuos,
+                    COUNT(r.id) as num_residuos,
                     ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
                     ROUND(MIN(r.bmp_medio)::numeric, 2) as min_bmp,
                     ROUND(MAX(r.bmp_medio)::numeric, 2) as max_bmp,
@@ -725,10 +652,14 @@ async def get_summary_by_sector():
                     ROUND(AVG(r.vs_medio)::numeric, 2) as avg_vs,
                     ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
                     ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content,
-                    COUNT(DISTINCT rr.id) as total_references
+                    COALESCE(
+                        (SELECT COUNT(*) FROM residuo_references rr
+                         JOIN residuos r2 ON rr.residuo_id = r2.id
+                         WHERE r2.sector_codigo = s.codigo),
+                        0
+                    ) as total_references
                 FROM sectors s
                 LEFT JOIN residuos r ON s.codigo = r.sector_codigo
-                LEFT JOIN residuo_references rr ON r.id = rr.residuo_id
                 GROUP BY s.codigo, s.nome, s.emoji, s.ordem
                 ORDER BY s.ordem
             """)

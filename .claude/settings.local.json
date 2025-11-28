@@ -58,8 +58,9 @@
       "Bash(timeout:*)",
       "Bash(NUL)",
       "Bash(uvicorn app.main:app:*)",
-      "Bash(npx tsc --noEmit)",
-      "Bash(npm install:*)"
+      "Bash(gh pr create:*)",
+      "Bash(git remote get-url:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
