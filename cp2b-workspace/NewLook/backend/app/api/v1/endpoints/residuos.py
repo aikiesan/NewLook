@@ -426,18 +426,26 @@ async def get_all_references(
             """, (limit, offset))
 
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            # RealDictCursor already returns dictionaries
 
             references = []
             for row in rows:
-                ref = dict(zip(columns, row))
-                if ref.get('reported_value'):
-                    ref['reported_value'] = float(ref['reported_value'])
+                ref = dict(row)  # Create a copy - RealDictCursor returns dict-like rows
+                # Bulletproof float conversion for reported_value
+                val = ref.get('reported_value')
+                if val is not None and val != '':
+                    try:
+                        ref['reported_value'] = float(val)
+                    except (ValueError, TypeError):
+                        ref['reported_value'] = None
+                else:
+                    ref['reported_value'] = None
                 references.append(ref)
 
             # Get total count
             cursor.execute("SELECT COUNT(*) FROM residuo_references")
-            total = cursor.fetchone()[0]
+            count_result = cursor.fetchone()
+            total = count_result['count'] if isinstance(count_result, dict) else count_result[0]
 
             return {
                 "success": True,
