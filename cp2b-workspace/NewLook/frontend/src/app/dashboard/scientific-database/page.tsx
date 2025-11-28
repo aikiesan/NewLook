@@ -154,7 +154,8 @@ export default function ScientificDatabasePage() {
     setError(null)
 
     try {
-      const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.all([
+      // Use Promise.allSettled instead of Promise.all to handle failures gracefully
+      const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.allSettled([
         getKineticsData(),
         getChemicalData(),
         getReferences(),
@@ -162,14 +163,41 @@ export default function ScientificDatabasePage() {
         getScientificSummary()
       ])
 
-      setKineticsData(kineticsRes.data)
-      setChemicalData(chemicalRes.data)
-      setReferences(refsRes.data)
-      setResidueList(residues)
-      setSummary(summaryData)
+      // Extract successful results or use defaults
+      if (kineticsRes.status === 'fulfilled') {
+        setKineticsData(kineticsRes.value.data)
+      } else {
+        console.warn('Failed to load kinetics data:', kineticsRes.reason)
+      }
+
+      if (chemicalRes.status === 'fulfilled') {
+        setChemicalData(chemicalRes.value.data)
+      } else {
+        console.warn('Failed to load chemical data:', chemicalRes.reason)
+      }
+
+      if (refsRes.status === 'fulfilled') {
+        setReferences(refsRes.value.data)
+      } else {
+        console.warn('Failed to load references:', refsRes.reason)
+      }
+
+      if (residues.status === 'fulfilled') {
+        setResidueList(residues.value)
+      } else {
+        console.warn('Failed to load residue list:', residues.reason)
+      }
+
+      if (summaryData.status === 'fulfilled') {
+        setSummary(summaryData.value)
+      } else {
+        console.warn('Failed to load summary data:', summaryData.reason)
+      }
 
       // Also fetch real residuos data from Panorama_CP2B
-      const [sectorSum, factors, allResiduosRes] = await Promise.all([
+      // Only fetch ONCE (not twice) to avoid duplicates
+      // Use Promise.allSettled here too for resilience
+      const [sectorSum, factors, allResiduosRes] = await Promise.allSettled([
         getRealSectorSummary(),
         getRealConversionFactors(),
         getRealResiduos() // Fetch all residues without filter
@@ -178,57 +206,79 @@ export default function ScientificDatabasePage() {
       // Set all residues so Chemical tab has data on first load
       // Add null safety checks for API responses
       // Deduplicate by ID to prevent duplicate keys
-      const uniqueResiduos = allResiduosRes?.residuos || []
+      let uniqueResiduos: any[] = []
+      let isMockData = false
+
+      if (allResiduosRes.status === 'fulfilled') {
+        uniqueResiduos = allResiduosRes.value?.residuos || []
+        isMockData = !!allResiduosRes.value?._isMockData
+      } else {
+        console.warn('Failed to load residuos:', allResiduosRes.reason)
+      }
+
       const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
         index === self.findIndex((r: any) => r.id === residuo.id)
       )
 
       // CRITICAL FIX: Only set state ONCE after all processing is done
       setRealResiduos(deduplicatedResiduos)
-      setSectorSummary(sectorSum?.summary || [])
-      setConversionFactors(factors?.factors || [])
 
-      // Check if backend is available (not using mock data)
-      setIsBackendAvailable(!allResiduosRes?._isMockData)
-
-      // Log warning if conversion factors failed to load
-      if (factors.error) {
-        console.warn('Could not load conversion factors:', factors.error)
+      if (sectorSum.status === 'fulfilled') {
+        setSectorSummary(sectorSum.value?.summary || [])
+      } else {
+        console.warn('Failed to load sector summary:', sectorSum.reason)
       }
 
-      // Fetch all references directly from the backend using the new endpoint
-      // This will show all 191 papers instead of the previous 51
-      try {
-        const allRefsResponse = await getAllReferences(1000, 0)
+      if (factors.status === 'fulfilled') {
+        setConversionFactors(factors.value?.factors || [])
+        // Log warning if conversion factors failed to load
+        if (factors.value?.error) {
+          console.warn('Could not load conversion factors:', factors.value.error)
+        }
+      } else {
+        console.warn('Failed to load conversion factors:', factors.reason)
+      }
 
-        if (allRefsResponse.references && allRefsResponse.references.length > 0) {
-          // Transform backend references to frontend format
-          const transformedReferences: ScientificReference[] = allRefsResponse.references.map((ref: any) => ({
-            id: ref.id || `ref-${ref.title}`,
-            authors: ref.authors || 'Autor desconhecido',
-            title: ref.title || ref.citation || 'Sem título',
-            year: ref.year || new Date().getFullYear(),
-            doi: ref.doi || undefined,
-            peer_reviewed: ref.is_primary || false,
-            sector: ref.sector || 'AG_AGRICULTURA' as any,
-            residues_studied: ref.residues_studied || [],
-            parameters_measured: [ref.parameter_type || 'unknown'],
-            reference_type: 'journal',
-            journal: ref.journal,
-            volume: ref.volume,
-            pages: ref.pages,
-            abstract: ref.abstract,
-            keywords: [],
-            key_findings: []
-          }))
+      // Check if backend is available (not using mock data)
+      setIsBackendAvailable(!isMockData)
 
-          setReferences(transformedReferences)
+      // Extract references from real residuos data
+      // This allows the Referencias Científicas tab to show real data instead of mock data
+      // Only extract if we have valid residuo data
+      if (allResiduosRes.status === 'fulfilled' && allResiduosRes.value?.residuos && Array.isArray(allResiduosRes.value.residuos) && allResiduosRes.value.residuos.length > 0) {
+        const extractedReferences: ScientificReference[] = []
+        const seenRefIds = new Set<string>()
 
-          // Update summary with actual reference count
-          setSummary(prev => prev ? {
-            ...prev,
-            total_references: allRefsResponse.total
-          } : prev)
+        allResiduosRes.value.residuos.forEach((residuo: any) => {
+          if (residuo.references && Array.isArray(residuo.references)) {
+            residuo.references.forEach((ref: any) => {
+              const refKey = `${ref.id || ref.title}-${ref.parameter_type}`
+              if (!seenRefIds.has(refKey)) {
+                seenRefIds.add(refKey)
+                extractedReferences.push({
+                  id: ref.id || `ref-${extractedReferences.length}`,
+                  authors: ref.authors || 'Autor desconhecido',
+                  title: ref.title || ref.citation || 'Sem título',
+                  year: ref.year || new Date().getFullYear(),
+                  doi: ref.doi || undefined,
+                  peer_reviewed: ref.is_primary || false,
+                  sector: residuo.sector_codigo as any, // Use real backend sector code
+                  residues_studied: [residuo.nome],
+                  parameters_measured: [ref.parameter_type || 'unknown'],
+                  reference_type: 'journal',
+                  journal: ref.journal,
+                  abstract: ref.abstract,
+                  keywords: [],
+                  key_findings: []
+                })
+              }
+            })
+          }
+        })
+
+        // Merge extracted references with mock references (prioritize real data)
+        if (extractedReferences.length > 0) {
+          setReferences(extractedReferences)
         }
       } catch (error) {
         console.error('Error fetching all references:', error)
@@ -236,9 +286,9 @@ export default function ScientificDatabasePage() {
       }
 
       // Update summary with real data counts
-      if (sectorSum?.summary && Array.isArray(sectorSum.summary)) {
-        const totalRefs = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
-        const totalResidues = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
+      if (sectorSum.status === 'fulfilled' && sectorSum.value?.summary && Array.isArray(sectorSum.value.summary)) {
+        const totalRefs = sectorSum.value.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
+        const totalResidues = sectorSum.value.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
         setSummary(prev => prev ? {
           ...prev,
           total_references: totalRefs || prev.total_references,
