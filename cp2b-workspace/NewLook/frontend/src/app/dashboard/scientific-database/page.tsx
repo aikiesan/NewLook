@@ -312,24 +312,12 @@ export default function ScientificDatabasePage() {
     }
   }, [])
 
-  // Fetch residuos by sector
+  // Fetch residuos by sector - DISABLED for now to prevent duplicates
+  // Users can see all residuos grouped by sector in the list below
   const fetchResiduosBySector = useCallback(async (sectorCode: string) => {
-    try {
-      const result = await getRealResiduos(sectorCode)
-
-      // Deduplicate by ID to prevent duplicate keys
-      const uniqueResiduos = result.residuos || []
-      const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
-        index === self.findIndex((r: any) => r.id === residuo.id)
-      )
-
-      setRealResiduos(deduplicatedResiduos)
-      setIsBackendAvailable(!result._isMockData)
-    } catch (err) {
-      console.error('Error fetching residuos by sector:', err)
-      setIsBackendAvailable(false)
-      setRealResiduos([]) // Clear on error
-    }
+    // Just update active sector for visual feedback
+    setActiveSector(sectorCode)
+    // Don't fetch again - we already have all residuos loaded
   }, [])
 
   // Calculate co-digestion
@@ -590,17 +578,9 @@ export default function ScientificDatabasePage() {
               {/* Sector Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {sectorSummary.map((sector: any) => (
-                  <button
+                  <div
                     key={sector.codigo}
-                    onClick={() => {
-                      setActiveSector(sector.codigo)
-                      fetchResiduosBySector(sector.codigo)
-                    }}
-                    className={`bg-white rounded-xl shadow-md p-5 border transition-all text-left hover:shadow-lg ${
-                      activeSector === sector.codigo
-                        ? 'border-green-500 ring-2 ring-green-200'
-                        : 'border-gray-100'
-                    }`}
+                    className="bg-white rounded-xl shadow-md p-5 border border-gray-100 transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-2xl">{sector.emoji}</span>
@@ -613,7 +593,7 @@ export default function ScientificDatabasePage() {
                       <div>BMP medio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
                       <div>Referencias: {sector.total_references || 0}</div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 
@@ -625,7 +605,12 @@ export default function ScientificDatabasePage() {
 
                 <div className="space-y-6">
                   {sectorSummary.map((sector: any) => {
-                    const sectorResiduos = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo)
+                    // Filter residues for this sector and deduplicate by ID
+                    const sectorResiduos = realResiduos
+                      .filter((r: any) => r.sector_codigo === sector.codigo)
+                      .filter((residuo: any, index: number, self: any[]) =>
+                        index === self.findIndex((r: any) => r.id === residuo.id)
+                      )
 
                     return (
                       <div key={sector.codigo} className="border-l-4 border-green-500 pl-4">
@@ -642,7 +627,7 @@ export default function ScientificDatabasePage() {
                         {sectorResiduos.length > 0 ? (
                           <ul className="space-y-2 ml-6">
                             {sectorResiduos.map((residuo: any) => (
-                              <li key={residuo.id} className="text-gray-700 flex items-center gap-2">
+                              <li key={`residuo-${residuo.id}-${sector.codigo}`} className="text-gray-700 flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                 <span>{residuo.nome}</span>
                                 {residuo.subsector_nome && (
