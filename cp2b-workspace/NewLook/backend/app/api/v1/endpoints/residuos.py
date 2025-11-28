@@ -361,6 +361,81 @@ async def get_residuo(residuo_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/references/all")
+async def get_all_references(
+    limit: int = Query(default=1000, le=5000),
+    offset: int = Query(default=0, ge=0)
+):
+    """
+    Get all scientific references across all residues.
+
+    Args:
+        limit: Max results (default 1000, max 5000)
+        offset: Pagination offset
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get all references with residue info
+            cursor.execute("""
+                SELECT
+                    rr.id,
+                    rr.residuo_id,
+                    r.nome as residuo_nome,
+                    r.sector_codigo,
+                    s.nome as sector_nome,
+                    rr.parameter_type,
+                    rr.citation,
+                    rr.authors,
+                    rr.title,
+                    rr.journal,
+                    rr.year,
+                    rr.volume,
+                    rr.pages,
+                    rr.doi,
+                    rr.url,
+                    rr.reported_value,
+                    rr.reported_unit,
+                    rr.is_primary,
+                    rr.validation_status
+                FROM residuo_references rr
+                JOIN residuos r ON rr.residuo_id = r.id
+                JOIN sectors s ON r.sector_codigo = s.codigo
+                ORDER BY rr.year DESC, rr.authors
+                LIMIT %s OFFSET %s
+            """, (limit, offset))
+
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+
+            references = []
+            for row in rows:
+                ref = dict(zip(columns, row))
+                if ref.get('reported_value'):
+                    ref['reported_value'] = float(ref['reported_value'])
+                references.append(ref)
+
+            # Get total count
+            cursor.execute("SELECT COUNT(*) FROM residuo_references")
+            total = cursor.fetchone()[0]
+
+            return {
+                "success": True,
+                "count": len(references),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "references": references
+            }
+
+    except Exception as e:
+        import traceback
+        logger.error(f"Error fetching all references: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{residuo_id}/references")
 async def get_residuo_references(
     residuo_id: int,
@@ -434,7 +509,9 @@ async def get_residuo_references(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
         logger.error(f"Error fetching references for residuo {residuo_id}: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
