@@ -368,12 +368,13 @@ export default function ScientificDatabasePage() {
     if (selected.length === 0) return []
 
     // Map each residue to a data point with BMP, VS, C:N, CH4
+    // Use null for zero/missing values so they don't display as 0 in charts
     return selected.map(residue => ({
       residue: residue.nome,
-      BMP: residue.bmp_medio || 0,
-      VS: residue.vs_medio || 0,
-      'C:N': residue.chemical_cn_ratio || 0,
-      'CH4': residue.chemical_ch4_content || 0
+      BMP: (residue.bmp_medio && residue.bmp_medio > 0) ? residue.bmp_medio : null,
+      VS: (residue.vs_medio && residue.vs_medio > 0) ? residue.vs_medio : null,
+      'C:N': (residue.chemical_cn_ratio && residue.chemical_cn_ratio > 0) ? residue.chemical_cn_ratio : null,
+      'CH4': (residue.chemical_ch4_content && residue.chemical_ch4_content > 0) ? residue.chemical_ch4_content : null
     }))
   }, [realResiduos, selectedResidues])
 
@@ -1357,18 +1358,31 @@ export default function ScientificDatabasePage() {
                           ].map(param => {
                             const values = selectedResidues.map(r => {
                               const data = realResiduos.find(res => res.nome === r)
-                              return data ? (data as any)[param.key] || 0 : 0
+                              const value = data ? (data as any)[param.key] : null
+                              // Return null for missing or zero values (null means no data)
+                              return (value !== null && value !== undefined && value !== 0) ? value : null
                             })
 
+                            // Only find best if we have at least one valid value
+                            const hasValidValues = values.some(v => v !== null)
                             let bestIdx = 0
-                            if (param.optimal) {
-                              // Find closest to optimal range
-                              const target = (param.optimal[0] + param.optimal[1]) / 2
-                              bestIdx = values.reduce((best, val, idx) =>
-                                Math.abs(val - target) < Math.abs(values[best] - target) ? idx : best, 0)
-                            } else if (param.higher) {
-                              bestIdx = values.reduce((best, val, idx) =>
-                                val > values[best] ? idx : best, 0)
+                            if (hasValidValues) {
+                              if (param.optimal) {
+                                // Find closest to optimal range, ignoring null values
+                                const target = (param.optimal[0] + param.optimal[1]) / 2
+                                bestIdx = values.reduce((best, val, idx) => {
+                                  if (val === null) return best
+                                  if (values[best] === null) return idx
+                                  return Math.abs(val - target) < Math.abs(values[best]! - target) ? idx : best
+                                }, 0)
+                              } else if (param.higher) {
+                                // Find highest value, ignoring null values
+                                bestIdx = values.reduce((best, val, idx) => {
+                                  if (val === null) return best
+                                  if (values[best] === null) return idx
+                                  return val > values[best]! ? idx : best
+                                }, 0)
+                              }
                             }
 
                             return (
@@ -1377,20 +1391,32 @@ export default function ScientificDatabasePage() {
                                 {values.map((value, idx) => (
                                   <td
                                     key={idx}
-                                    className={`py-3 px-4 text-center font-mono ${
-                                      idx === bestIdx ? 'bg-green-50 font-semibold' : ''
+                                    className={`py-3 px-4 text-center ${
+                                      value !== null && hasValidValues && idx === bestIdx
+                                        ? 'bg-green-50 font-semibold'
+                                        : ''
                                     }`}
                                   >
-                                    {typeof value === 'number' ? value.toFixed(1) : '-'}
-                                    {idx === bestIdx && (
-                                      <Trophy className="inline ml-1 h-3 w-3 text-yellow-500" />
+                                    {value !== null ? (
+                                      <>
+                                        <span className="font-mono">{value.toFixed(1)}</span>
+                                        {hasValidValues && idx === bestIdx && (
+                                          <Trophy className="inline ml-1 h-3 w-3 text-yellow-500" />
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span className="text-xs text-gray-400 italic">Sem dados</span>
                                     )}
                                   </td>
                                 ))}
                                 <td className="py-3 px-4 text-center">
-                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
-                                    {selectedResidues[bestIdx]}
-                                  </span>
+                                  {hasValidValues && values[bestIdx] !== null ? (
+                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
+                                      {selectedResidues[bestIdx]}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-400 italic">N/A</span>
+                                  )}
                                 </td>
                               </tr>
                             )
