@@ -280,9 +280,6 @@ export default function ScientificDatabasePage() {
         if (extractedReferences.length > 0) {
           setReferences(extractedReferences)
         }
-      } catch (error) {
-        console.error('Error fetching all references:', error)
-        // Fall back to extracting from residuos data if the new endpoint fails
       }
 
       // Update summary with real data counts
