@@ -80,6 +80,28 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    @field_validator('DATABASE_URL', mode='before')
+    @classmethod
+    def assemble_db_connection(cls, v: Optional[str], info):
+        """Assemble database connection string if not present"""
+        if isinstance(v, str) and v and v != "postgresql://user:password@localhost:5432/cp2b_maps":
+            return v
+
+        # Check if individual components are available in env
+        host = os.getenv("POSTGRES_HOST")
+        user = os.getenv("POSTGRES_USER")
+        password = os.getenv("POSTGRES_PASSWORD")
+        db = os.getenv("POSTGRES_DB")
+        port = os.getenv("POSTGRES_PORT", "5432")
+
+        if host and user and db:
+            # Build connection string
+            # Handle password
+            pwd_part = f":{password}" if password else ""
+            return f"postgresql://{user}{pwd_part}@{host}:{port}/{db}"
+            
+        return v or "postgresql://user:password@localhost:5432/cp2b_maps"
+
     @field_validator('SECRET_KEY')
     @classmethod
     def validate_secret_key(cls, v, info):
