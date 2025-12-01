@@ -260,10 +260,16 @@ class EconomicSimulationOrchestrator:
         if include_spatial_spillover:
             logger.info("\n[Step 3/4] Calculating spatial spillover (gravity model)...")
 
-            regional_vab_impacts = self.spillover_service.calculate_and_distribute(
+            # Calculate spillover weights first
+            spillover_weights = self.spillover_service.calculate_spillover_weights(
                 origin_region_code=region_code,
-                total_impact=leontief_result.total_vab_sum,
                 all_regions=all_regions
+            )
+
+            # Distribute the total impact using those weights
+            regional_vab_impacts = self.spillover_service.distribute_impact(
+                total_impact=leontief_result.total_vab_sum,
+                spillover_weights=spillover_weights
             )
 
             # Build detailed regional impacts
@@ -279,6 +285,7 @@ class EconomicSimulationOrchestrator:
                 regional_impacts[target_code] = {
                     "region_name": target_region['nm_rgi'],
                     "vab_impact_brl": float(vab_impact),
+                    "spillover_weight": float(spillover_weights.get(target_code, 0)),  # ADD THIS!
                     "vab_agriculture": float(leontief_result.vab_by_sector['agriculture'] * vab_share),
                     "vab_industry": float(leontief_result.vab_by_sector['industry'] * vab_share),
                     "vab_services": float(leontief_result.vab_by_sector['services'] * vab_share),
@@ -299,6 +306,7 @@ class EconomicSimulationOrchestrator:
                 region_code: {
                     "region_name": origin_region['nm_rgi'],
                     "vab_impact_brl": float(leontief_result.total_vab_sum),
+                    "spillover_weight": 1.0,  # 100% in origin when spillover disabled
                     "vab_agriculture": leontief_result.vab_by_sector['agriculture'],
                     "vab_industry": leontief_result.vab_by_sector['industry'],
                     "vab_services": leontief_result.vab_by_sector['services'],
