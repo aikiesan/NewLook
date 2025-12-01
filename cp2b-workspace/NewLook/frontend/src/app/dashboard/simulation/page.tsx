@@ -35,6 +35,10 @@ const RegionMarkersLayer = dynamic(
   () => import('@/components/map/RegionMarkersLayer'),
   { ssr: false }
 )
+const RegionChoroplethLayer = dynamic(
+  () => import('@/components/map/RegionChoroplethLayer'),
+  { ssr: false }
+)
 
 interface SimulationResult {
   simulation_id: string
@@ -202,7 +206,14 @@ function EconomicSimulationContent() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {/* 53 Region Markers */}
+            {/* 53 Region Boundaries (Choropleth) */}
+            <RegionChoroplethLayer
+              selectedRegion={selectedRegion}
+              simulationResult={simulationResult}
+              onRegionClick={setSelectedRegion}
+            />
+
+            {/* 53 Region Markers (Points) */}
             <RegionMarkersLayer
               selectedRegion={selectedRegion}
               onRegionSelect={setSelectedRegion}
