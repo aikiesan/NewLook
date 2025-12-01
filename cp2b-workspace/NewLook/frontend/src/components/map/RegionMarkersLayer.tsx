@@ -98,17 +98,15 @@ export default function RegionMarkersLayer({
   // Check if region has simulation impact
   const hasImpact = (regionCode: string) => {
     if (!simulationResult?.results?.regional_impacts) return false
-    return simulationResult.results.regional_impacts.some(
-      (impact: any) => impact.region_code === regionCode
-    )
+    // regional_impacts is a Record/dict: { "3501": {...}, "3502": {...}, ... }
+    return regionCode in simulationResult.results.regional_impacts
   }
 
   // Get impact data for region
   const getImpact = (regionCode: string) => {
     if (!simulationResult?.results?.regional_impacts) return null
-    return simulationResult.results.regional_impacts.find(
-      (impact: any) => impact.region_code === regionCode
-    )
+    // regional_impacts is a Record/dict: { "3501": { region_name, vab_impact_brl, spillover_weight }, ... }
+    return simulationResult.results.regional_impacts[regionCode]
   }
 
   if (loading) {

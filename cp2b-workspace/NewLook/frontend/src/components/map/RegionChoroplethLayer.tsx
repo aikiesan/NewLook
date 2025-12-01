@@ -50,9 +50,8 @@ export default function RegionChoroplethLayer({
   // Get impact data for a region
   const getRegionImpact = (regionCode: string) => {
     if (!simulationResult?.results?.regional_impacts) return null
-    return simulationResult.results.regional_impacts.find(
-      (impact: any) => impact.region_code === regionCode
-    )
+    // regional_impacts is a Record/dict: { "3501": { region_name, vab_impact_brl, spillover_weight }, ... }
+    return simulationResult.results.regional_impacts[regionCode]
   }
 
   // Get color based on impact intensity
