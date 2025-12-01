@@ -62,19 +62,59 @@ export default function RegionChoroplethLayer({
     fetchData()
   }, [])
 
-  // Get region code from shapefile feature using name mapping
-  const getRegionCode = (feature: any): string | null => {
-    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM
-    if (!regionName) return null
+  // Normalize shapefile code to 4-digit format (fallback strategy)
+  const normalizeShapefileCode = (rawCode: string | undefined): string | null => {
+    if (!rawCode) return null
 
-    // Use database code from mapping (matched by name)
-    const code = regionCodeMap[regionName]
-    if (!code) {
-      console.warn(`No database code found for region: ${regionName}`)
-      return null
+    const codeStr = rawCode.toString()
+
+    // Handle different formats
+    if (codeStr.length === 6) {
+      // 6-digit: '350047' -> extract state (35) + parse region number (47) -> '3547'
+      const state = codeStr.substring(0, 2)
+      const regionNum = parseInt(codeStr.substring(2), 10)
+      return state + regionNum.toString().padStart(2, '0')
+    } else if (codeStr.length === 5) {
+      // 5-digit: '35047' -> extract state (35) + parse region (047 = 47) -> '3547'
+      const state = codeStr.substring(0, 2)
+      const regionNum = parseInt(codeStr.substring(2), 10)
+      return state + regionNum.toString().padStart(2, '0')
+    } else if (codeStr.length === 4) {
+      // Already correct format
+      return codeStr
     }
 
-    return code
+    return null
+  }
+
+  // Get region code from shapefile feature using name mapping with fallback
+  const getRegionCode = (feature: any): string | null => {
+    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM
+    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
+
+    // Strategy 1: Try exact name match with database
+    if (regionName && regionCodeMap[regionName]) {
+      return regionCodeMap[regionName]
+    }
+
+    // Strategy 2: Try first part of compound name (e.g., "São José do Rio Pardo - Mococa" -> "São José do Rio Pardo")
+    if (regionName && regionName.includes(' - ')) {
+      const firstPart = regionName.split(' - ')[0]
+      if (regionCodeMap[firstPart]) {
+        console.log(`Matched compound name "${regionName}" using first part: ${firstPart} -> ${regionCodeMap[firstPart]}`)
+        return regionCodeMap[firstPart]
+      }
+    }
+
+    // Strategy 3: Fall back to normalized shapefile code
+    const normalizedCode = normalizeShapefileCode(rawCode)
+    if (normalizedCode) {
+      console.log(`Using shapefile code for "${regionName}": ${rawCode} -> ${normalizedCode}`)
+      return normalizedCode
+    }
+
+    console.warn(`No code found for region: ${regionName} (raw: ${rawCode})`)
+    return null
   }
 
   // Get impact data for a region
