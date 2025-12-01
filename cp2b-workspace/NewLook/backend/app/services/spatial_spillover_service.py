@@ -110,8 +110,8 @@ class SpatialSpilloverService:
         if not all_regions:
             raise ValueError("all_regions list cannot be empty")
 
-        # Calculate total state VAB
-        total_vab = sum(r['vab_total_brl'] for r in all_regions)
+        # Calculate total state VAB (convert Decimal to float)
+        total_vab = float(sum(r['vab_total_brl'] for r in all_regions))
 
         if total_vab == 0:
             raise ValueError("Total state VAB is zero - check data")
@@ -156,7 +156,7 @@ class SpatialSpilloverService:
 
             # Calculate gravity-based weight
             # Weight = (Economic size share) / (Distance ^ decay exponent)
-            vab_share = region['vab_total_brl'] / total_vab
+            vab_share = float(region['vab_total_brl']) / total_vab
             distance_factor = 1.0 / (distance ** self.distance_decay)
             raw_weight = vab_share * distance_factor
 
