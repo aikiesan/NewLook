@@ -190,6 +190,7 @@ class LRUCache:
 proximity_cache = LRUCache(max_size=500, default_ttl=300)  # 5 minutes
 mapbiomas_cache = LRUCache(max_size=200, default_ttl=600)  # 10 minutes (stable data)
 municipality_cache = LRUCache(max_size=1000, default_ttl=3600)  # 1 hour (rarely changes)
+economic_cache = LRUCache(max_size=100, default_ttl=300)  # 5 minutes for economic simulation
 
 
 def get_proximity_cache_key(lat: float, lng: float, radius_km: float) -> str:
@@ -217,6 +218,17 @@ def get_all_cache_stats() -> dict:
     return {
         "proximity": proximity_cache.get_stats(),
         "mapbiomas": mapbiomas_cache.get_stats(),
-        "municipality": municipality_cache.get_stats()
+        "municipality": municipality_cache.get_stats(),
+        "economic": economic_cache.get_stats()
     }
+
+
+def get_cache_service() -> LRUCache:
+    """
+    Get economic cache instance for dependency injection.
+
+    Returns:
+        LRUCache instance for economic simulation caching
+    """
+    return economic_cache
 

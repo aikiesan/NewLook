@@ -3,7 +3,7 @@ Main API router for CP2B Maps V3
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity, residuos, statistics
+from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity, residuos, statistics, economic_simulation
 
 api_router = APIRouter()
 
@@ -77,4 +77,11 @@ api_router.include_router(
     statistics.router,
     prefix="/statistics",
     tags=["statistics", "summary"]
+)
+
+# Economic Simulation endpoints (Leontief Input-Output Analysis)
+api_router.include_router(
+    economic_simulation.router,
+    prefix="/simulation",
+    tags=["economic-simulation", "leontief", "input-output"]
 )
