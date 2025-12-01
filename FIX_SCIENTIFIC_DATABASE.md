@@ -43,6 +43,7 @@ GET /api/v1/residuos/summary/by-sector 500 (Internal Server Error)
 ### Option 2: Using psql CLI
 
 ```bash
+<<<<<<< HEAD
 # Set environment variable
 export DATABASE_URL="postgresql://postgres.zyuxkzfhkueeipokyhgw:Bauzi#S#9285@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
 

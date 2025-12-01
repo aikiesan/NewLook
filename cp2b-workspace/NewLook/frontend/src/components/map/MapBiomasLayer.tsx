@@ -29,7 +29,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 export default function MapBiomasLayer({
   opacity = 0.7,
   minZoom = 7,
-  maxZoom = 15
+  maxZoom = 14
 }: MapBiomasLayerProps) {
   const map = useMap();
   const [isVisible, setIsVisible] = useState(true);

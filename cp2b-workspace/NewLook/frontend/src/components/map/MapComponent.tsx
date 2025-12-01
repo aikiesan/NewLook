@@ -39,6 +39,10 @@ const MapBiomasLayer = dynamic(() => import('./MapBiomasLayer'), {
   ssr: false,
 });
 
+const MapBiomasLegend = dynamic(() => import('./MapBiomasLegend'), {
+  ssr: false,
+});
+
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
 const DEFAULT_ZOOM = 7;
@@ -69,13 +73,16 @@ export default function MapComponent({
   const [layers, setLayers] = useState([
     { id: 'municipalities', name: 'Municípios SP', visible: true, icon: '📍' },
     { id: 'mapbiomas', name: 'MapBiomas 2024', visible: false, icon: '🌳' },
-    { id: 'biogas-plants', name: 'Plantas de Biogás', visible: false, icon: '🏭' },
-    { id: 'pipelines', name: 'Gasodutos', visible: false, icon: '🔧' },
-    { id: 'substations', name: 'Subestações', visible: false, icon: '⚡' },
-    { id: 'transmission-lines', name: 'Linhas de Transmissão', visible: false, icon: '🔌' },
-    { id: 'etes', name: 'ETEs', visible: false, icon: '💧' },
-    { id: 'railways', name: 'Rodovias', visible: false, icon: '🛣️' },
+    { id: 'biogas-plants', name: 'Plantas de Biogás (MapBiomas+ANP, 2024)', visible: false, icon: '🏭' },
+    { id: 'pipelines', name: 'Gasodutos (EPE, 2024)', visible: false, icon: '🔧' },
+    { id: 'substations', name: 'Subestações (EPE, 2024)', visible: false, icon: '⚡' },
+    { id: 'transmission-lines', name: 'Linhas de Transmissão (EPE, 2023)', visible: false, icon: '🔌' },
+    { id: 'etes', name: 'ETEs (SNIS, 2023)', visible: false, icon: '💧' },
+    { id: 'railways', name: 'Rodovias (EPE, 2023)', visible: false, icon: '🛣️' },
   ]);
+
+  // MapBiomas legend visibility state
+  const [showMapBiomasLegend, setShowMapBiomasLegend] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -88,6 +95,11 @@ export default function MapComponent({
         layer.id === layerId ? { ...layer, visible } : layer
       )
     );
+
+    // Toggle MapBiomas legend visibility when MapBiomas layer is toggled
+    if (layerId === 'mapbiomas') {
+      setShowMapBiomasLegend(visible);
+    }
   };
 
   // Get visible layer IDs
@@ -258,6 +270,9 @@ export default function MapComponent({
 
       {/* Legend (Bottom-Right) */}
       {visibleLayerIds.includes('municipalities') && <MapLegend />}
+
+      {/* MapBiomas Legend (Bottom-Right, above MapLegend) */}
+      {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
 
       {/* Municipality Count Badge (Top-Right) */}
       <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-md">

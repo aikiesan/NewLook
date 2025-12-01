@@ -4,6 +4,9 @@
  * Scientific References & Biokinetics Database Page
  * CP2B Maps V3 - DBFZ-inspired scientific knowledge platform
  * Features: Kinetic curves, chemical data, references, comparison, co-digestion
+ *
+ * Protected by Vercel Edge Middleware that checks for Supabase auth cookies.
+ * Client-side fetching uses useEffect to load fresh data on each visit.
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
@@ -74,7 +77,8 @@ import {
   getRealResiduos,
   getRealSectorSummary,
   getRealResiduoWithReferences,
-  getRealConversionFactors
+  getRealConversionFactors,
+  getAllReferences
 } from '@/services/scientificApi'
 
 import type { SectorCode } from '@/services/residuosApi'
@@ -128,7 +132,7 @@ export default function ScientificDatabasePage() {
   // Selection states
   const [selectedResidues, setSelectedResidues] = useState<string[]>([])
   const [selectedKineticClass, setSelectedKineticClass] = useState<KineticClassification | ''>('')
-  const [selectedSectors, setSelectedSectors] = useState<SectorCode[]>([])
+  const [selectedSectors, setSelectedSectors] = useState<SectorType[]>([])
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
@@ -149,13 +153,9 @@ export default function ScientificDatabasePage() {
     setLoading(true)
     setError(null)
 
-    // Clear all state first to prevent duplicates
-    setRealResiduos([])
-    setSectorSummary([])
-    setConversionFactors([])
-
     try {
-      const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.all([
+      // Use Promise.allSettled instead of Promise.all to handle failures gracefully
+      const [kineticsRes, chemicalRes, refsRes, residues, summaryData] = await Promise.allSettled([
         getKineticsData(),
         getChemicalData(),
         getReferences(),
@@ -163,15 +163,41 @@ export default function ScientificDatabasePage() {
         getScientificSummary()
       ])
 
-      setKineticsData(kineticsRes.data)
-      setChemicalData(chemicalRes.data)
-      setReferences(refsRes.data)
-      setResidueList(residues)
-      setSummary(summaryData)
+      // Extract successful results or use defaults
+      if (kineticsRes.status === 'fulfilled') {
+        setKineticsData(kineticsRes.value.data)
+      } else {
+        console.warn('Failed to load kinetics data:', kineticsRes.reason)
+      }
+
+      if (chemicalRes.status === 'fulfilled') {
+        setChemicalData(chemicalRes.value.data)
+      } else {
+        console.warn('Failed to load chemical data:', chemicalRes.reason)
+      }
+
+      if (refsRes.status === 'fulfilled') {
+        setReferences(refsRes.value.data)
+      } else {
+        console.warn('Failed to load references:', refsRes.reason)
+      }
+
+      if (residues.status === 'fulfilled') {
+        setResidueList(residues.value)
+      } else {
+        console.warn('Failed to load residue list:', residues.reason)
+      }
+
+      if (summaryData.status === 'fulfilled') {
+        setSummary(summaryData.value)
+      } else {
+        console.warn('Failed to load summary data:', summaryData.reason)
+      }
 
       // Also fetch real residuos data from Panorama_CP2B
       // Only fetch ONCE (not twice) to avoid duplicates
-      const [sectorSum, factors, allResiduosRes] = await Promise.all([
+      // Use Promise.allSettled here too for resilience
+      const [sectorSum, factors, allResiduosRes] = await Promise.allSettled([
         getRealSectorSummary(),
         getRealConversionFactors(),
         getRealResiduos() // Fetch all residues without filter
@@ -180,31 +206,50 @@ export default function ScientificDatabasePage() {
       // Set all residues so Chemical tab has data on first load
       // Add null safety checks for API responses
       // Deduplicate by ID to prevent duplicate keys
-      const uniqueResiduos = allResiduosRes?.residuos || []
+      let uniqueResiduos: any[] = []
+      let isMockData = false
+
+      if (allResiduosRes.status === 'fulfilled') {
+        uniqueResiduos = allResiduosRes.value?.residuos || []
+        isMockData = !!allResiduosRes.value?._isMockData
+      } else {
+        console.warn('Failed to load residuos:', allResiduosRes.reason)
+      }
+
       const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
         index === self.findIndex((r: any) => r.id === residuo.id)
       )
 
+      // CRITICAL FIX: Only set state ONCE after all processing is done
       setRealResiduos(deduplicatedResiduos)
-      setSectorSummary(sectorSum?.summary || [])
-      setConversionFactors(factors?.factors || [])
+
+      if (sectorSum.status === 'fulfilled') {
+        setSectorSummary(sectorSum.value?.summary || [])
+      } else {
+        console.warn('Failed to load sector summary:', sectorSum.reason)
+      }
+
+      if (factors.status === 'fulfilled') {
+        setConversionFactors(factors.value?.factors || [])
+        // Log warning if conversion factors failed to load
+        if (factors.value?.error) {
+          console.warn('Could not load conversion factors:', factors.value.error)
+        }
+      } else {
+        console.warn('Failed to load conversion factors:', factors.reason)
+      }
 
       // Check if backend is available (not using mock data)
-      setIsBackendAvailable(!allResiduosRes?._isMockData)
-
-      // Log warning if conversion factors failed to load
-      if (factors.error) {
-        console.warn('Could not load conversion factors:', factors.error)
-      }
+      setIsBackendAvailable(!isMockData)
 
       // Extract references from real residuos data
       // This allows the Referencias Científicas tab to show real data instead of mock data
       // Only extract if we have valid residuo data
-      if (allResiduosRes?.residuos && Array.isArray(allResiduosRes.residuos) && allResiduosRes.residuos.length > 0) {
+      if (allResiduosRes.status === 'fulfilled' && allResiduosRes.value?.residuos && Array.isArray(allResiduosRes.value.residuos) && allResiduosRes.value.residuos.length > 0) {
         const extractedReferences: ScientificReference[] = []
         const seenRefIds = new Set<string>()
 
-        allResiduosRes.residuos.forEach((residuo: any) => {
+        allResiduosRes.value.residuos.forEach((residuo: any) => {
           if (residuo.references && Array.isArray(residuo.references)) {
             residuo.references.forEach((ref: any) => {
               const refKey = `${ref.id || ref.title}-${ref.parameter_type}`
@@ -238,9 +283,9 @@ export default function ScientificDatabasePage() {
       }
 
       // Update summary with real data counts
-      if (sectorSum?.summary && Array.isArray(sectorSum.summary)) {
-        const totalRefs = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
-        const totalResidues = sectorSum.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
+      if (sectorSum.status === 'fulfilled' && sectorSum.value?.summary && Array.isArray(sectorSum.value.summary)) {
+        const totalRefs = sectorSum.value.summary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)
+        const totalResidues = sectorSum.value.summary.reduce((acc: number, s: any) => acc + (s.num_residuos || 0), 0)
         setSummary(prev => prev ? {
           ...prev,
           total_references: totalRefs || prev.total_references,
@@ -267,24 +312,12 @@ export default function ScientificDatabasePage() {
     }
   }, [])
 
-  // Fetch residuos by sector
+  // Fetch residuos by sector - DISABLED for now to prevent duplicates
+  // Users can see all residuos grouped by sector in the list below
   const fetchResiduosBySector = useCallback(async (sectorCode: string) => {
-    try {
-      const result = await getRealResiduos(sectorCode)
-
-      // Deduplicate by ID to prevent duplicate keys
-      const uniqueResiduos = result.residuos || []
-      const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
-        index === self.findIndex((r: any) => r.id === residuo.id)
-      )
-
-      setRealResiduos(deduplicatedResiduos)
-      setIsBackendAvailable(!result._isMockData)
-    } catch (err) {
-      console.error('Error fetching residuos by sector:', err)
-      setIsBackendAvailable(false)
-      setRealResiduos([]) // Clear on error
-    }
+    // Just update active sector for visual feedback
+    setActiveSector(sectorCode)
+    // Don't fetch again - we already have all residuos loaded
   }, [])
 
   // Calculate co-digestion
@@ -309,6 +342,11 @@ export default function ScientificDatabasePage() {
     })
   }, [kineticsData, selectedResidues])
 
+  // Get real residue names for selector (use realResiduos instead of mock data)
+  const realResidueNames = useMemo(() => {
+    return realResiduos.map(r => r.nome).sort()
+  }, [realResiduos])
+
   // Bar chart data for chemical comparison (updated to use realResiduos and remove FDE/pH)
   const barChartData = useMemo(() => {
     const selected = selectedResidues.length > 0
@@ -318,12 +356,13 @@ export default function ScientificDatabasePage() {
     if (selected.length === 0) return []
 
     // Map each residue to a data point with BMP, VS, C:N, CH4
+    // Use null for zero/missing values so they don't display as 0 in charts
     return selected.map(residue => ({
       residue: residue.nome,
-      BMP: residue.bmp_medio || 0,
-      VS: residue.vs_medio || 0,
-      'C:N': residue.chemical_cn_ratio || 0,
-      'CH4': residue.chemical_ch4_content || 0
+      BMP: (residue.bmp_medio && residue.bmp_medio > 0) ? residue.bmp_medio : null,
+      VS: (residue.vs_medio && residue.vs_medio > 0) ? residue.vs_medio : null,
+      'C:N': (residue.chemical_cn_ratio && residue.chemical_cn_ratio > 0) ? residue.chemical_cn_ratio : null,
+      'CH4': (residue.chemical_ch4_content && residue.chemical_ch4_content > 0) ? residue.chemical_ch4_content : null
     }))
   }, [realResiduos, selectedResidues])
 
@@ -539,17 +578,9 @@ export default function ScientificDatabasePage() {
               {/* Sector Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {sectorSummary.map((sector: any) => (
-                  <button
+                  <div
                     key={sector.codigo}
-                    onClick={() => {
-                      setActiveSector(sector.codigo)
-                      fetchResiduosBySector(sector.codigo)
-                    }}
-                    className={`bg-white rounded-xl shadow-md p-5 border transition-all text-left hover:shadow-lg ${
-                      activeSector === sector.codigo
-                        ? 'border-green-500 ring-2 ring-green-200'
-                        : 'border-gray-100'
-                    }`}
+                    className="bg-white rounded-xl shadow-md p-5 border border-gray-100 transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-2xl">{sector.emoji}</span>
@@ -562,7 +593,7 @@ export default function ScientificDatabasePage() {
                       <div>BMP medio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
                       <div>Referencias: {sector.total_references || 0}</div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 
@@ -574,7 +605,12 @@ export default function ScientificDatabasePage() {
 
                 <div className="space-y-6">
                   {sectorSummary.map((sector: any) => {
-                    const sectorResiduos = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo)
+                    // Filter residues for this sector and deduplicate by ID
+                    const sectorResiduos = realResiduos
+                      .filter((r: any) => r.sector_codigo === sector.codigo)
+                      .filter((residuo: any, index: number, self: any[]) =>
+                        index === self.findIndex((r: any) => r.id === residuo.id)
+                      )
 
                     return (
                       <div key={sector.codigo} className="border-l-4 border-green-500 pl-4">
@@ -591,7 +627,7 @@ export default function ScientificDatabasePage() {
                         {sectorResiduos.length > 0 ? (
                           <ul className="space-y-2 ml-6">
                             {sectorResiduos.map((residuo: any) => (
-                              <li key={residuo.id} className="text-gray-700 flex items-center gap-2">
+                              <li key={`residuo-${residuo.id}-${sector.codigo}`} className="text-gray-700 flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                 <span>{residuo.nome}</span>
                                 {residuo.subsector_nome && (
@@ -910,6 +946,33 @@ export default function ScientificDatabasePage() {
                             value={`${residue.chemical_ch4_content}%`}
                           />
                         )}
+
+                        {/* References Button */}
+                        {residue.reference_count && residue.reference_count > 0 && (
+                          <button
+                            onClick={() => {
+                              // Switch to References tab
+                              setViewMode('references')
+                              // Filter by residue name
+                              setSearchQuery(residue.nome)
+                              // Scroll to top smoothly
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }}
+                            className="w-full flex items-start gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left border border-blue-200"
+                          >
+                            <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
+                            <div className="flex flex-col items-start overflow-hidden flex-1">
+                              <span className="text-xs font-semibold text-blue-900">
+                                Ver Referências ({residue.reference_count})
+                              </span>
+                              {residue.main_reference && (
+                                <span className="text-[10px] text-blue-600 truncate w-full" title={residue.main_reference}>
+                                  {residue.main_reference}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -924,6 +987,31 @@ export default function ScientificDatabasePage() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Filters Sidebar */}
               <div className="lg:col-span-1 space-y-4">
+                {/* Statistics Summary */}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md p-5 border border-green-200">
+                  <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Base de Conhecimento
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Total Referências</span>
+                      <span className="font-bold text-green-900">{references.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Resíduos</span>
+                      <span className="font-bold text-green-900">{realResiduos.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-700">Peer-Reviewed</span>
+                      <span className="font-bold text-green-900">
+                        {references.filter(r => r.peer_reviewed).length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters */}
                 <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
                   <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Filter className="h-4 w-4" />
@@ -938,7 +1026,7 @@ export default function ScientificDatabasePage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Titulo, autor, keyword..."
+                        placeholder="Título, autor, keyword..."
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-8"
                       />
                       <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -950,27 +1038,33 @@ export default function ScientificDatabasePage() {
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
                     <div className="space-y-2">
                       {([
-                        { code: 'AG_AGRICULTURA' as SectorCode, label: 'Agrícola' },
-                        { code: 'PC_PECUARIA' as SectorCode, label: 'Pecuária' },
-                        { code: 'IN_INDUSTRIAL' as SectorCode, label: 'Industrial' },
-                        { code: 'UR_URBANO' as SectorCode, label: 'Urbano' }
-                      ]).map(sector => (
-                        <label key={sector.code} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={selectedSectors.includes(sector.code)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedSectors([...selectedSectors, sector.code])
-                              } else {
-                                setSelectedSectors(selectedSectors.filter(s => s !== sector.code))
-                              }
-                            }}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                          {sector.label}
-                        </label>
-                      ))}
+                        { code: 'AG_AGRICULTURA' as SectorCode, label: '🌾 Agrícola', color: 'green' },
+                        { code: 'PC_PECUARIA' as SectorCode, label: '🐄 Pecuária', color: 'amber' },
+                        { code: 'IN_INDUSTRIAL' as SectorCode, label: '🏭 Industrial', color: 'blue' },
+                        { code: 'UR_URBANO' as SectorCode, label: '🏙️ Urbano', color: 'gray' }
+                      ]).map(sector => {
+                        const count = references.filter(r => r.sector === sector.code).length
+                        return (
+                          <label key={sector.code} className="flex items-center justify-between gap-2 text-sm group">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedSectors.includes(sector.code)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedSectors([...selectedSectors, sector.code])
+                                  } else {
+                                    setSelectedSectors(selectedSectors.filter(s => s !== sector.code))
+                                  }
+                                }}
+                                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              />
+                              <span className="group-hover:text-gray-900">{sector.label}</span>
+                            </div>
+                            <span className="text-xs text-gray-400">{count}</span>
+                          </label>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -987,107 +1081,173 @@ export default function ScientificDatabasePage() {
                     </label>
                   </div>
 
+                  {/* Clear Filters */}
+                  {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('')
+                        setSelectedSectors([])
+                        setPeerReviewedOnly(false)
+                      }}
+                      className="w-full py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+
                   {/* Results count */}
-                  <div className="pt-3 border-t border-gray-100">
-                    <span className="text-sm text-gray-600">
-                      {filteredReferences.length} resultado(s)
-                    </span>
+                  <div className="pt-3 mt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        {filteredReferences.length} resultado{filteredReferences.length !== 1 ? 's' : ''}
+                      </span>
+                      {filteredReferences.length < references.length && (
+                        <span className="text-xs text-gray-400">
+                          de {references.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* References List */}
               <div className="lg:col-span-3 space-y-4">
-                {filteredReferences.map((ref) => (
-                  <div
-                    key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
-                    className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
-                  >
-                    <div className="p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-1">{ref.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {ref.authors} ({ref.year})
-                          </p>
-                        </div>
-                        {ref.peer_reviewed && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
-                            Peer-Reviewed
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                          {getSectorLabel(ref.sector)}
-                        </span>
-                        {ref.residues_studied.slice(0, 2).map((residue, idx) => (
-                          <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                            {residue}
-                          </span>
-                        ))}
-                        {ref.parameters_measured.slice(0, 2).map((param, idx) => (
-                          <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
-                            {PARAMETER_LABELS[param]}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Expandable Content */}
+                {filteredReferences.length === 0 ? (
+                  <div className="bg-white rounded-xl shadow-md p-12 border border-gray-100 text-center">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Nenhuma referência encontrada
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Tente ajustar seus filtros de busca
+                    </p>
+                    {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
                       <button
-                        onClick={() => toggleRefExpansion(ref.id)}
-                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                        onClick={() => {
+                          setSearchQuery('')
+                          setSelectedSectors([])
+                          setPeerReviewedOnly(false)
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        {expandedRefs.has(ref.id) ? (
-                          <>
-                            <ChevronUp className="h-4 w-4" />
-                            Ver menos
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4" />
-                            Ver mais
-                          </>
-                        )}
+                        Limpar filtros
                       </button>
-
-                      {expandedRefs.has(ref.id) && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                          {ref.abstract && (
-                            <div>
-                              <h5 className="text-xs font-semibold text-gray-700 mb-1">Resumo</h5>
-                              <p className="text-sm text-gray-600">{ref.abstract}</p>
-                            </div>
+                    )}
+                  </div>
+                ) : (
+                  filteredReferences.map((ref) => (
+                    <div
+                      key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
+                      className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+                    >
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-1 leading-snug">{ref.title}</h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              {ref.authors} ({ref.year})
+                            </p>
+                            {ref.journal && (
+                              <p className="text-xs text-gray-500 italic mb-3">
+                                {ref.journal}
+                              </p>
+                            )}
+                          </div>
+                          {ref.peer_reviewed && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
+                              ✓ Peer-Reviewed
+                            </span>
                           )}
+                        </div>
 
-                          {ref.key_findings && ref.key_findings.length > 0 && (
-                            <div>
-                              <h5 className="text-xs font-semibold text-gray-700 mb-1">Principais Achados</h5>
-                              <ul className="list-disc ml-5 text-sm text-gray-600">
-                                {ref.key_findings.map((finding, idx) => (
-                                  <li key={idx}>{finding}</li>
-                                ))}
-                              </ul>
-                            </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                            {getSectorLabel(ref.sector)}
+                          </span>
+                          {ref.residues_studied.slice(0, 3).map((residue, idx) => (
+                            <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                              {residue}
+                            </span>
+                          ))}
+                          {ref.residues_studied.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded text-xs">
+                              +{ref.residues_studied.length - 3} mais
+                            </span>
                           )}
+                          {ref.parameters_measured.slice(0, 2).map((param, idx) => (
+                            <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                              {PARAMETER_LABELS[param] || param}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Expandable Content */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => toggleRefExpansion(ref.id)}
+                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 font-medium"
+                          >
+                            {expandedRefs.has(ref.id) ? (
+                              <>
+                                <ChevronUp className="h-4 w-4" />
+                                Ver menos
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4" />
+                                Ver detalhes
+                              </>
+                            )}
+                          </button>
 
                           {ref.doi && (
                             <a
                               href={`https://doi.org/${ref.doi}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
-                              Abrir DOI
+                              DOI
                             </a>
                           )}
                         </div>
-                      )}
+
+                        {expandedRefs.has(ref.id) && (
+                          <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                            {ref.abstract && (
+                              <div>
+                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">📄 Resumo</h5>
+                                <p className="text-sm text-gray-600 leading-relaxed">{ref.abstract}</p>
+                              </div>
+                            )}
+
+                            {ref.key_findings && ref.key_findings.length > 0 && (
+                              <div>
+                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">🔍 Principais Achados</h5>
+                                <ul className="list-disc ml-5 text-sm text-gray-600 space-y-1">
+                                  {ref.key_findings.map((finding, idx) => (
+                                    <li key={idx}>{finding}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-500">
+                              {ref.reference_type && (
+                                <span>Tipo: <span className="font-medium text-gray-700">{ref.reference_type}</span></span>
+                              )}
+                              {(ref as any).cited_by && (
+                                <span>Citações: <span className="font-medium text-gray-700">{(ref as any).cited_by}</span></span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -1101,7 +1261,7 @@ export default function ScientificDatabasePage() {
                   Selecione residuos para comparar
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {residueList.map((residue, idx) => (
+                  {realResidueNames.map((residue, idx) => (
                     <button
                       key={residue}
                       onClick={() => {
@@ -1183,18 +1343,31 @@ export default function ScientificDatabasePage() {
                           ].map(param => {
                             const values = selectedResidues.map(r => {
                               const data = realResiduos.find(res => res.nome === r)
-                              return data ? (data as any)[param.key] || 0 : 0
+                              const value = data ? (data as any)[param.key] : null
+                              // Return null for missing or zero values (null means no data)
+                              return (value !== null && value !== undefined && value !== 0) ? value : null
                             })
 
+                            // Only find best if we have at least one valid value
+                            const hasValidValues = values.some(v => v !== null)
                             let bestIdx = 0
-                            if (param.optimal) {
-                              // Find closest to optimal range
-                              const target = (param.optimal[0] + param.optimal[1]) / 2
-                              bestIdx = values.reduce((best, val, idx) =>
-                                Math.abs(val - target) < Math.abs(values[best] - target) ? idx : best, 0)
-                            } else if (param.higher) {
-                              bestIdx = values.reduce((best, val, idx) =>
-                                val > values[best] ? idx : best, 0)
+                            if (hasValidValues) {
+                              if (param.optimal) {
+                                // Find closest to optimal range, ignoring null values
+                                const target = (param.optimal[0] + param.optimal[1]) / 2
+                                bestIdx = values.reduce((best, val, idx) => {
+                                  if (val === null) return best
+                                  if (values[best] === null) return idx
+                                  return Math.abs(val - target) < Math.abs(values[best]! - target) ? idx : best
+                                }, 0)
+                              } else if (param.higher) {
+                                // Find highest value, ignoring null values
+                                bestIdx = values.reduce((best, val, idx) => {
+                                  if (val === null) return best
+                                  if (values[best] === null) return idx
+                                  return val > values[best]! ? idx : best
+                                }, 0)
+                              }
                             }
 
                             return (
@@ -1203,20 +1376,32 @@ export default function ScientificDatabasePage() {
                                 {values.map((value, idx) => (
                                   <td
                                     key={idx}
-                                    className={`py-3 px-4 text-center font-mono ${
-                                      idx === bestIdx ? 'bg-green-50 font-semibold' : ''
+                                    className={`py-3 px-4 text-center ${
+                                      value !== null && hasValidValues && idx === bestIdx
+                                        ? 'bg-green-50 font-semibold'
+                                        : ''
                                     }`}
                                   >
-                                    {typeof value === 'number' ? value.toFixed(1) : '-'}
-                                    {idx === bestIdx && (
-                                      <Trophy className="inline ml-1 h-3 w-3 text-yellow-500" />
+                                    {value !== null ? (
+                                      <>
+                                        <span className="font-mono">{value.toFixed(1)}</span>
+                                        {hasValidValues && idx === bestIdx && (
+                                          <Trophy className="inline ml-1 h-3 w-3 text-yellow-500" />
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span className="text-xs text-gray-400 italic">Sem dados</span>
                                     )}
                                   </td>
                                 ))}
                                 <td className="py-3 px-4 text-center">
-                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
-                                    {selectedResidues[bestIdx]}
-                                  </span>
+                                  {hasValidValues && values[bestIdx] !== null ? (
+                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
+                                      {selectedResidues[bestIdx]}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-400 italic">N/A</span>
+                                  )}
                                 </td>
                               </tr>
                             )

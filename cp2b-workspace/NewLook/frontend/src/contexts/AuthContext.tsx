@@ -23,20 +23,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user session on mount
   useEffect(() => {
-    // Load user from session
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+
+    // Check if Supabase is properly configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      logger.warn('Supabase not configured - auth disabled')
+      setLoading(false)
+      return
+    }
+
+    // Load user from session with safety timeout
     const loadUser = async () => {
       try {
-        const {
-          data: { session }
-        } = await supabase.auth.getSession()
+        // Safety timeout - if Supabase doesn't respond in 5 seconds, allow UI to render
+        const timeoutPromise = new Promise((resolve) => {
+          timeoutId = setTimeout(() => {
+            logger.warn('[AuthContext] Session check timeout - forcing loading to false')
+            if (isMounted) setLoading(false)
+            resolve(null)
+          }, 5000)
+        })
 
-        if (session?.user) {
-          await fetchUserProfile(session.user.id, session.access_token)
+        // Race between Supabase and timeout
+        const sessionPromise = (async () => {
+          try {
+            const {
+              data: { session }
+            } = await supabase.auth.getSession()
+            return session
+          } catch (error) {
+            logger.error('Error loading user session:', error)
+            return null
+          }
+        })()
+
+        const session = await Promise.race([sessionPromise, timeoutPromise])
+
+        // If we got a valid session (not timeout), fetch profile
+        if (session && session !== null && typeof session === 'object' && 'user' in session && isMounted) {
+          const { user, access_token } = session as { user: { id: string }; access_token: string }
+          await fetchUserProfile(user.id, access_token)
+        } else {
+          logger.debug('[Auth] No session found')
         }
       } catch (error) {
-        logger.error('Error loading user:', error)
+        logger.error('Error in auth initialization:', error)
       } finally {
-        setLoading(false)
+        // Clear timeout if it hasn't fired yet
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        if (isMounted) setLoading(false)
       }
     }
 
@@ -46,16 +87,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return
+
+      logger.debug('[AuthContext] Auth state change:', event)
+
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
       } else {
         setUser(null)
       }
-      setLoading(false)
+
+      if (isMounted) setLoading(false)
     })
 
+    // Cleanup function
     return () => {
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
+      logger.debug('[Auth] Cleanup complete')
     }
   }, [])
 
@@ -115,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }
@@ -132,34 +182,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      if (authData.user && authData.session) {
-        await fetchUserProfile(authData.user.id, authData.session.access_token)
-      }
+      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
+      logger.debug('[Auth] Registration successful - onAuthStateChange will handle profile fetch')
+      setLoading(false)
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('Registration error:', appError)
+      setLoading(false)
       throw createAuthError(
         getErrorMessage(error) || 'Registration failed',
         'REGISTRATION_FAILED'
       )
-    } finally {
-      setLoading(false)
     }
   }
 
   // Login user
   const login = async (credentials: LoginCredentials) => {
+    logger.debug('[Auth] Login attempt:', credentials.email)
+
     try {
       setLoading(true)
 
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         throw createAuthError(
-          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Cloudflare Pages.',
+          'Supabase não está configurado. Por favor, configure as variáveis de ambiente no Vercel.',
           'AUTH_FAILED'
         )
       }
 
+      // Sign in with Supabase (let Supabase handle its own timeouts)
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
@@ -167,18 +219,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      if (data.user && data.session) {
-        await fetchUserProfile(data.user.id, data.session.access_token)
-      }
+      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
+      // to avoid race conditions and double fetching
+      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch')
+
+      // Set loading to false immediately after successful auth
+      // onAuthStateChange will fire but we want to allow navigation immediately
+      setLoading(false)
+      logger.debug('[Auth] Login complete, ready for navigation')
     } catch (error: unknown) {
       const appError = toAppError(error)
-      logger.error('Login error:', appError)
+      logger.error('[Auth] Login failed:', appError)
+      setLoading(false)
       throw createAuthError(
-        getErrorMessage(error) || 'Login failed',
+        getErrorMessage(error) || 'Falha no login. Verifique suas credenciais.',
         'INVALID_CREDENTIALS'
       )
-    } finally {
-      setLoading(false)
     }
   }
 
