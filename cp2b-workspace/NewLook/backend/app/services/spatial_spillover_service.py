@@ -69,7 +69,7 @@ class SpatialSpilloverService:
 
         logger.info(
             f"✅ SpatialSpilloverService initialized "
-            f"(origin_weight={origin_weight}, decay_exponent={distance_decay_exponent})"
+            f"(origin_weight={self.origin_weight}, decay_exponent={self.distance_decay})"
         )
 
     def calculate_spillover_weights(
