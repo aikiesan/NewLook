@@ -220,7 +220,7 @@ class EconomicSimulationOrchestrator:
         if not origin_region:
             raise ValueError(f"Region not found: {region_code}")
 
-        logger.info(f"  Origin: {origin_region['nm_rgi']} (VAB: R$ {origin_region['vab_total_brl']/1e9:.2f}B)")
+        logger.info(f"  Origin: {origin_region['nm_rgi']} (VAB: R$ {float(origin_region['vab_total_brl'])/1e9:.2f}B)")
 
         # Get all regions (for spatial spillover)
         all_regions = self.data_service.get_all_regions()
