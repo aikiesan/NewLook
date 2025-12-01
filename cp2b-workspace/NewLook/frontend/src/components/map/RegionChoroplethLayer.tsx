@@ -81,9 +81,39 @@ export default function RegionChoroplethLayer({
   // Normalize region code to match database format (first 4 digits)
   const normalizeRegionCode = (code: string | undefined): string | null => {
     if (!code) return null
-    // Extract first 4 digits to match database format (3501, 3502, etc.)
-    const normalized = code.toString().substring(0, 4)
-    return normalized
+
+    const codeStr = code.toString()
+
+    // Handle different shapefile formats:
+    // Format 1: '350031' (6 digits) -> extract state (35) + region digits 3-4 (00) -> '3500' + last digit -> '35003'
+    // Format 2: '35001' (5 digits) -> extract state (35) + first 2 of region (00) -> '3500' + last digit
+    // Format 3: '3501' (4 digits) -> already correct format
+
+    if (codeStr.length === 6) {
+      // 6-digit format: '350031' -> extract as '35' + last 2 digits '31' = '3531'
+      // But if it's '350001' it should be '3501' (remove middle zeros)
+      const state = codeStr.substring(0, 2)  // '35'
+      const region = codeStr.substring(2)     // '0031' or '0001'
+
+      // Remove leading zeros from region part and take first 2 non-zero digits
+      const regionNum = parseInt(region, 10)  // 31 or 1
+      const regionFormatted = regionNum.toString().padStart(2, '0')  // '31' or '01'
+
+      return state + regionFormatted  // '3531' or '3501'
+    } else if (codeStr.length === 5) {
+      // 5-digit format: '35001' -> '3501'
+      const state = codeStr.substring(0, 2)   // '35'
+      const regionNum = parseInt(codeStr.substring(2), 10)  // 1
+      const regionFormatted = regionNum.toString().padStart(2, '0')  // '01'
+      return state + regionFormatted  // '3501'
+    } else if (codeStr.length === 4) {
+      // Already in correct format
+      return codeStr
+    } else {
+      // Unknown format, just take first 4 characters
+      console.warn('Unknown region code format:', codeStr)
+      return codeStr.substring(0, 4)
+    }
   }
 
   // Style function for GeoJSON features
@@ -112,6 +142,9 @@ export default function RegionChoroplethLayer({
       console.warn('Region code not found in feature properties:', feature.properties)
       return
     }
+
+    // Debug: log the raw and normalized codes
+    console.log(`Region: ${regionName}, Raw code: ${rawCode}, Normalized: ${regionCode}`)
 
     // Popup content
     const impact = getRegionImpact(regionCode)
