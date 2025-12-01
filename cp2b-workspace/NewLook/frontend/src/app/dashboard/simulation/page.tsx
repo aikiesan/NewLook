@@ -89,6 +89,11 @@ function EconomicSimulationContent() {
   // Panel visibility
   const [controlsVisible, setControlsVisible] = useState(true)
   const [resultsVisible, setResultsVisible] = useState(false)
+  const [regionImpactVisible, setRegionImpactVisible] = useState(false)
+
+  // Individual region impact view (for clicking regions after simulation)
+  const [viewedRegionCode, setViewedRegionCode] = useState<string | null>(null)
+  const [viewedRegionData, setViewedRegionData] = useState<any>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -179,6 +184,39 @@ function EconomicSimulationContent() {
     return new Intl.NumberFormat('pt-BR').format(Math.round(value))
   }
 
+  // Handle region click - different behavior if simulation exists
+  const handleRegionClick = useCallback(async (regionCode: string) => {
+    if (!simulationResult) {
+      // No simulation yet - just select region for running simulation
+      setSelectedRegion(regionCode)
+    } else {
+      // Simulation exists - show this region's impact
+      const impact = simulationResult.results.regional_impacts[regionCode]
+      if (impact) {
+        // Fetch region name from API
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+          if (response.ok) {
+            const data = await response.json()
+            const region = data.regions.find((r: any) => r.cd_rgi === regionCode)
+            if (region) {
+              setViewedRegionCode(regionCode)
+              setViewedRegionData({
+                ...impact,
+                region_name: region.nm_rgi,
+                region_vab: region.vab_total_brl
+              })
+              setRegionImpactVisible(true)
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching region data for impact view:', err)
+        }
+      }
+    }
+  }, [simulationResult])
+
   // Show loading state while checking authentication
   if (authLoading || !user) {
     return (
@@ -215,7 +253,7 @@ function EconomicSimulationContent() {
             <RegionChoroplethLayer
               selectedRegion={selectedRegion}
               simulationResult={simulationResult}
-              onRegionClick={setSelectedRegion}
+              onRegionClick={handleRegionClick}
             />
 
             {/* 53 Region Markers (Points) */}
@@ -470,6 +508,87 @@ function EconomicSimulationContent() {
                 <Download className="h-4 w-4 mr-2" />
                 Baixar Resultados (JSON)
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Region Impact Panel */}
+        {regionImpactVisible && viewedRegionData && (
+          <div className="absolute bottom-4 right-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-[1000]">
+            {/* Panel Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5" />
+                <h2 className="font-semibold">Impacto Regional</h2>
+              </div>
+              <button
+                onClick={() => setRegionImpactVisible(false)}
+                className="p-1 hover:bg-white/20 rounded transition-colors"
+                aria-label="Fechar painel"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {/* Region Info */}
+              <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <h3 className="font-bold text-lg text-purple-900 dark:text-purple-100">
+                  {viewedRegionData.region_name}
+                </h3>
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  Código: {viewedRegionCode}
+                </p>
+              </div>
+
+              {/* Impact Metrics */}
+              <div className="grid grid-cols-1 gap-3 mb-4">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Impacto VAB</p>
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                    {formatCurrency(viewedRegionData.vab_impact_brl)}
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Peso Spillover</p>
+                  <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
+                    {(viewedRegionData.spillover_weight * 100).toFixed(2)}%
+                  </p>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Intensidade</p>
+                  <p className="text-base font-semibold text-orange-700 dark:text-orange-400">
+                    {viewedRegionData.spillover_weight * 100 >= 30
+                      ? '🔥 Alto Impacto (região próxima)'
+                      : viewedRegionData.spillover_weight * 100 >= 10
+                      ? '📈 Médio Impacto'
+                      : viewedRegionData.spillover_weight * 100 >= 2
+                      ? '📊 Baixo Impacto'
+                      : '📉 Impacto Mínimo (região distante)'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Region Info */}
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded">
+                <p className="mb-1">
+                  <strong>VAB Regional Total:</strong> {formatCurrency(viewedRegionData.region_vab)}
+                </p>
+                <p>
+                  <strong>Proporção do Impacto:</strong>{' '}
+                  {((viewedRegionData.vab_impact_brl / viewedRegionData.region_vab) * 100).toFixed(2)}% do VAB regional
+                </p>
+              </div>
+
+              {/* Help Text */}
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-xs text-blue-800 dark:text-blue-200">
+                  💡 O peso spillover indica quanto do investimento inicial transborda para esta região através de conexões econômicas (Matriz de Leontief).
+                </p>
+              </div>
             </div>
           </div>
         )}
