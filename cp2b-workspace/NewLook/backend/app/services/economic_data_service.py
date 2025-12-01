@@ -50,13 +50,8 @@ class EconomicDataService:
     @contextmanager
     def _get_connection(self):
         """Context manager for database connections"""
-        conn = None
-        try:
-            conn = get_db()
+        with get_db() as conn:
             yield conn
-        finally:
-            if conn:
-                conn.close()
 
     def get_all_regions(self) -> List[Dict[str, Any]]:
         """
