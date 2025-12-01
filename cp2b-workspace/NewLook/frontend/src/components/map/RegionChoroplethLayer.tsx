@@ -20,37 +20,66 @@ export default function RegionChoroplethLayer({
   onRegionClick
 }: RegionChoroplethLayerProps) {
   const [geoJsonData, setGeoJsonData] = useState<any>(null)
+  const [regionCodeMap, setRegionCodeMap] = useState<Record<string, string>>({}) // name -> code mapping
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch immediate regions GeoJSON
+  // Fetch both shapefile and region codes
   useEffect(() => {
-    const fetchRegionBoundaries = async () => {
+    const fetchData = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-        const response = await fetch(`${API_URL}/api/v1/infrastructure/immediate-regions/geojson`)
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch region boundaries')
+        // Fetch both in parallel
+        const [shapefileResponse, regionsResponse] = await Promise.all([
+          fetch(`${API_URL}/api/v1/infrastructure/immediate-regions/geojson`),
+          fetch(`${API_URL}/api/v1/simulation/regions`)
+        ])
+
+        if (!shapefileResponse.ok || !regionsResponse.ok) {
+          throw new Error('Failed to fetch region data')
         }
 
-        const data = await response.json()
-        setGeoJsonData(data)
+        const shapefileData = await shapefileResponse.json()
+        const regionsData = await regionsResponse.json()
+
+        // Create name -> code mapping from database
+        const nameToCode: Record<string, string> = {}
+        regionsData.regions.forEach((region: any) => {
+          nameToCode[region.nm_rgi] = region.cd_rgi
+        })
+
+        setGeoJsonData(shapefileData)
+        setRegionCodeMap(nameToCode)
       } catch (err: any) {
-        console.error('Error fetching region boundaries:', err)
+        console.error('Error fetching region data:', err)
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchRegionBoundaries()
+    fetchData()
   }, [])
 
+  // Get region code from shapefile feature using name mapping
+  const getRegionCode = (feature: any): string | null => {
+    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM
+    if (!regionName) return null
+
+    // Use database code from mapping (matched by name)
+    const code = regionCodeMap[regionName]
+    if (!code) {
+      console.warn(`No database code found for region: ${regionName}`)
+      return null
+    }
+
+    return code
+  }
+
   // Get impact data for a region
-  const getRegionImpact = (regionCode: string) => {
-    if (!simulationResult?.results?.regional_impacts) return null
-    // regional_impacts is a Record/dict: { "3501": { region_name, vab_impact_brl, spillover_weight }, ... }
+  const getRegionImpact = (regionCode: string | null) => {
+    if (!regionCode || !simulationResult?.results?.regional_impacts) return null
     return simulationResult.results.regional_impacts[regionCode]
   }
 
@@ -61,7 +90,7 @@ export default function RegionChoroplethLayer({
     const impact = getRegionImpact(regionCode)
 
     if (!impact) {
-      // No impact - light gray/transparent
+      // No impact - light gray/transparent (or green if selected)
       return selectedRegion === regionCode ? '#10b981' : '#e5e7eb'
     }
 
@@ -83,48 +112,9 @@ export default function RegionChoroplethLayer({
     return '#d1fae5'                    // Palest emerald - Trace impact
   }
 
-  // Normalize region code to match database format (first 4 digits)
-  const normalizeRegionCode = (code: string | undefined): string | null => {
-    if (!code) return null
-
-    const codeStr = code.toString()
-
-    // Handle different shapefile formats:
-    // Format 1: '350031' (6 digits) -> extract state (35) + region digits 3-4 (00) -> '3500' + last digit -> '35003'
-    // Format 2: '35001' (5 digits) -> extract state (35) + first 2 of region (00) -> '3500' + last digit
-    // Format 3: '3501' (4 digits) -> already correct format
-
-    if (codeStr.length === 6) {
-      // 6-digit format: '350031' -> extract as '35' + last 2 digits '31' = '3531'
-      // But if it's '350001' it should be '3501' (remove middle zeros)
-      const state = codeStr.substring(0, 2)  // '35'
-      const region = codeStr.substring(2)     // '0031' or '0001'
-
-      // Remove leading zeros from region part and take first 2 non-zero digits
-      const regionNum = parseInt(region, 10)  // 31 or 1
-      const regionFormatted = regionNum.toString().padStart(2, '0')  // '31' or '01'
-
-      return state + regionFormatted  // '3531' or '3501'
-    } else if (codeStr.length === 5) {
-      // 5-digit format: '35001' -> '3501'
-      const state = codeStr.substring(0, 2)   // '35'
-      const regionNum = parseInt(codeStr.substring(2), 10)  // 1
-      const regionFormatted = regionNum.toString().padStart(2, '0')  // '01'
-      return state + regionFormatted  // '3501'
-    } else if (codeStr.length === 4) {
-      // Already in correct format
-      return codeStr
-    } else {
-      // Unknown format, just take first 4 characters
-      console.warn('Unknown region code format:', codeStr)
-      return codeStr.substring(0, 4)
-    }
-  }
-
   // Style function for GeoJSON features
   const style = (feature: any) => {
-    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
-    const regionCode = normalizeRegionCode(rawCode)
+    const regionCode = getRegionCode(feature)
     const isSelected = selectedRegion === regionCode
     const hasImpact = !!getRegionImpact(regionCode)
 
@@ -141,19 +131,18 @@ export default function RegionChoroplethLayer({
 
   // Handle feature interaction
   const onEachFeature = (feature: any, layer: L.Layer) => {
-    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
-    const regionCode = normalizeRegionCode(rawCode)
+    const regionCode = getRegionCode(feature)
     const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM || 'Unknown Region'
 
     if (!regionCode) {
-      console.warn('Region code not found in feature properties:', feature.properties)
+      console.warn('Region code not found for:', regionName, 'Properties:', feature.properties)
       return
     }
 
-    // Debug: log the raw and normalized codes
-    console.log(`Region: ${regionName}, Raw code: ${rawCode}, Normalized: ${regionCode}`)
+    // Debug: log the mapping
+    console.log(`Polygon: ${regionName} → Code: ${regionCode}`)
 
-    // Popup content
+    // Popup content with simulation impact (if available)
     const impact = getRegionImpact(regionCode)
     let popupContent = `
       <div style="padding: 8px; min-width: 200px;">
@@ -164,19 +153,24 @@ export default function RegionChoroplethLayer({
     `
 
     if (impact) {
+      const weightPercent = (impact.spillover_weight * 100).toFixed(2)
+      const vabImpactM = (impact.vab_impact_brl / 1e6).toFixed(2)
+
       popupContent += `
         <div style="margin-top: 8px; padding: 8px; background: #d1fae5; border-radius: 4px;">
           <div style="font-size: 11px; font-weight: 600; color: #065f46; margin-bottom: 4px;">
-            💰 Impacto Econômico
+            💰 Impacto Econômico da Simulação
           </div>
           <div style="font-size: 12px; color: #047857;">
-            <strong>VAB:</strong> R$ ${(impact.vab_impact_brl / 1e6).toFixed(2)}M
+            <strong>Impacto VAB:</strong> R$ ${vabImpactM}M
           </div>
           <div style="font-size: 12px; color: #047857;">
-            <strong>Peso:</strong> ${(impact.spillover_weight * 100).toFixed(1)}%
+            <strong>Peso Spillover:</strong> ${weightPercent}%
           </div>
-          <div style="font-size: 11px; color: #059669; margin-top: 4px;">
-            <em>${impact.impact_intensity || 'Medium'} intensity</em>
+          <div style="font-size: 11px; color: #059669; margin-top: 4px; font-style: italic;">
+            ${parseFloat(weightPercent) >= 30 ? 'Alto impacto (região próxima)' :
+              parseFloat(weightPercent) >= 10 ? 'Médio impacto' :
+              parseFloat(weightPercent) >= 2 ? 'Baixo impacto' : 'Impacto mínimo (região distante)'}
           </div>
         </div>
       `
@@ -192,7 +186,7 @@ export default function RegionChoroplethLayer({
         const layer = e.target
         layer.setStyle({
           weight: 2,
-          fillOpacity: 0.8
+          fillOpacity: 0.9
         })
         layer.bringToFront()
       },
@@ -201,7 +195,7 @@ export default function RegionChoroplethLayer({
         layer.setStyle(style(feature))
       },
       click: () => {
-        if (onRegionClick) {
+        if (onRegionClick && regionCode) {
           onRegionClick(regionCode)
         }
       }
