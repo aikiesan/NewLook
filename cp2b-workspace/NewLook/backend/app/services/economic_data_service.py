@@ -264,7 +264,7 @@ class EconomicDataService:
                     unit,
                     description,
                     source
-                FROM conversion_factors
+                FROM economic_conversion_factors
                 ORDER BY factor_type, factor_name
             """)
 

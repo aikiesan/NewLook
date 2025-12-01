@@ -2,7 +2,7 @@
 
 /**
  * Economic Shock Simulation Page for CP2B Maps V3
- * Uses the same map as /dashboard with floating simulation panels
+ * Full-page map showing 53 immediate regions with floating simulation panels
  * Leontief Input-Output Analysis with spatial spillover effects
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
@@ -11,7 +11,6 @@ import dynamic from 'next/dynamic'
 import {
   TrendingUp,
   DollarSign,
-  Users,
   X,
   Loader2,
   Info,
@@ -22,21 +21,20 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
-import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
-import type { BiomassType } from '@/components/map/FloatingControlPanel'
 
-// Dynamically import Map component (same as dashboard)
-const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] dark:border-emerald-500 mx-auto"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando mapa...</p>
-      </div>
-    </div>
-  ),
-})
+// Dynamically import Leaflet components
+const MapContainer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.MapContainer),
+  { ssr: false }
+)
+const TileLayer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.TileLayer),
+  { ssr: false }
+)
+const RegionMarkersLayer = dynamic(
+  () => import('@/components/map/RegionMarkersLayer'),
+  { ssr: false }
+)
 
 interface SimulationResult {
   simulation_id: string
@@ -74,22 +72,9 @@ function EconomicSimulationContent() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
-  // Map state (same as dashboard)
-  const [biomassType, setBiomassType] = useState<BiomassType>('total')
-  const [opacity, setOpacity] = useState(0.7)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeFilters, setActiveFilters] = useState<FilterCriteria>({
-    residueTypes: [],
-    regions: [],
-    searchQuery: '',
-    nearRailway: false,
-    nearPipeline: false,
-    nearSubstation: false,
-    proximityRadius: 50
-  })
-
   // Simulation state
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
+  const [selectedRegionName, setSelectedRegionName] = useState<string>('')
   const [investment, setInvestment] = useState(100000000) // 100 million BRL default
   const [sector, setSector] = useState('industry')
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
@@ -107,10 +92,27 @@ function EconomicSimulationContent() {
     }
   }, [authLoading, isAuthenticated, router])
 
-  // Update filters when search changes
+  // Fetch region name when selected
   useEffect(() => {
-    setActiveFilters(prev => ({ ...prev, searchQuery }))
-  }, [searchQuery])
+    if (selectedRegion) {
+      const fetchRegionName = async () => {
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+          if (response.ok) {
+            const data = await response.json()
+            const region = data.regions.find((r: any) => r.cd_rgi === selectedRegion)
+            if (region) {
+              setSelectedRegionName(region.nm_rgi)
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching region name:', err)
+        }
+      }
+      fetchRegionName()
+    }
+  }, [selectedRegion])
 
   // Run simulation
   const handleRunSimulation = useCallback(async () => {
@@ -187,20 +189,31 @@ function EconomicSimulationContent() {
 
       {/* Full-Page Map with Floating Panels */}
       <main className="flex-1 relative">
-        {/* Map Component (same as dashboard) */}
-        <MapComponent
-          activeFilters={activeFilters}
-          biomassType={biomassType}
-          onBiomassTypeChange={setBiomassType}
-          opacity={opacity}
-          onOpacityChange={setOpacity}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+        {/* Leaflet Map */}
+        <div className="absolute inset-0">
+          <MapContainer
+            center={[-23.5505, -46.6333]} // São Paulo center
+            zoom={7}
+            style={{ height: '100%', width: '100%' }}
+            zoomControl={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            {/* 53 Region Markers */}
+            <RegionMarkersLayer
+              selectedRegion={selectedRegion}
+              onRegionSelect={setSelectedRegion}
+              simulationResult={simulationResult}
+            />
+          </MapContainer>
+        </div>
 
         {/* Floating Simulation Controls Panel */}
         <div
-          className={`absolute top-4 left-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 transition-transform duration-300 z-10 ${
+          className={`absolute top-4 left-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 transition-transform duration-300 z-[1000] ${
             controlsVisible ? 'translate-x-0' : '-translate-x-[390px]'
           }`}
         >
@@ -225,7 +238,7 @@ function EconomicSimulationContent() {
               <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-center">
                   <Info className="h-4 w-4 mr-2 flex-shrink-0" />
-                  Clique em um município no mapa para começar
+                  Clique em uma região no mapa para começar
                 </p>
               </div>
             )}
@@ -234,14 +247,16 @@ function EconomicSimulationContent() {
               <>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Município Selecionado
+                    Região Selecionada
                   </label>
-                  <input
-                    type="text"
-                    value={selectedRegion}
-                    disabled
-                    className="w-full px-3 py-2 bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white text-sm"
-                  />
+                  <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+                      {selectedRegionName || selectedRegion}
+                    </div>
+                    <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                      Código: {selectedRegion}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mb-4">
@@ -328,7 +343,7 @@ function EconomicSimulationContent() {
         {!controlsVisible && (
           <button
             onClick={() => setControlsVisible(true)}
-            className="absolute top-4 left-4 p-3 bg-emerald-600 text-white rounded-lg shadow-xl hover:bg-emerald-700 transition-colors z-10"
+            className="absolute top-4 left-4 p-3 bg-emerald-600 text-white rounded-lg shadow-xl hover:bg-emerald-700 transition-colors z-[1000]"
             aria-label="Mostrar painel de controles"
           >
             <ChevronRight className="h-5 w-5" />
@@ -337,7 +352,7 @@ function EconomicSimulationContent() {
 
         {/* Floating Results Panel */}
         {resultsVisible && simulationResult && (
-          <div className="absolute top-4 right-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-10">
+          <div className="absolute top-4 right-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-[1000]">
             {/* Panel Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg flex items-center justify-between">
               <div className="flex items-center space-x-2">
