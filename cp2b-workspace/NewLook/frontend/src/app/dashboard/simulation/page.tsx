@@ -44,31 +44,31 @@ interface SimulationResult {
   simulation_id: string
   timestamp: string
   input: {
-    region_code: string
-    region_name: string
+    origin_region: string
+    origin_region_name: string
     investment_brl: number
-    sector: string
+    primary_sector: string
   }
   results: {
-    total_impact: {
-      total_vab_brl: number
-      economic_multiplier: number
-      jobs_created: number
-      tax_revenue_brl: number
-    }
-    sectoral_breakdown: {
+    total_vab_impact_brl: number
+    economic_multiplier: number
+    tax_revenue_brl: number
+    jobs_created: number
+    vab_by_sector: {
       agriculture: number
       industry: number
       services: number
       public: number
     }
-    regional_impacts: Array<{
-      region_code: string
+    regional_impacts: Record<string, {
       region_name: string
       vab_impact_brl: number
       spillover_weight: number
-      impact_intensity: string
     }>
+  }
+  metadata: {
+    calculation_time_ms: number
+    data_year: number
   }
 }
 
@@ -386,28 +386,28 @@ function EconomicSimulationContent() {
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">VAB Total</p>
                   <p className="text-base font-bold text-emerald-700 dark:text-emerald-400">
-                    {formatCurrency(simulationResult.results.total_impact.total_vab_brl)}
+                    {formatCurrency(simulationResult.results.total_vab_impact_brl)}
                   </p>
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Multiplicador</p>
                   <p className="text-base font-bold text-blue-700 dark:text-blue-400">
-                    {simulationResult.results.total_impact.economic_multiplier.toFixed(2)}×
+                    {simulationResult.results.economic_multiplier.toFixed(2)}×
                   </p>
                 </div>
 
                 <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Empregos</p>
                   <p className="text-base font-bold text-purple-700 dark:text-purple-400">
-                    {formatNumber(simulationResult.results.total_impact.jobs_created)}
+                    {formatNumber(simulationResult.results.jobs_created)}
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Arrecadação</p>
                   <p className="text-base font-bold text-orange-700 dark:text-orange-400">
-                    {formatCurrency(simulationResult.results.total_impact.tax_revenue_brl)}
+                    {formatCurrency(simulationResult.results.tax_revenue_brl)}
                   </p>
                 </div>
               </div>
@@ -421,25 +421,25 @@ function EconomicSimulationContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🌾 Agricultura</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.agriculture)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.agriculture)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🏭 Indústria</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.industry)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.industry)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">💼 Serviços</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.services)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.services)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🏛️ Público</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.public)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.public)}
                     </span>
                   </div>
                 </div>
