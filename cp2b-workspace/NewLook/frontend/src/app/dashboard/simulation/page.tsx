@@ -275,7 +275,7 @@ function EconomicSimulationContent() {
           <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-5 w-5" />
-              <h2 className="font-semibold">Simulação Econômica</h2>
+              <h2 className="font-semibold">Modelo Insumo-Produto</h2>
             </div>
             <button
               onClick={() => setControlsVisible(!controlsVisible)}
@@ -554,20 +554,24 @@ function EconomicSimulationContent() {
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Peso Spillover</p>
                   <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
-                    {(viewedRegionData.spillover_weight * 100).toFixed(2)}%
+                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
+                      ? (viewedRegionData.spillover_weight * 100).toFixed(2) + '%'
+                      : '⚠️ Dados inválidos'}
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Intensidade</p>
                   <p className="text-base font-semibold text-orange-700 dark:text-orange-400">
-                    {viewedRegionData.spillover_weight * 100 >= 30
-                      ? '🔥 Alto Impacto (região próxima)'
-                      : viewedRegionData.spillover_weight * 100 >= 10
-                      ? '📈 Médio Impacto'
-                      : viewedRegionData.spillover_weight * 100 >= 2
-                      ? '📊 Baixo Impacto'
-                      : '📉 Impacto Mínimo (região distante)'}
+                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
+                      ? (viewedRegionData.spillover_weight * 100 >= 30
+                        ? '🔥 Alto Impacto (região próxima)'
+                        : viewedRegionData.spillover_weight * 100 >= 10
+                        ? '📈 Médio Impacto'
+                        : viewedRegionData.spillover_weight * 100 >= 2
+                        ? '📊 Baixo Impacto'
+                        : '📉 Impacto Mínimo (região distante)')
+                      : '⚠️ Dados inválidos'}
                   </p>
                 </div>
               </div>
