@@ -56,7 +56,9 @@ export default function RegionChoroplethLayer({
   }
 
   // Get color based on impact intensity
-  const getColor = (regionCode: string) => {
+  const getColor = (regionCode: string | null) => {
+    if (!regionCode) return '#e5e7eb' // Gray if no code
+
     const impact = getRegionImpact(regionCode)
 
     if (!impact) {
@@ -76,9 +78,18 @@ export default function RegionChoroplethLayer({
     return '#d1fae5'                   // Minimal green - Minimal impact
   }
 
+  // Normalize region code to match database format (first 4 digits)
+  const normalizeRegionCode = (code: string | undefined): string | null => {
+    if (!code) return null
+    // Extract first 4 digits to match database format (3501, 3502, etc.)
+    const normalized = code.toString().substring(0, 4)
+    return normalized
+  }
+
   // Style function for GeoJSON features
   const style = (feature: any) => {
-    const regionCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi
+    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
+    const regionCode = normalizeRegionCode(rawCode)
     const isSelected = selectedRegion === regionCode
 
     return {
@@ -93,8 +104,14 @@ export default function RegionChoroplethLayer({
 
   // Handle feature interaction
   const onEachFeature = (feature: any, layer: L.Layer) => {
-    const regionCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi
-    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || 'Unknown Region'
+    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
+    const regionCode = normalizeRegionCode(rawCode)
+    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM || 'Unknown Region'
+
+    if (!regionCode) {
+      console.warn('Region code not found in feature properties:', feature.properties)
+      return
+    }
 
     // Popup content
     const impact = getRegionImpact(regionCode)
