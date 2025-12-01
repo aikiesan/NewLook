@@ -13,8 +13,10 @@ interface Region {
   nm_rgi: string
   vab_total_brl: number
   population: number
-  centroid_lat: number
-  centroid_lng: number
+  centroid: {
+    lat: number | null
+    lng: number | null
+  }
 }
 
 interface RegionMarkersLayerProps {
@@ -120,26 +122,35 @@ export default function RegionMarkersLayer({
 
   return (
     <>
-      {regions.map((region) => {
-        const isSelected = selectedRegion === region.cd_rgi
-        const impact = getImpact(region.cd_rgi)
-        const hasRegionImpact = !!impact
+      {regions
+        .filter((region) => {
+          // Only render regions with valid coordinates
+          return region.centroid?.lat != null && region.centroid?.lng != null
+        })
+        .map((region) => {
+          const isSelected = selectedRegion === region.cd_rgi
+          const impact = getImpact(region.cd_rgi)
+          const hasRegionImpact = !!impact
 
-        return (
-          <Marker
-            key={region.cd_rgi}
-            position={[region.centroid_lat, region.centroid_lng]}
-            icon={createMarkerIcon(isSelected, hasRegionImpact)}
-            eventHandlers={{
-              click: () => {
-                onRegionSelect(region.cd_rgi)
-                map.setView([region.centroid_lat, region.centroid_lng], 10, {
-                  animate: true,
-                  duration: 0.5
-                })
-              }
-            }}
-          >
+          // Safe to use non-null assertion here because we filtered above
+          const lat = region.centroid.lat!
+          const lng = region.centroid.lng!
+
+          return (
+            <Marker
+              key={region.cd_rgi}
+              position={[lat, lng]}
+              icon={createMarkerIcon(isSelected, hasRegionImpact)}
+              eventHandlers={{
+                click: () => {
+                  onRegionSelect(region.cd_rgi)
+                  map.setView([lat, lng], 10, {
+                    animate: true,
+                    duration: 0.5
+                  })
+                }
+              }}
+            >
             <Popup>
               <div className="p-2 min-w-[200px]">
                 <h3 className="font-bold text-base text-gray-900 dark:text-white mb-2">

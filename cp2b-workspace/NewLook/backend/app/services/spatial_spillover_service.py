@@ -130,7 +130,7 @@ class SpatialSpilloverService:
 
         logger.debug(
             f"Calculating spillover from origin: {origin_region['nm_rgi']} "
-            f"(VAB: R$ {origin_region['vab_total_brl']/1e9:.2f}B)"
+            f"(VAB: R$ {float(origin_region['vab_total_brl'])/1e9:.2f}B)"
         )
 
         # Calculate raw weights for all regions
