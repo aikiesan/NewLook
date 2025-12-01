@@ -79,7 +79,8 @@ function EconomicSimulationContent() {
   // Simulation state
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
   const [selectedRegionName, setSelectedRegionName] = useState<string>('')
-  const [investment, setInvestment] = useState(100000000) // 100 million BRL default
+  const [selectedRegionVAB, setSelectedRegionVAB] = useState<number>(0)
+  const [investmentPercent, setInvestmentPercent] = useState(10) // 10% default
   const [sector, setSector] = useState('industry')
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -96,10 +97,10 @@ function EconomicSimulationContent() {
     }
   }, [authLoading, isAuthenticated, router])
 
-  // Fetch region name when selected
+  // Fetch region data when selected
   useEffect(() => {
     if (selectedRegion) {
-      const fetchRegionName = async () => {
+      const fetchRegionData = async () => {
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
           const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
@@ -108,13 +109,14 @@ function EconomicSimulationContent() {
             const region = data.regions.find((r: any) => r.cd_rgi === selectedRegion)
             if (region) {
               setSelectedRegionName(region.nm_rgi)
+              setSelectedRegionVAB(region.vab_total_brl)
             }
           }
         } catch (err) {
-          console.error('Error fetching region name:', err)
+          console.error('Error fetching region data:', err)
         }
       }
-      fetchRegionName()
+      fetchRegionData()
     }
   }, [selectedRegion])
 
@@ -129,6 +131,9 @@ function EconomicSimulationContent() {
     setError(null)
 
     try {
+      // Calculate actual investment amount as percentage of region's VAB
+      const investmentAmount = selectedRegionVAB * (investmentPercent / 100)
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${API_URL}/api/v1/simulation/shock`, {
         method: 'POST',
@@ -137,7 +142,7 @@ function EconomicSimulationContent() {
         },
         body: JSON.stringify({
           region_code: selectedRegion,
-          investment_brl: investment,
+          investment_brl: investmentAmount,
           sector: sector,
           options: {}
         })
@@ -157,7 +162,7 @@ function EconomicSimulationContent() {
     } finally {
       setLoading(false)
     }
-  }, [selectedRegion, investment, sector])
+  }, [selectedRegion, selectedRegionVAB, investmentPercent, sector])
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -272,20 +277,23 @@ function EconomicSimulationContent() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Valor do Investimento: {formatCurrency(investment)}
+                    Percentual do VAB Regional: {investmentPercent}%
                   </label>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    Valor estimado: {formatCurrency(selectedRegionVAB * (investmentPercent / 100))}
+                  </div>
                   <input
                     type="range"
-                    min="10000000"
-                    max="10000000000"
-                    step="10000000"
-                    value={investment}
-                    onChange={(e) => setInvestment(Number(e.target.value))}
+                    min="0"
+                    max="50"
+                    step="0.5"
+                    value={investmentPercent}
+                    onChange={(e) => setInvestmentPercent(Number(e.target.value))}
                     className="w-full h-2 bg-emerald-200 dark:bg-emerald-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                   />
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>R$ 10 M</span>
-                    <span>R$ 10 B</span>
+                    <span>0%</span>
+                    <span>50%</span>
                   </div>
                 </div>
 

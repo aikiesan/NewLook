@@ -54,7 +54,7 @@ export default function RegionChoroplethLayer({
     return simulationResult.results.regional_impacts[regionCode]
   }
 
-  // Get color based on impact intensity
+  // Get color based on impact intensity using continuous gradient
   const getColor = (regionCode: string | null) => {
     if (!regionCode) return '#e5e7eb' // Gray if no code
 
@@ -66,15 +66,21 @@ export default function RegionChoroplethLayer({
     }
 
     // Color scale based on spillover weight (0-100%)
+    // Using a continuous gradient from light to dark green
     const weight = impact.spillover_weight * 100
 
-    if (weight >= 80) return '#065f46' // Dark green - Very high impact
-    if (weight >= 60) return '#047857' // Green - High impact
-    if (weight >= 40) return '#10b981' // Emerald - Medium-high impact
-    if (weight >= 20) return '#34d399' // Light emerald - Medium impact
-    if (weight >= 10) return '#6ee7b7' // Lighter emerald - Low-medium impact
-    if (weight >= 5) return '#a7f3d0'  // Very light emerald - Low impact
-    return '#d1fae5'                   // Minimal green - Minimal impact
+    // Enhanced color scale for better visual distinction
+    // Darker greens = more impact (closer regions with high spillover)
+    // Lighter greens = less impact (distant regions with low spillover)
+    if (weight >= 50) return '#064e3b' // Darkest emerald - Very high impact (closest regions)
+    if (weight >= 30) return '#065f46' // Very dark emerald - High impact
+    if (weight >= 20) return '#047857' // Dark emerald - Medium-high impact
+    if (weight >= 10) return '#059669' // Emerald - Medium impact
+    if (weight >= 5) return '#10b981'  // Medium emerald - Medium-low impact
+    if (weight >= 2) return '#34d399'  // Light emerald - Low impact
+    if (weight >= 1) return '#6ee7b7'  // Lighter emerald - Very low impact
+    if (weight >= 0.5) return '#a7f3d0' // Very light emerald - Minimal impact
+    return '#d1fae5'                    // Palest emerald - Trace impact
   }
 
   // Normalize region code to match database format (first 4 digits)
@@ -120,10 +126,12 @@ export default function RegionChoroplethLayer({
     const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
     const regionCode = normalizeRegionCode(rawCode)
     const isSelected = selectedRegion === regionCode
+    const hasImpact = !!getRegionImpact(regionCode)
 
     return {
       fillColor: getColor(regionCode),
-      fillOpacity: 0.6,
+      // Higher opacity when showing simulation results for better visibility
+      fillOpacity: hasImpact ? 0.75 : 0.5,
       color: isSelected ? '#059669' : '#94a3b8', // Border color
       weight: isSelected ? 3 : 1,
       opacity: 1,
