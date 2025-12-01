@@ -22,7 +22,8 @@ import {
   Info,
   BarChart3,
   BookOpen,
-  Target
+  Target,
+  TrendingUp
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -74,6 +75,12 @@ const authenticatedNavItems: NavItem[] = [
     href: '/dashboard/advanced-analysis',
     label: 'Análises',
     icon: <BarChart3 className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/simulation',
+    label: 'Simulação',
+    icon: <TrendingUp className="h-4 w-4" />,
+    description: 'Análise Econômica I-O'
   },
   {
     href: '/dashboard/scientific-database',
