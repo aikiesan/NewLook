@@ -132,17 +132,18 @@ export default function RegionChoroplethLayer({
     }
 
     // Color scale based on spillover weight (0-100%) - RED GRADIENT
-    // ADJUSTED THRESHOLDS for realistic Brazil simulation with 133 regions
+    // ADJUSTED THRESHOLDS for 133 Brazil regions (values match actual data, display shows 100x boost)
     const weight = spilloverWeight * 100
 
-    // Realistic color scale for distributed spillover across many regions
-    if (weight >= 10) return '#8B0000' // Dark red - Top tier impact (≥10%)
-    if (weight >= 5) return '#DC143C'  // Crimson - Very high impact (5-10%)
-    if (weight >= 2) return '#FF6347'  // Tomato - High impact (2-5%)
-    if (weight >= 1) return '#FFA07A'  // Light salmon - Medium impact (1-2%)
-    if (weight >= 0.5) return '#FFB6C1' // Light pink - Low impact (0.5-1%)
-    if (weight >= 0.1) return '#FFC0CB' // Pink - Very low impact (0.1-0.5%)
-    return '#FFF0F5'                    // Lavender blush - Negligible impact (<0.1%)
+    // Realistic color scale adjusted to actual spillover distribution
+    // (Display shows 100x boost, so 0.1% actual = 10% displayed)
+    if (weight >= 0.1) return '#8B0000'   // Dark red - Top tier impact (≥0.1% = displays as ≥10%)
+    if (weight >= 0.05) return '#DC143C'  // Crimson - Very high impact (0.05-0.1% = 5-10% display)
+    if (weight >= 0.02) return '#FF6347'  // Tomato - High impact (0.02-0.05% = 2-5% display)
+    if (weight >= 0.01) return '#FFA07A'  // Light salmon - Medium impact (0.01-0.02% = 1-2% display)
+    if (weight >= 0.005) return '#FFB6C1' // Light pink - Low impact (0.005-0.01% = 0.5-1% display)
+    if (weight >= 0.001) return '#FFC0CB' // Pink - Very low impact (0.001-0.005% = 0.1-0.5% display)
+    return '#FFF0F5'                      // Lavender blush - Negligible impact (<0.001% = <0.1% display)
   }
 
   // Style function for GeoJSON features
@@ -190,11 +191,12 @@ export default function RegionChoroplethLayer({
       const vabImpact = impact.vab_impact_brl
 
       if (spilloverWeight !== undefined && !isNaN(spilloverWeight) && vabImpact !== undefined && !isNaN(vabImpact)) {
-        const weightPercent = (spilloverWeight * 100).toFixed(2)
+        // Apply 100x display boost for better visualization
+        const weightPercent = (spilloverWeight * 100 * 100).toFixed(2)
         const vabImpactM = (vabImpact / 1e6).toFixed(2)
         const weightNum = parseFloat(weightPercent)
 
-        // Determine background color based on impact level
+        // Determine background color based on impact level (with 100x boost applied)
         const bgColor = weightNum >= 30 ? '#dcfce7' :
                        weightNum >= 10 ? '#d1fae5' :
                        weightNum >= 2 ? '#ecfdf5' : '#f0fdf4'
@@ -213,6 +215,7 @@ export default function RegionChoroplethLayer({
             </div>
             <div style="font-size: 13px; color: #047857; margin-bottom: 4px;">
               <strong>Peso Spillover:</strong> ${weightPercent}%
+              <span style="font-size: 10px; color: #6b7280; font-weight: normal;"> (×100)</span>
             </div>
             <div style="font-size: 11px; color: #059669; margin-top: 4px; font-weight: 600;">
               ${emoji} ${weightNum >= 30 ? 'Alto impacto (região próxima)' :
