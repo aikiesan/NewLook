@@ -524,8 +524,8 @@ class EconomicDataService:
                     vab_total_brl,
                     population,
                     gdp_per_capita_brl,
-                    ST_Y(centroid::geometry) as centroid_lat,
-                    ST_X(centroid::geometry) as centroid_lng,
+                    centroid_lat,
+                    centroid_lng,
                     data_year,
                     created_at,
                     updated_at
@@ -581,8 +581,8 @@ class EconomicDataService:
                     vab_total_brl,
                     population,
                     gdp_per_capita_brl,
-                    ST_Y(centroid::geometry) as centroid_lat,
-                    ST_X(centroid::geometry) as centroid_lng,
+                    centroid_lat,
+                    centroid_lng,
                     data_year
                 FROM br_intermediate_regions
                 WHERE cd_rgint = %s
