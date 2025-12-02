@@ -533,8 +533,22 @@ class EconomicDataService:
                 ORDER BY vab_total_brl DESC
             """)
 
-            regions = cursor.fetchall()
+            rows = cursor.fetchall()
             cursor.close()
+
+        # Transform to match schema (cd_rgint -> cd_rgi, nm_rgint -> nm_rgi, create centroid object)
+        regions = []
+        for row in rows:
+            region = dict(row)
+            # Rename fields to match schema
+            region['cd_rgi'] = region.pop('cd_rgint')
+            region['nm_rgi'] = region.pop('nm_rgint')
+            # Create centroid object
+            region['centroid'] = {
+                'lat': region.pop('centroid_lat'),
+                'lng': region.pop('centroid_lng')
+            }
+            regions.append(region)
 
         # Cache for 5 minutes
         self.cache.set(cache_key, regions, ttl=300)
@@ -588,17 +602,26 @@ class EconomicDataService:
                 WHERE cd_rgint = %s
             """, (region_code,))
 
-            region = cursor.fetchone()
+            row = cursor.fetchone()
             cursor.close()
 
-        if region:
+        if row:
+            # Transform to match schema
+            region = dict(row)
+            region['cd_rgi'] = region.pop('cd_rgint')
+            region['nm_rgi'] = region.pop('nm_rgint')
+            region['centroid'] = {
+                'lat': region.pop('centroid_lat'),
+                'lng': region.pop('centroid_lng')
+            }
+
             # Cache for 5 minutes
             self.cache.set(cache_key, region, ttl=300)
-            logger.debug(f"✅ Fetched Brazil region: {region['nm_rgint']}")
+            logger.debug(f"✅ Fetched Brazil region: {region['nm_rgi']}")
+            return region
         else:
             logger.warning(f"⚠️  Brazil region not found: {region_code}")
-
-        return region
+            return None
 
     def get_brazil_distance(
         self,
