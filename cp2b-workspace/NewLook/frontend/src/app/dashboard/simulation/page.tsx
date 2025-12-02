@@ -185,6 +185,22 @@ function EconomicSimulationContent() {
     return new Intl.NumberFormat('pt-BR').format(Math.round(value))
   }
 
+  // Reset simulation to start a new one
+  const handleNewSimulation = useCallback(() => {
+    setSimulationResult(null)
+    setResultsVisible(false)
+    setRegionImpactVisible(false)
+    setViewedRegionCode(null)
+    setViewedRegionData(null)
+    setSelectedRegion(null)
+    setSelectedRegionName('')
+    setSelectedRegionVAB(0)
+    setInvestmentPercent(10)
+    setSector('industry')
+    setError(null)
+    setControlsVisible(true)
+  }, [])
+
   // Handle region click - different behavior if simulation exists
   const handleRegionClick = useCallback(async (regionCode: string) => {
     if (!simulationResult) {
@@ -493,23 +509,66 @@ function EconomicSimulationContent() {
                 </div>
               </div>
 
-              {/* Download Button */}
-              <button
-                onClick={() => {
-                  const dataStr = JSON.stringify(simulationResult, null, 2)
-                  const dataBlob = new Blob([dataStr], { type: 'application/json' })
-                  const url = URL.createObjectURL(dataBlob)
-                  const link = document.createElement('a')
-                  link.href = url
-                  link.download = `simulation_${simulationResult.input.region_code}_${Date.now()}.json`
-                  link.click()
-                  URL.revokeObjectURL(url)
-                }}
-                className="w-full bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Baixar Resultados (JSON)
-              </button>
+              {/* Investment Input Info */}
+              <div className="mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Investimento Inicial</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(simulationResult.input.investment_brl)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Região: {simulationResult.input.origin_region_name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Setor: {simulationResult.input.primary_sector === 'industry' ? '🏭 Indústria' :
+                           simulationResult.input.primary_sector === 'agriculture' ? '🌾 Agricultura' :
+                           simulationResult.input.primary_sector === 'services' ? '💼 Serviços' : '🏛️ Público'}
+                </p>
+              </div>
+
+              {/* Regional Impacts Summary */}
+              <div className="mb-4 p-3 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
+                  📍 Spillover Espacial
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Impacto distribuído em{' '}
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {Object.keys(simulationResult.results.regional_impacts).length}
+                  </span>{' '}
+                  regiões
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Clique nas regiões coloridas no mapa para ver detalhes
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={handleNewSimulation}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Nova Simulação
+                </button>
+
+                <button
+                  onClick={() => {
+                    const dataStr = JSON.stringify(simulationResult, null, 2)
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+                    const url = URL.createObjectURL(dataBlob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = `simulation_${simulationResult.input.origin_region}_${Date.now()}.json`
+                    link.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="w-full bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar Resultados (JSON)
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -545,37 +604,69 @@ function EconomicSimulationContent() {
               </div>
 
               {/* Impact Metrics */}
-              <div className="grid grid-cols-1 gap-3 mb-4">
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Impacto VAB</p>
-                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg col-span-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Impacto VAB Total</p>
+                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
                     {formatCurrency(viewedRegionData.vab_impact_brl)}
                   </p>
+                  {/* Visual Progress Bar */}
+                  <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min((viewedRegionData.spillover_weight || 0) * 100 * 2, 100)}%`
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Peso Spillover</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">📊 Peso Spillover</p>
                   <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
                     {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
                       ? (viewedRegionData.spillover_weight * 100).toFixed(2) + '%'
-                      : '⚠️ Dados inválidos'}
+                      : '0.00%'}
                   </p>
                 </div>
 
-                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Intensidade</p>
-                  <p className="text-base font-semibold text-orange-700 dark:text-orange-400">
-                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
-                      ? (viewedRegionData.spillover_weight * 100 >= 30
-                        ? '🔥 Alto Impacto (região próxima)'
-                        : viewedRegionData.spillover_weight * 100 >= 10
-                        ? '📈 Médio Impacto'
-                        : viewedRegionData.spillover_weight * 100 >= 2
-                        ? '📊 Baixo Impacto'
-                        : '📉 Impacto Mínimo (região distante)')
-                      : '⚠️ Dados inválidos'}
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">📍 VAB Regional</p>
+                  <p className="text-sm font-bold text-purple-700 dark:text-purple-400">
+                    {formatCurrency(viewedRegionData.region_vab)}
                   </p>
                 </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg col-span-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🎯 Intensidade do Impacto</p>
+                  <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
+                      ? (viewedRegionData.spillover_weight * 100 >= 30
+                        ? '🔥 Alto Impacto - Região Próxima'
+                        : viewedRegionData.spillover_weight * 100 >= 10
+                        ? '📈 Médio Impacto - Região Adjacente'
+                        : viewedRegionData.spillover_weight * 100 >= 2
+                        ? '📊 Baixo Impacto - Região Distante'
+                        : '📉 Impacto Mínimo - Região Muito Distante')
+                      : '⚠️ Dados não disponíveis'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detailed Impact Breakdown */}
+              <div className="mb-4 p-3 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-700/50 dark:to-blue-900/20 rounded-lg border border-gray-200 dark:border-slate-600">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  📈 Crescimento Estimado
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Percentual do VAB regional:{' '}
+                  <span className="font-bold text-blue-600 dark:text-blue-400">
+                    {((viewedRegionData.vab_impact_brl / viewedRegionData.region_vab) * 100).toFixed(3)}%
+                  </span>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Este choque econômico representa um crescimento adicional do VAB desta região
+                </p>
               </div>
 
               {/* Region Info */}
