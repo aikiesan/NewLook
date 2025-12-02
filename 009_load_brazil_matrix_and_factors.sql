@@ -64,8 +64,8 @@ VALUES
    'IBGE Contas Nacionais 2021', 2021),
 
   -- Productivity Estimates
-  ('productivity', 'vab_per_worker_brl_year', 80000, 123000, 67500, 89000, 'BRL/worker/year',
-   'Average VAB generated per worker (National average)',
+  ('productivity', 'vab_per_worker_brl_year', 80.0, 123.0, 67.5, 89.0, 'thousands BRL/worker/year',
+   'Average VAB generated per worker in thousands (National average)',
    'Calculated from IBGE 2021', 2021),
 
   -- Carbon Emissions (National average)
