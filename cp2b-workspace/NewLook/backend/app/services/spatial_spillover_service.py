@@ -161,13 +161,13 @@ class SpatialSpilloverService:
             raw_weight = vab_share * distance_factor
 
             # PROXIMITY BOOST: Multiply weight for nearby regions to make spillover HIGHLY VISIBLE
-            # This is for demo visualization purposes - EXTREME BOOST for clear visualization
+            # This is for demo visualization purposes - ULTRA EXTREME BOOST for clear visualization
             if distance < 500:  # Within 500km
-                proximity_boost = 200.0  # 200x boost for nearby regions!
+                proximity_boost = 500.0  # 500x boost for nearby regions! (was 200x)
             elif distance < 1000:  # Within 1000km
-                proximity_boost = 50.0   # 50x boost for medium distance
+                proximity_boost = 150.0   # 150x boost for medium distance (was 50x)
             elif distance < 2000:  # Within 2000km
-                proximity_boost = 10.0   # 10x boost for far regions
+                proximity_boost = 30.0   # 30x boost for far regions (was 10x)
             else:
                 proximity_boost = 1.0   # No boost for very distant regions
 
