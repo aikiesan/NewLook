@@ -13,6 +13,9 @@ BEGIN
   END IF;
 END $$;
 
+-- Clear existing data to avoid duplicates
+TRUNCATE TABLE br_intermediate_regions CASCADE;
+
 -- Batch 1/3
 INSERT INTO br_intermediate_regions (
   cd_rgint, nm_rgint, cd_uf, nm_uf, sigla_uf,
