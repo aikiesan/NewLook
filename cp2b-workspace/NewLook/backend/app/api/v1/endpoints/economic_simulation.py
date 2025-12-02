@@ -474,14 +474,13 @@ async def execute_brazil_shock_simulation(
             f"Sector: {request.sector}"
         )
 
-        # Execute simulation (orchestrator will use Brazil data if region code format matches)
+        # Execute simulation (orchestrator will auto-detect Brazil vs SP based on region code)
         result = orchestrator.simulate_shock(
             region_code=request.region_code,
             investment_brl=request.investment_brl,
             sector=request.sector.value,
             include_spatial_spillover=request.options.get('include_spatial_spillover', True),
-            tax_rate=request.options.get('tax_rate', 0.18),
-            scope='brazil'  # Explicitly set Brazil scope
+            tax_rate=request.options.get('tax_rate', 0.18)
         )
 
         # Convert to response schema

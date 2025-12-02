@@ -55,7 +55,8 @@ class EconomicDataService:
 
     def get_all_regions(self) -> List[Dict[str, Any]]:
         """
-        Fetch all 53 immediate regions with VAB data.
+        Fetch all regions (auto-detects Brazil vs São Paulo).
+        Prefers Brazil (133 regions) if available, falls back to SP (53 regions).
 
         Returns:
             List of region dictionaries with VAB, population, etc.
@@ -63,9 +64,15 @@ class EconomicDataService:
         Example:
             >>> service = EconomicDataService()
             >>> regions = service.get_all_regions()
-            >>> len(regions)  # 53
-            >>> regions[0]['nm_rgi']  # 'São Paulo'
+            >>> len(regions)  # 133 (Brazil) or 53 (SP)
         """
+        # Try Brazil regions first (larger scope)
+        brazil_regions = self.get_all_brazil_regions()
+        if brazil_regions and len(brazil_regions) > 0:
+            logger.info(f"✅ Using Brazil regions ({len(brazil_regions)} regions)")
+            return brazil_regions
+
+        # Fall back to São Paulo regions
         cache_key = "economic:all_regions"
 
         # Try cache first
@@ -109,20 +116,25 @@ class EconomicDataService:
 
     def get_region_by_code(self, region_code: str) -> Optional[Dict[str, Any]]:
         """
-        Fetch a specific region by IBGE code.
+        Fetch a specific region by IBGE code (auto-detects São Paulo vs Brazil).
 
         Args:
-            region_code: IBGE region code (e.g., "3501")
+            region_code: IBGE region code (e.g., "3501" for SP, "4106" for Brazil)
 
         Returns:
             Region dictionary or None if not found
 
         Example:
             >>> service = EconomicDataService()
-            >>> sp = service.get_region_by_code("3501")
-            >>> sp['nm_rgi']  # 'São Paulo'
-            >>> sp['vab_total_brl']  # 500000000000
+            >>> sp = service.get_region_by_code("3501")  # São Paulo
+            >>> br = service.get_region_by_code("4106")  # Brazil (Paraná)
         """
+        # Auto-detect: Try Brazil first (more regions), then São Paulo
+        brazil_region = self.get_brazil_region_by_code(region_code)
+        if brazil_region:
+            return brazil_region
+
+        # Fall back to São Paulo regions
         cache_key = f"economic:region:{region_code}"
 
         # Try cache first
