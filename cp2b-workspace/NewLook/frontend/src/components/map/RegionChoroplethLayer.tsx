@@ -131,18 +131,18 @@ export default function RegionChoroplethLayer({
       return '#e5e7eb' // Gray if invalid data
     }
 
-    // Color scale based on spillover weight (0-100%) - RED GRADIENT like Prototipo
-    // Graduated from light to dark red for clear visual impact
+    // Color scale based on spillover weight (0-100%) - RED GRADIENT
+    // ADJUSTED THRESHOLDS for realistic Brazil simulation with 133 regions
     const weight = spilloverWeight * 100
 
-    // Red color scale matching Prototipo_Choque_Marcelo style
-    if (weight >= 80) return '#8B0000' // Dark red - Highest impact
-    if (weight >= 60) return '#DC143C' // Crimson - Very high impact
-    if (weight >= 40) return '#FF6347' // Tomato - High impact
-    if (weight >= 20) return '#FFA07A' // Light salmon - Medium impact
-    if (weight >= 10) return '#FFB6C1' // Light pink - Low impact
-    if (weight >= 1) return '#FFC0CB'  // Pink - Very low impact
-    return '#FFF0F5'                    // Lavender blush - Negligible impact
+    // Realistic color scale for distributed spillover across many regions
+    if (weight >= 10) return '#8B0000' // Dark red - Top tier impact (≥10%)
+    if (weight >= 5) return '#DC143C'  // Crimson - Very high impact (5-10%)
+    if (weight >= 2) return '#FF6347'  // Tomato - High impact (2-5%)
+    if (weight >= 1) return '#FFA07A'  // Light salmon - Medium impact (1-2%)
+    if (weight >= 0.5) return '#FFB6C1' // Light pink - Low impact (0.5-1%)
+    if (weight >= 0.1) return '#FFC0CB' // Pink - Very low impact (0.1-0.5%)
+    return '#FFF0F5'                    // Lavender blush - Negligible impact (<0.1%)
   }
 
   // Style function for GeoJSON features
@@ -153,12 +153,12 @@ export default function RegionChoroplethLayer({
 
     return {
       fillColor: getColor(regionCode),
-      // MAXIMUM VISIBILITY: High opacity for simulation results, clear visual emphasis
-      fillOpacity: hasImpact ? 0.85 : 0.4,
-      color: isSelected ? '#059669' : (hasImpact ? '#065f46' : '#94a3b8'), // Darker borders for impact regions
-      weight: isSelected ? 3 : (hasImpact ? 2 : 1),
-      opacity: 1,
-      dashArray: isSelected ? '0' : '3'
+      // IMPROVED VISIBILITY: Higher opacity and clearer borders
+      fillOpacity: hasImpact ? 0.85 : 0.2,  // Reduced default opacity for clearer borders
+      color: isSelected ? '#059669' : (hasImpact ? '#065f46' : '#1e293b'), // Much darker borders (slate-900)
+      weight: isSelected ? 3 : (hasImpact ? 2.5 : 1.5),  // Thicker borders for better visibility
+      opacity: 1,  // Full opacity for borders
+      dashArray: '0'  // Solid lines for all regions (no dashed lines)
     }
   }
 
