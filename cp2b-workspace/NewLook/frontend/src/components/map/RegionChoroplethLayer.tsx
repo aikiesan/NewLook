@@ -46,7 +46,8 @@ export default function RegionChoroplethLayer({
         // Create name -> code mapping from database (for Brazil intermediary regions)
         const nameToCode: Record<string, string> = {}
         regionsData.regions.forEach((region: any) => {
-          nameToCode[region.nm_rgint] = region.cd_rgint
+          // API returns cd_rgi and nm_rgi (transformed from database)
+          nameToCode[region.nm_rgi] = region.cd_rgi
         })
 
         setGeoJsonData(shapefileData)
