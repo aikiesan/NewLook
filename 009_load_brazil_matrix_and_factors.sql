@@ -15,6 +15,9 @@ BEGIN;
 -- Note: For MVP, we use the same Leontief matrix as São Paulo
 -- Future versions can use state-specific matrices
 
+-- Clear existing Brazil economic data
+DELETE FROM leontief_matrix WHERE data_year = 2019;
+
 INSERT INTO leontief_matrix (matrix_type, from_sector, to_agriculture, to_industry, to_services, to_public, description, data_year)
 VALUES
   -- Technical Coefficients Matrix (A)
@@ -27,19 +30,14 @@ VALUES
   ('leontief_inverse', 'agriculture', 1.2547, 0.4823, 0.1245, 0.0812, 'National Leontief inverse - Agriculture row', 2019),
   ('leontief_inverse', 'industry', 0.3845, 1.7234, 0.3178, 0.2156, 'National Leontief inverse - Industry row', 2019),
   ('leontief_inverse', 'services', 0.2234, 0.4512, 1.8523, 0.3012, 'National Leontief inverse - Services row', 2019),
-  ('leontief_inverse', 'public', 0.1023, 0.1478, 0.2034, 1.4012, 'National Leontief inverse - Public row', 2019)
-
-ON CONFLICT (matrix_type, from_sector) DO UPDATE SET
-  to_agriculture = EXCLUDED.to_agriculture,
-  to_industry = EXCLUDED.to_industry,
-  to_services = EXCLUDED.to_services,
-  to_public = EXCLUDED.to_public,
-  description = EXCLUDED.description,
-  data_year = EXCLUDED.data_year;
+  ('leontief_inverse', 'public', 0.1023, 0.1478, 0.2034, 1.4012, 'National Leontief inverse - Public row', 2019);
 
 -- ============================================================================
 -- STEP 2: Populate National Conversion Factors
 -- ============================================================================
+
+-- Clear existing economic factors
+DELETE FROM conversion_factors WHERE data_year >= 2019;
 
 INSERT INTO conversion_factors (factor_type, factor_name, agriculture, industry, services, public, unit, description, source, data_year)
 VALUES
@@ -76,17 +74,7 @@ VALUES
   -- Investment Return
   ('investment', 'annual_vab_per_investment_brl', 0.12, 0.15, 0.18, 0.10, 'ratio',
    'Annual VAB generated per BRL invested',
-   'Economic modeling', 2021)
-
-ON CONFLICT (factor_type, factor_name) DO UPDATE SET
-  agriculture = EXCLUDED.agriculture,
-  industry = EXCLUDED.industry,
-  services = EXCLUDED.services,
-  public = EXCLUDED.public,
-  unit = EXCLUDED.unit,
-  description = EXCLUDED.description,
-  source = EXCLUDED.source,
-  data_year = EXCLUDED.data_year;
+   'Economic modeling', 2021);
 
 -- ============================================================================
 -- STEP 3: Verify Data Loaded Correctly

@@ -19,6 +19,12 @@ ALTER TABLE conversion_factors
 ALTER TABLE conversion_factors
   ADD COLUMN IF NOT EXISTS factor_name VARCHAR(100);
 
+-- Set default values for existing rows to prevent NULL issues
+UPDATE conversion_factors
+SET factor_type = COALESCE(factor_type, category),
+    factor_name = COALESCE(factor_name, subcategory)
+WHERE factor_type IS NULL OR factor_name IS NULL;
+
 -- Add sector-specific columns (CRITICAL for economic simulation)
 ALTER TABLE conversion_factors
   ADD COLUMN IF NOT EXISTS agriculture DECIMAL(10, 6);
