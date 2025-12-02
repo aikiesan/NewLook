@@ -4,14 +4,14 @@
 [phases.setup]
 aptPkgs = ["unzip", "curl"]
 
-[phases.install]
-# Enable pip cache to speed up dependency installation
-cmds = ["pip install --cache-dir=/root/.cache/pip -r requirements.txt"]
+# Let Nixpacks auto-detect and install Python dependencies
+# (Don't override install phase - it breaks pip setup)
 
 [phases.build]
-# Download shapefiles only if not cached
+# Download shapefiles after dependencies are installed
 cmds = ["bash ./scripts/download-shapefiles.sh"]
 
-# Cache directories to speed up builds
+# Optimize Python version and caching
 [variables]
 NIXPACKS_PYTHON_VERSION = "3.11"
+PIP_CACHE_DIR = "/root/.cache/pip"
