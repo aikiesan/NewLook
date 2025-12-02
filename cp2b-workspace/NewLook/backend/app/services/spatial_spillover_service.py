@@ -43,16 +43,16 @@ class SpatialSpilloverService:
 
     def __init__(
         self,
-        origin_impact_weight: float = 0.25,
-        distance_decay_exponent: float = 0.3,
+        origin_impact_weight: float = 0.15,
+        distance_decay_exponent: float = 0.2,
         min_distance_km: float = 1.0
     ):
         """
-        Initialize spatial spillover service with model parameters (optimized for visualization).
+        Initialize spatial spillover service with model parameters (HIGHLY optimized for visualization).
 
         Args:
-            origin_impact_weight: Weight for origin region (default: 0.25 = 25% direct, 75% spillover)
-            distance_decay_exponent: Power for distance decay (default: 0.3 = very slow decay)
+            origin_impact_weight: Weight for origin region (default: 0.15 = 15% direct, 85% spillover!)
+            distance_decay_exponent: Power for distance decay (default: 0.2 = extremely slow decay)
             min_distance_km: Minimum distance to prevent division by zero (default: 1.0)
 
         Example:
@@ -160,14 +160,16 @@ class SpatialSpilloverService:
             distance_factor = 1.0 / (distance ** self.distance_decay)
             raw_weight = vab_share * distance_factor
 
-            # PROXIMITY BOOST: Multiply weight for nearby regions to make spillover VISIBLE
-            # This is for demo visualization purposes
-            if distance < 400:  # Within 400km
-                proximity_boost = 20.0  # 20x boost for nearby regions
-            elif distance < 800:  # Within 800km
-                proximity_boost = 5.0   # 5x boost for medium distance
+            # PROXIMITY BOOST: Multiply weight for nearby regions to make spillover HIGHLY VISIBLE
+            # This is for demo visualization purposes - EXTREME BOOST for clear visualization
+            if distance < 500:  # Within 500km
+                proximity_boost = 200.0  # 200x boost for nearby regions!
+            elif distance < 1000:  # Within 1000km
+                proximity_boost = 50.0   # 50x boost for medium distance
+            elif distance < 2000:  # Within 2000km
+                proximity_boost = 10.0   # 10x boost for far regions
             else:
-                proximity_boost = 1.0   # No boost for distant regions
+                proximity_boost = 1.0   # No boost for very distant regions
 
             raw_weight = raw_weight * proximity_boost
 
