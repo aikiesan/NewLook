@@ -35,8 +35,7 @@ ON CONFLICT (matrix_type, from_sector) DO UPDATE SET
   to_services = EXCLUDED.to_services,
   to_public = EXCLUDED.to_public,
   description = EXCLUDED.description,
-  data_year = EXCLUDED.data_year,
-  updated_at = NOW();
+  data_year = EXCLUDED.data_year;
 
 -- ============================================================================
 -- STEP 2: Populate National Conversion Factors
@@ -87,8 +86,7 @@ ON CONFLICT (factor_type, factor_name) DO UPDATE SET
   unit = EXCLUDED.unit,
   description = EXCLUDED.description,
   source = EXCLUDED.source,
-  data_year = EXCLUDED.data_year,
-  updated_at = NOW();
+  data_year = EXCLUDED.data_year;
 
 -- ============================================================================
 -- STEP 3: Verify Data Loaded Correctly
