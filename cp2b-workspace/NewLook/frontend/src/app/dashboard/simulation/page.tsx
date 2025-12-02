@@ -2,7 +2,7 @@
 
 /**
  * Economic Shock Simulation Page for CP2B Maps V3
- * Full-page map showing 53 immediate regions with floating simulation panels
+ * Full-page map showing 133 Brazil intermediary regions with floating simulation panels
  * Leontief Input-Output Analysis with spatial spillover effects
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
@@ -108,12 +108,12 @@ function EconomicSimulationContent() {
       const fetchRegionData = async () => {
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-          const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
           if (response.ok) {
             const data = await response.json()
-            const region = data.regions.find((r: any) => r.cd_rgi === selectedRegion)
+            const region = data.regions.find((r: any) => r.cd_rgint === selectedRegion)
             if (region) {
-              setSelectedRegionName(region.nm_rgi)
+              setSelectedRegionName(region.nm_rgint)
               setSelectedRegionVAB(region.vab_total_brl)
             }
           }
@@ -140,7 +140,7 @@ function EconomicSimulationContent() {
       const investmentAmount = selectedRegionVAB * (investmentPercent / 100)
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/api/v1/simulation/shock`, {
+      const response = await fetch(`${API_URL}/api/v1/simulation/shock/brazil`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,15 +196,15 @@ function EconomicSimulationContent() {
         // Fetch region name from API
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-          const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
           if (response.ok) {
             const data = await response.json()
-            const region = data.regions.find((r: any) => r.cd_rgi === regionCode)
+            const region = data.regions.find((r: any) => r.cd_rgint === regionCode)
             if (region) {
               setViewedRegionCode(regionCode)
               setViewedRegionData({
                 ...impact,
-                region_name: region.nm_rgi,
+                region_name: region.nm_rgint,
                 region_vab: region.vab_total_brl
               })
               setRegionImpactVisible(true)
@@ -239,8 +239,8 @@ function EconomicSimulationContent() {
         {/* Leaflet Map */}
         <div className="absolute inset-0">
           <MapContainer
-            center={[-23.5505, -46.6333]} // São Paulo center
-            zoom={7}
+            center={[-15.7939, -47.8828]} // Brazil center (Brasília)
+            zoom={4}
             style={{ height: '100%', width: '100%' }}
             zoomControl={true}
           >
@@ -249,14 +249,14 @@ function EconomicSimulationContent() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {/* 53 Region Boundaries (Choropleth) */}
+            {/* 133 Brazil Region Boundaries (Choropleth) */}
             <RegionChoroplethLayer
               selectedRegion={selectedRegion}
               simulationResult={simulationResult}
               onRegionClick={handleRegionClick}
             />
 
-            {/* 53 Region Markers (Points) */}
+            {/* 133 Region Markers (Points) */}
             <RegionMarkersLayer
               selectedRegion={selectedRegion}
               onRegionSelect={setSelectedRegion}

@@ -2,7 +2,7 @@
 
 /**
  * Region Choropleth Layer for Economic Simulation
- * Displays 53 immediate regions as colored polygons based on economic impact
+ * Displays 133 Brazil intermediary regions as colored polygons based on economic impact
  */
 import { useEffect, useState } from 'react'
 import { GeoJSON } from 'react-leaflet'
@@ -30,10 +30,10 @@ export default function RegionChoroplethLayer({
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-        // Fetch both in parallel
+        // Fetch Brazil GeoJSON from public directory and regions from API
         const [shapefileResponse, regionsResponse] = await Promise.all([
-          fetch(`${API_URL}/api/v1/infrastructure/immediate-regions/geojson`),
-          fetch(`${API_URL}/api/v1/simulation/regions`)
+          fetch('/data/br_intermediary_regions.geojson'),
+          fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
         ])
 
         if (!shapefileResponse.ok || !regionsResponse.ok) {
@@ -43,10 +43,10 @@ export default function RegionChoroplethLayer({
         const shapefileData = await shapefileResponse.json()
         const regionsData = await regionsResponse.json()
 
-        // Create name -> code mapping from database
+        // Create name -> code mapping from database (for Brazil intermediary regions)
         const nameToCode: Record<string, string> = {}
         regionsData.regions.forEach((region: any) => {
-          nameToCode[region.nm_rgi] = region.cd_rgi
+          nameToCode[region.nm_rgint] = region.cd_rgint
         })
 
         setGeoJsonData(shapefileData)
@@ -89,31 +89,21 @@ export default function RegionChoroplethLayer({
 
   // Get region code from shapefile feature using name mapping with fallback
   const getRegionCode = (feature: any): string | null => {
-    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM
-    const rawCode = feature.properties?.CD_RGI || feature.properties?.cd_rgi || feature.properties?.CD_RGIM
+    // For Brazil intermediary regions, use cd_rgint property
+    const regionCode = feature.properties?.cd_rgint || feature.properties?.CD_RGINT
+    const regionName = feature.properties?.nm_rgint || feature.properties?.NM_RGINT
 
-    // Strategy 1: Try exact name match with database
+    // Strategy 1: Use direct code from GeoJSON properties
+    if (regionCode) {
+      return String(regionCode)
+    }
+
+    // Strategy 2: Try exact name match with database
     if (regionName && regionCodeMap[regionName]) {
       return regionCodeMap[regionName]
     }
 
-    // Strategy 2: Try first part of compound name (e.g., "São José do Rio Pardo - Mococa" -> "São José do Rio Pardo")
-    if (regionName && regionName.includes(' - ')) {
-      const firstPart = regionName.split(' - ')[0]
-      if (regionCodeMap[firstPart]) {
-        console.log(`Matched compound name "${regionName}" using first part: ${firstPart} -> ${regionCodeMap[firstPart]}`)
-        return regionCodeMap[firstPart]
-      }
-    }
-
-    // Strategy 3: Fall back to normalized shapefile code
-    const normalizedCode = normalizeShapefileCode(rawCode)
-    if (normalizedCode) {
-      console.log(`Using shapefile code for "${regionName}": ${rawCode} -> ${normalizedCode}`)
-      return normalizedCode
-    }
-
-    console.warn(`No code found for region: ${regionName} (raw: ${rawCode})`)
+    console.warn(`No code found for region: ${regionName}`)
     return null
   }
 
@@ -123,45 +113,35 @@ export default function RegionChoroplethLayer({
     return simulationResult.results.regional_impacts[regionCode]
   }
 
-  // Get color based on impact intensity using continuous gradient
+  // Get color based on impact intensity - Graduated choropleth like Prototipo
   const getColor = (regionCode: string | null) => {
     if (!regionCode) return '#e5e7eb' // Gray if no code
 
     const impact = getRegionImpact(regionCode)
 
     if (!impact) {
-      // No impact - light gray/transparent (or green if selected)
+      // No impact - light gray/transparent (or emerald if selected)
       return selectedRegion === regionCode ? '#10b981' : '#e5e7eb'
     }
-
-    // Debug: log the impact data to see what we're getting
-    console.log(`Color for ${regionCode}:`, impact)
 
     // Handle NaN or undefined spillover_weight
     const spilloverWeight = impact.spillover_weight
     if (spilloverWeight === undefined || isNaN(spilloverWeight)) {
-      console.warn(`Invalid spillover_weight for ${regionCode}:`, spilloverWeight)
       return '#e5e7eb' // Gray if invalid data
     }
 
-    // Color scale based on spillover weight (0-100%)
-    // Using a continuous gradient from light to dark green
-    // VISUAL EMPHASIS: Strong, vibrant colors for clear spatial patterns
+    // Color scale based on spillover weight (0-100%) - RED GRADIENT like Prototipo
+    // Graduated from light to dark red for clear visual impact
     const weight = spilloverWeight * 100
 
-    // Enhanced color scale for MAXIMUM visual distinction
-    // Darker/stronger colors = more impact (closer regions with high spillover)
-    // Lighter colors = less impact (distant regions with low spillover)
-    if (weight >= 50) return '#052e16' // DARKEST green - Very high impact (closest regions)
-    if (weight >= 30) return '#064e3b' // Very dark green - High impact
-    if (weight >= 20) return '#065f46' // Dark green - Medium-high impact
-    if (weight >= 10) return '#047857' // Medium-dark green - Medium impact
-    if (weight >= 5) return '#059669'  // Medium green - Medium-low impact
-    if (weight >= 2) return '#10b981'  // Light green - Low impact
-    if (weight >= 1) return '#34d399'  // Lighter green - Very low impact
-    if (weight >= 0.5) return '#6ee7b7' // Very light green - Minimal impact
-    if (weight >= 0.1) return '#a7f3d0' // Pale green - Trace impact
-    return '#d1fae5'                    // Palest green - Negligible impact
+    // Red color scale matching Prototipo_Choque_Marcelo style
+    if (weight >= 80) return '#8B0000' // Dark red - Highest impact
+    if (weight >= 60) return '#DC143C' // Crimson - Very high impact
+    if (weight >= 40) return '#FF6347' // Tomato - High impact
+    if (weight >= 20) return '#FFA07A' // Light salmon - Medium impact
+    if (weight >= 10) return '#FFB6C1' // Light pink - Low impact
+    if (weight >= 1) return '#FFC0CB'  // Pink - Very low impact
+    return '#FFF0F5'                    // Lavender blush - Negligible impact
   }
 
   // Style function for GeoJSON features
@@ -184,15 +164,13 @@ export default function RegionChoroplethLayer({
   // Handle feature interaction
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const regionCode = getRegionCode(feature)
-    const regionName = feature.properties?.NM_RGI || feature.properties?.nm_rgi || feature.properties?.NM_RGIM || 'Unknown Region'
+    const regionName = feature.properties?.nm_rgint || feature.properties?.NM_RGINT || 'Unknown Region'
+    const stateName = feature.properties?.sigla_uf || feature.properties?.SIGLA_UF || ''
 
     if (!regionCode) {
       console.warn('Region code not found for:', regionName, 'Properties:', feature.properties)
       return
     }
-
-    // Debug: log the mapping
-    console.log(`Polygon: ${regionName} → Code: ${regionCode}`)
 
     // Popup content with simulation impact (if available)
     const impact = getRegionImpact(regionCode)
@@ -200,6 +178,7 @@ export default function RegionChoroplethLayer({
       <div style="padding: 8px; min-width: 200px;">
         <h3 style="margin: 0 0 8px 0; font-weight: bold;">${regionName}</h3>
         <div style="font-size: 12px; color: #6b7280;">
+          <strong>Estado:</strong> ${stateName}<br/>
           <strong>Código:</strong> ${regionCode}
         </div>
     `
