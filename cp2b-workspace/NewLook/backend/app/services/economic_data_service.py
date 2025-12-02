@@ -555,11 +555,12 @@ class EconomicDataService:
             # Rename fields to match schema
             region['cd_rgi'] = region.pop('cd_rgint')
             region['nm_rgi'] = region.pop('nm_rgint')
-            # Create centroid object
+            # Create centroid object (keep flat fields for spillover service)
             region['centroid'] = {
-                'lat': region.pop('centroid_lat'),
-                'lng': region.pop('centroid_lng')
+                'lat': region['centroid_lat'],
+                'lng': region['centroid_lng']
             }
+            # Keep centroid_lat and centroid_lng for spillover calculations
             regions.append(region)
 
         # Cache for 5 minutes
@@ -622,10 +623,12 @@ class EconomicDataService:
             # Transform to match Pydantic schema
             region['cd_rgi'] = region.pop('cd_rgint')
             region['nm_rgi'] = region.pop('nm_rgint')
+            # Create centroid object (keep flat fields for spillover service)
             region['centroid'] = {
-                'lat': region.pop('centroid_lat'),
-                'lng': region.pop('centroid_lng')
+                'lat': region['centroid_lat'],
+                'lng': region['centroid_lng']
             }
+            # Keep centroid_lat and centroid_lng for spillover calculations
 
             # Cache for 5 minutes
             self.cache.set(cache_key, region, ttl=300)
