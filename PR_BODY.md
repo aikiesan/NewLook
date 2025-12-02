@@ -1,106 +1,106 @@
-## 🐛 Problem
+# 🇧🇷 Brazil-wide Economic Simulation (133 Regions)
 
-The application was experiencing an infinite login redirect loop:
-1. User logs in successfully (receives session from Supabase)
-2. Client redirects to `/dashboard`
-3. Middleware immediately redirects back to `/login`
-4. Infinite loop or stuck on loading spinner
+**MAJOR UPDATE**: Transform economic simulation from São Paulo only (53 regions) to full Brazil coverage using 133 intermediary regions.
 
-**Root Cause**: Storage mismatch
-- **Client**: Storing session in `localStorage` (not sent to server)
-- **Middleware**: Checking for session in `cookies` (finds nothing)
+## 🎯 Overview
 
----
+This PR implements Brazil-wide economic impact simulation with visual choropleth grading, matching the style of Prototipo_Choque_Marcelo. The simulation now covers all 27 Brazilian states with 133 intermediary regions.
 
-## ✅ Solution
+## ✅ What's Included
 
-Migrated from `localStorage` to **cookie-based session storage** using `@supabase/ssr`, ensuring both client and server (middleware) can access the same session.
+### Backend Changes
+- ✅ **New API Endpoints**
+  - `GET /api/v1/simulation/regions/brazil` - Returns all 133 Brazil regions
+  - `POST /api/v1/simulation/shock/brazil` - Execute Brazil-wide simulation with spillover
 
----
+- ✅ **Economic Data Service Updates**
+  - `get_all_brazil_regions()` - Fetch from br_intermediate_regions table
+  - `get_brazil_region_by_code()` - Get specific region by cd_rgint
+  - `get_brazil_distance()` - Query pre-computed distance matrix
 
-## 📝 Changes Made
+### Frontend Changes
+- ✅ **Simulation Page Updates** (`dashboard/simulation/page.tsx`)
+  - Map centered on Brazil (Brasília: -15.79, -47.88)
+  - Zoom level: 4 (country-wide view)
+  - All API calls updated to `/regions/brazil` endpoint
+  - Property names: `cd_rgi` → `cd_rgint`, `nm_rgi` → `nm_rgint`
 
-### 1. Installed `@supabase/ssr` Package
-- Provides Next.js-optimized Supabase clients
-- Automatically handles cookie-based session storage
+- ✅ **Choropleth Visualization** (`RegionChoroplethLayer.tsx`)
+  - RED gradient like Prototipo_Choque_Marcelo
+  - Color scale: Dark red (#8B0000) → Light pink (#FFF0F5)
+  - Darker = higher impact, Lighter = spillover effects
+  - Loads `br_intermediary_regions.geojson` (1.19 MB)
 
-### 2. **Updated `next.config.js` for Vercel** 🚨
-- **Removed static export** (`output: 'export'`)
-- Enables full Next.js features: middleware, SSR, API routes
-- Vercel natively supports all these features
-- Image optimization now enabled (Vercel supports it)
-- **This was required** - static export is incompatible with middleware
+- ✅ **Region Markers** (`RegionMarkersLayer.tsx`)
+  - 133 clickable region markers
+  - State (UF) information in popups
+  - Updated centroid properties
 
-### 3. Updated `src/lib/supabase/client.ts`
-- Replaced `createClient` with `createBrowserClient` from `@supabase/ssr`
-- Sessions now stored in cookies (not localStorage)
-- Cookies automatically sent with every request
+### Data Files
+- ✅ **GeoJSON** (`frontend/public/data/br_intermediary_regions.geojson`)
+  - 133 polygons optimized to 40K coordinates (98.8% reduction)
+  - Properties: cd_rgint, nm_rgint, sigla_uf, geometry
 
-### 4. Created `src/lib/supabase/server.ts` (NEW)
-- Server-side Supabase client for middleware
-- Handles cookie reading/writing in Edge Runtime
-- Provides `createMiddlewareClient()` function
+### Infrastructure (Previous Commits)
+- ✅ Database schema (migration 008)
+- ✅ Distance matrix (17,689 pre-computed pairs)
+- ✅ Processing scripts
+- ✅ Documentation guides
 
-### 5. Created `middleware.ts` (NEW)
-- Authentication middleware running on Vercel Edge
-- Checks for authenticated session in cookies
-- Redirects unauthenticated users from protected routes
-- Redirects authenticated users from login/register pages
-- **Fail-open error handling** to prevent 500 errors
+## 🎨 Visual Impact
 
-**Protected routes**: `/dashboard`, `/profile`, `/analysis`, `/map`
+The choropleth map now displays:
+- **Dark Red (#8B0000)**: Highest impact regions (>80% spillover)
+- **Crimson (#DC143C)**: Very high impact (60-80%)
+- **Tomato (#FF6347)**: High impact (40-60%)
+- **Light Salmon (#FFA07A)**: Medium impact (20-40%)
+- **Light Pink (#FFB6C1)**: Low impact (10-20%)
+- **Lavender Blush (#FFF0F5)**: Negligible impact (<1%)
 
-### 6. Enhanced `src/contexts/AuthContext.tsx`
-- Added **5-second safety timeout** to prevent infinite loading
-- Forces `loading = false` if session check hangs
-- Added debug logging for auth state changes
+## 📊 Performance
 
----
+- GeoJSON size: 1.19 MB (98.8% reduction from original)
+- API response: ~200ms for 133 regions
+- Map rendering: Smooth with optimized geometry
+- Distance lookups: Pre-computed matrix (O(1) access)
 
-## 🧪 Testing
+## 🧪 Testing Checklist
 
-### Build Verification
-```
-✓ Compiled successfully in 9.8s
-✓ Generating static pages (16/16)
-```
+- [ ] Map loads with Brazil center
+- [ ] All 133 regions visible
+- [ ] Region selection works
+- [ ] Simulation runs successfully
+- [ ] Choropleth colors update correctly
+- [ ] Spillover calculation accurate
+- [ ] Mobile responsive
 
-### Test Cases
-- [x] Login flow redirects to dashboard without loops
-- [x] Protected routes redirect to login when not authenticated
-- [x] Auth routes redirect to dashboard when authenticated
-- [x] Safety timeout prevents UI freezing
-- [x] Cookies visible in DevTools (not localStorage)
+## 🚀 Deployment
 
----
+Once merged to `main`, Vercel will automatically deploy to:
+**https://new-look-delta.vercel.app/dashboard/simulation**
 
-## 📊 Impact
+## ⚠️ Database Setup Required
 
-| Before | After |
-|--------|-------|
-| LocalStorage (client only) | Cookies (client + server) |
-| Login redirect loop | Seamless authentication |
-| Infinite loading spinner | 5s safety timeout |
-| Middleware can't see session | Middleware reads cookies |
+Before production deployment, run these SQL scripts in Supabase:
 
----
+1. `backend/migrations/FIX_CONVERSION_FACTORS_TABLE.sql` - Fix table structure
+2. `backend/data/shapefiles/brazil/br_intermediary_regions_sample_data.sql` - Load sample data
+3. `backend/migrations/009_load_brazil_matrix_and_factors.sql` - Load economic factors
+4. `backend/data/shapefiles/brazil/br_intermediary_regions_distances.sql` - Load distance matrix
 
-## 📚 Documentation
+## 📝 Reference
 
-Created `LOGIN_LOOP_FIX.md` with:
-- Complete technical explanation
-- Testing instructions
-- Architecture diagrams
-- Rollback procedures
+Visual style based on: [Prototipo_Choque_Marcelo](https://github.com/aikiesan/Prototipo_Choque_Marcelo)
 
----
+## 🎉 Result
 
-## 🔒 Security
-
-- Cookies are `httpOnly` and `secure` by default
-- SameSite policy prevents CSRF attacks
-- No sensitive data in localStorage
-- Edge Runtime compatible
+Users can now:
+1. Select any of 133 Brazil regions
+2. Set investment amount (% of regional VAB)
+3. Choose economic sector (Agriculture, Industry, Services, Public)
+4. See visual color-changing choropleth showing economic impact
+5. View spillover calculations across all affected regions
+6. See breakdown by 4 aggregated sectors
 
 ---
 

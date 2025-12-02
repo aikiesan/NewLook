@@ -484,6 +484,164 @@ class EconomicDataService:
         self._leontief_calculator_cache = None
         logger.info("✅ Economic data cache cleared")
 
+    # ========================================================================
+    # BRAZIL-WIDE SIMULATION METHODS
+    # ========================================================================
+
+    def get_all_brazil_regions(self) -> List[Dict[str, Any]]:
+        """
+        Fetch all 133 Brazil intermediary regions with VAB data.
+
+        Returns:
+            List of region dictionaries with VAB, population, etc.
+
+        Example:
+            >>> service = EconomicDataService()
+            >>> regions = service.get_all_brazil_regions()
+            >>> len(regions)  # 133
+        """
+        cache_key = "economic:brazil_regions"
+
+        # Try cache first
+        cached_data = self.cache.get(cache_key)
+        if cached_data:
+            logger.debug(f"Cache HIT: {cache_key}")
+            return cached_data
+
+        # Fetch from database
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT
+                    cd_rgint,
+                    nm_rgint,
+                    cd_uf,
+                    sigla_uf,
+                    vab_agriculture_brl,
+                    vab_industry_brl,
+                    vab_services_brl,
+                    vab_public_brl,
+                    vab_total_brl,
+                    population,
+                    gdp_per_capita_brl,
+                    ST_Y(centroid::geometry) as centroid_lat,
+                    ST_X(centroid::geometry) as centroid_lng,
+                    data_year,
+                    created_at,
+                    updated_at
+                FROM br_intermediate_regions
+                ORDER BY vab_total_brl DESC
+            """)
+
+            regions = cursor.fetchall()
+            cursor.close()
+
+        # Cache for 5 minutes
+        self.cache.set(cache_key, regions, ttl=300)
+
+        logger.info(f"✅ Fetched {len(regions)} Brazil regions from database")
+        return regions
+
+    def get_brazil_region_by_code(self, region_code: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch a specific Brazil intermediary region by IBGE code.
+
+        Args:
+            region_code: IBGE region code (e.g., "1101", "3501")
+
+        Returns:
+            Region dictionary or None if not found
+
+        Example:
+            >>> service = EconomicDataService()
+            >>> sp = service.get_brazil_region_by_code("3501")
+            >>> sp['nm_rgint']  # 'São Paulo'
+        """
+        cache_key = f"economic:brazil_region:{region_code}"
+
+        # Try cache first
+        cached_data = self.cache.get(cache_key)
+        if cached_data:
+            logger.debug(f"Cache HIT: {cache_key}")
+            return cached_data
+
+        # Fetch from database
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT
+                    cd_rgint,
+                    nm_rgint,
+                    cd_uf,
+                    sigla_uf,
+                    vab_agriculture_brl,
+                    vab_industry_brl,
+                    vab_services_brl,
+                    vab_public_brl,
+                    vab_total_brl,
+                    population,
+                    gdp_per_capita_brl,
+                    ST_Y(centroid::geometry) as centroid_lat,
+                    ST_X(centroid::geometry) as centroid_lng,
+                    data_year
+                FROM br_intermediate_regions
+                WHERE cd_rgint = %s
+            """, (region_code,))
+
+            region = cursor.fetchone()
+            cursor.close()
+
+        if region:
+            # Cache for 5 minutes
+            self.cache.set(cache_key, region, ttl=300)
+            logger.debug(f"✅ Fetched Brazil region: {region['nm_rgint']}")
+        else:
+            logger.warning(f"⚠️  Brazil region not found: {region_code}")
+
+        return region
+
+    def get_brazil_distance(
+        self,
+        origin_code: str,
+        target_code: str
+    ) -> Optional[float]:
+        """
+        Get pre-computed distance between two Brazil regions.
+
+        Args:
+            origin_code: Origin region code
+            target_code: Target region code
+
+        Returns:
+            Distance in kilometers or None if not found
+        """
+        cache_key = f"economic:brazil_distance:{origin_code}:{target_code}"
+
+        # Try cache first
+        cached_data = self.cache.get(cache_key)
+        if cached_data:
+            logger.debug(f"Cache HIT: {cache_key}")
+            return cached_data
+
+        # Fetch from pre-computed distance matrix
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT distance_km
+                FROM br_region_distances
+                WHERE origin_cd_rgint = %s AND target_cd_rgint = %s
+            """, (origin_code, target_code))
+            result = cursor.fetchone()
+            cursor.close()
+
+        distance = float(result['distance_km']) if result else None
+
+        if distance:
+            # Cache for 5 minutes
+            self.cache.set(cache_key, distance, ttl=300)
+
+        return distance
+
 
 # Singleton instance
 _economic_data_service = None
