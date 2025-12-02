@@ -111,9 +111,10 @@ function EconomicSimulationContent() {
           const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
           if (response.ok) {
             const data = await response.json()
-            const region = data.regions.find((r: any) => r.cd_rgint === selectedRegion)
+            // API returns cd_rgi (transformed from cd_rgint in database)
+            const region = data.regions.find((r: any) => r.cd_rgi === selectedRegion)
             if (region) {
-              setSelectedRegionName(region.nm_rgint)
+              setSelectedRegionName(region.nm_rgi)
               setSelectedRegionVAB(region.vab_total_brl)
             }
           }
@@ -199,12 +200,13 @@ function EconomicSimulationContent() {
           const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
           if (response.ok) {
             const data = await response.json()
-            const region = data.regions.find((r: any) => r.cd_rgint === regionCode)
+            // API returns cd_rgi (transformed from cd_rgint in database)
+            const region = data.regions.find((r: any) => r.cd_rgi === regionCode)
             if (region) {
               setViewedRegionCode(regionCode)
               setViewedRegionData({
                 ...impact,
-                region_name: region.nm_rgint,
+                region_name: region.nm_rgi,
                 region_vab: region.vab_total_brl
               })
               setRegionImpactVisible(true)
