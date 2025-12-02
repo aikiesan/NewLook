@@ -153,12 +153,12 @@ export default function RegionChoroplethLayer({
 
     return {
       fillColor: getColor(regionCode),
-      // MAXIMUM VISIBILITY: High opacity for simulation results, clear visual emphasis
-      fillOpacity: hasImpact ? 0.85 : 0.4,
-      color: isSelected ? '#059669' : (hasImpact ? '#065f46' : '#94a3b8'), // Darker borders for impact regions
-      weight: isSelected ? 3 : (hasImpact ? 2 : 1),
-      opacity: 1,
-      dashArray: isSelected ? '0' : '3'
+      // IMPROVED VISIBILITY: Higher opacity and clearer borders
+      fillOpacity: hasImpact ? 0.85 : 0.2,  // Reduced default opacity for clearer borders
+      color: isSelected ? '#059669' : (hasImpact ? '#065f46' : '#1e293b'), // Much darker borders (slate-900)
+      weight: isSelected ? 3 : (hasImpact ? 2.5 : 1.5),  // Thicker borders for better visibility
+      opacity: 1,  // Full opacity for borders
+      dashArray: '0'  // Solid lines for all regions (no dashed lines)
     }
   }
 
