@@ -43,16 +43,16 @@ class SpatialSpilloverService:
 
     def __init__(
         self,
-        origin_impact_weight: float = 0.4,
-        distance_decay_exponent: float = 1.0,
+        origin_impact_weight: float = 0.25,
+        distance_decay_exponent: float = 0.3,
         min_distance_km: float = 1.0
     ):
         """
-        Initialize spatial spillover service with model parameters.
+        Initialize spatial spillover service with model parameters (optimized for visualization).
 
         Args:
-            origin_impact_weight: Weight for origin region (default: 0.4 = 40% direct, 60% spillover)
-            distance_decay_exponent: Power for distance decay (default: 1.0 = linear decay)
+            origin_impact_weight: Weight for origin region (default: 0.25 = 25% direct, 75% spillover)
+            distance_decay_exponent: Power for distance decay (default: 0.3 = very slow decay)
             min_distance_km: Minimum distance to prevent division by zero (default: 1.0)
 
         Example:
@@ -159,6 +159,17 @@ class SpatialSpilloverService:
             vab_share = float(region['vab_total_brl']) / total_vab
             distance_factor = 1.0 / (distance ** self.distance_decay)
             raw_weight = vab_share * distance_factor
+
+            # PROXIMITY BOOST: Multiply weight for nearby regions to make spillover VISIBLE
+            # This is for demo visualization purposes
+            if distance < 400:  # Within 400km
+                proximity_boost = 20.0  # 20x boost for nearby regions
+            elif distance < 800:  # Within 800km
+                proximity_boost = 5.0   # 5x boost for medium distance
+            else:
+                proximity_boost = 1.0   # No boost for distant regions
+
+            raw_weight = raw_weight * proximity_boost
 
             raw_weights[region_code] = raw_weight
 
