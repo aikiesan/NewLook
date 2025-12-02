@@ -625,8 +625,11 @@ function EconomicSimulationContent() {
                   <p className="text-xs text-gray-600 dark:text-gray-400">📊 Peso Spillover</p>
                   <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
                     {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
-                      ? (viewedRegionData.spillover_weight * 100).toFixed(2) + '%'
+                      ? (viewedRegionData.spillover_weight * 100 * 100).toFixed(2) + '%'
                       : '0.00%'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    (Visualização amplificada 100x)
                   </p>
                 </div>
 
