@@ -43,16 +43,16 @@ class SpatialSpilloverService:
 
     def __init__(
         self,
-        origin_impact_weight: float = 1.0,
-        distance_decay_exponent: float = 2.0,
+        origin_impact_weight: float = 0.4,
+        distance_decay_exponent: float = 1.0,
         min_distance_km: float = 1.0
     ):
         """
         Initialize spatial spillover service with model parameters.
 
         Args:
-            origin_impact_weight: Weight for origin region (default: 1.0 = 100%)
-            distance_decay_exponent: Power for distance decay (default: 2.0 = inverse square)
+            origin_impact_weight: Weight for origin region (default: 0.4 = 40% direct, 60% spillover)
+            distance_decay_exponent: Power for distance decay (default: 1.0 = linear decay)
             min_distance_km: Minimum distance to prevent division by zero (default: 1.0)
 
         Example:
