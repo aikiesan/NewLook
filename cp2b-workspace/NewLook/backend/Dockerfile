@@ -22,11 +22,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Runtime - Minimal production image
 FROM python:3.11-slim
 
-# Install only runtime dependencies (use libgdal32 for Debian Trixie/Python 3.11)
+# Install only runtime dependencies (use libgdal36 for Debian Trixie/Python 3.11)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     gdal-bin \
-    libgdal32 \
+    libgdal36 \
     curl \
     unzip \
     && rm -rf /var/lib/apt/lists/*
