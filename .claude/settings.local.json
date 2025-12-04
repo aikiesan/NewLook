@@ -61,7 +61,8 @@
       "Bash(gh pr create:*)",
       "Bash(git remote get-url:*)",
       "Bash(git stash:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
