@@ -105,18 +105,74 @@ export const technologyRoutesApi = {
    */
   getTechnologies: async (category?: string): Promise<TechnologyCardWithReferences[]> => {
     const params = category ? `?category=${encodeURIComponent(category)}` : '';
-    return apiCall<TechnologyCardWithReferences[]>(
+    const data = await apiCall<any[]>(
       `/api/v1/technology-routes/technologies${params}`
     );
+
+    // Transform snake_case API response to camelCase TypeScript interface
+    return data.map(tech => ({
+      id: tech.id,
+      category: tech.category,
+      namePt: tech.name_pt,
+      nameEn: tech.name_en,
+      emoji: tech.emoji,
+      descriptionPt: tech.description_pt,
+      descriptionEn: tech.description_en,
+      color: tech.color,
+      canConnectTo: tech.can_connect_to,
+      canReceiveFrom: tech.can_receive_from,
+      isCustom: tech.is_custom,
+      createdBy: tech.created_by,
+      createdAt: tech.created_at,
+      updatedAt: tech.updated_at,
+      references: tech.references.map((ref: any) => ({
+        referenceId: ref.reference_id,
+        title: ref.title,
+        authors: ref.authors,
+        year: ref.year,
+        journal: ref.journal,
+        doi: ref.doi,
+        url: ref.url,
+        relevanceNote: ref.relevance_note,
+      })),
+    }));
   },
 
   /**
    * Get a specific technology by ID with its references
    */
   getTechnologyById: async (techId: string): Promise<TechnologyCardWithReferences> => {
-    return apiCall<TechnologyCardWithReferences>(
+    const tech = await apiCall<any>(
       `/api/v1/technology-routes/technologies/${encodeURIComponent(techId)}`
     );
+
+    // Transform snake_case API response to camelCase TypeScript interface
+    return {
+      id: tech.id,
+      category: tech.category,
+      namePt: tech.name_pt,
+      nameEn: tech.name_en,
+      emoji: tech.emoji,
+      descriptionPt: tech.description_pt,
+      descriptionEn: tech.description_en,
+      color: tech.color,
+      canConnectTo: tech.can_connect_to,
+      canReceiveFrom: tech.can_receive_from,
+      isCustom: tech.is_custom,
+      createdBy: tech.created_by,
+      createdAt: tech.created_at,
+      updatedAt: tech.updated_at,
+      references: tech.references.map((ref: any) => ({
+        referenceId: ref.reference_id,
+        title: ref.title,
+        authors: ref.authors,
+        year: ref.year,
+        journal: ref.journal,
+        doi: ref.doi,
+        url: ref.url,
+        relevanceNote: ref.relevance_note,
+      })),
+    };
   },
 
   /**
