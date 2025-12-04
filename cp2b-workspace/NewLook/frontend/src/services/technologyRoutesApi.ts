@@ -54,6 +54,9 @@ async function apiCall<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+
+  console.log(`[TechRoutes API] Calling: ${url}`);
+
   const headers = await getAuthHeaders();
 
   try {
@@ -63,16 +66,30 @@ async function apiCall<T>(
         ...headers,
         ...options.headers,
       },
+      signal: AbortSignal.timeout(30000), // 30 second timeout
     });
+
+    console.log(`[TechRoutes API] Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `API error: ${response.status}`);
+      const errorMsg = errorData.detail || `API error: ${response.status}`;
+      console.error(`[TechRoutes API] Error response:`, errorData);
+      throw new Error(errorMsg);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log(`[TechRoutes API] Success:`, data.length, 'items received');
+    return data;
   } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
+    console.error(`[TechRoutes API] Call failed for ${endpoint}:`, error);
+    if (error instanceof Error) {
+      console.error(`[TechRoutes API] Error details:`, {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+    }
     throw error;
   }
 }
