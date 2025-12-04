@@ -14,6 +14,7 @@ import ReactFlow, {
   ReactFlowInstance,
 } from 'reactflow';
 import CustomNode from './CustomNode';
+import ConnectionToast, { ToastType } from './ConnectionToast';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences } from '@/types/technology-routes';
 
@@ -26,6 +27,12 @@ interface RouteCanvasProps {
   selectedNodeId: string | null;
 }
 
+interface ToastState {
+  message: string;
+  type: ToastType;
+  id: number;
+}
+
 /**
  * Main React Flow canvas for building technology routes
  * Handles drag-and-drop, connections, and validation
@@ -35,6 +42,39 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [toasts, setToasts] = useState<ToastState[]>([]);
+
+  // Show toast notification
+  const showToast = useCallback((message: string, type: ToastType) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { message, type, id }]);
+  }, []);
+
+  // Remove toast
+  const removeToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // Categorize connection type based on categories
+  const categorizeConnection = (sourceCategory: string, targetCategory: string): 'standard' | 'experimental' => {
+    // Standard flow patterns
+    const standardFlows = [
+      ['feedstock', 'pretreatment'],
+      ['feedstock', 'digestion'],
+      ['pretreatment', 'digestion'],
+      ['digestion', 'upgrading'],
+      ['digestion', 'enduse'],
+      ['digestion', 'byproduct'],
+      ['upgrading', 'enduse'],
+      ['upgrading', 'byproduct'],
+    ];
+
+    const isStandard = standardFlows.some(
+      ([src, tgt]) => src === sourceCategory && tgt === targetCategory
+    );
+
+    return isStandard ? 'standard' : 'experimental';
+  };
 
   // Handle new connections between nodes
   const onConnect = useCallback(
@@ -56,28 +96,68 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
         );
 
         if (!validation.valid) {
-          alert(validation.reason || 'Conexão inválida');
+          showToast(
+            validation.reason || 'Esta conexão não é tecnicamente viável segundo as regras de processo.',
+            'error'
+          );
           return;
         }
 
-        // Add edge with animation
+        // Categorize the connection
+        const connectionType = categorizeConnection(
+          sourceNode.data.category,
+          targetNode.data.category
+        );
+
+        // Determine edge style based on connection type
+        const edgeStyle = {
+          standard: {
+            stroke: '#2F7D32', // cp2b-green
+            strokeWidth: 2,
+            strokeDasharray: undefined,
+          },
+          experimental: {
+            stroke: '#F59E0B', // amber-500
+            strokeWidth: 2,
+            strokeDasharray: '5 5',
+          },
+        }[connectionType];
+
+        // Show appropriate feedback
+        if (connectionType === 'standard') {
+          showToast(
+            `✅ Conexão padrão: ${sourceNode.data.label} → ${targetNode.data.label}`,
+            'success'
+          );
+        } else {
+          showToast(
+            `⚠️ Conexão experimental: Esta rota é possível mas não é convencional. Verifique a viabilidade técnica.`,
+            'warning'
+          );
+        }
+
+        // Add edge with appropriate styling
         setEdges((eds) =>
           addEdge(
             {
               ...connection,
-              animated: true,
-              style: { stroke: '#3B82F6', strokeWidth: 2 },
+              animated: connectionType === 'standard',
+              style: edgeStyle,
               type: 'smoothstep',
+              data: { connectionType },
             },
             eds
           )
         );
       } catch (error) {
         console.error('Connection validation failed:', error);
-        alert('Erro ao validar conexão. Tente novamente.');
+        showToast(
+          'Erro ao validar conexão. Verifique sua conexão com a internet e tente novamente.',
+          'error'
+        );
       }
     },
-    [nodes, setEdges]
+    [nodes, setEdges, showToast]
   );
 
   // Handle drag and drop from palette
@@ -137,50 +217,68 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
   }, [onNodeSelect]);
 
   return (
-    <div ref={reactFlowWrapper} className="w-full h-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onInit={setReactFlowInstance}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
-        nodeTypes={nodeTypes}
-        fitView
-        attributionPosition="bottom-left"
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-          animated: false,
-          style: { strokeWidth: 2, stroke: '#94a3b8' },
-        }}
-      >
-        <Background color="#e5e7eb" gap={16} />
-        <Controls />
-        <MiniMap
-          nodeColor={(node) => node.data.color || '#3B82F6'}
-          maskColor="rgba(0, 0, 0, 0.1)"
-          className="bg-white border border-gray-200 rounded-lg"
-        />
+    <>
+      <div ref={reactFlowWrapper} className="w-full h-full">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={setReactFlowInstance}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          nodeTypes={nodeTypes}
+          fitView
+          attributionPosition="bottom-left"
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            animated: false,
+            style: { strokeWidth: 2, stroke: '#94a3b8' },
+          }}
+        >
+          <Background color="#e5e7eb" gap={16} />
+          <Controls />
+          <MiniMap
+            nodeColor={(node) => node.data.color || '#2F7D32'}
+            maskColor="rgba(0, 0, 0, 0.1)"
+            className="bg-white border border-cp2b-green/20 rounded-lg shadow-sm"
+          />
       </ReactFlow>
 
-      {/* Instructions overlay when canvas is empty */}
-      {nodes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-8 max-w-md text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Comece criando sua rota tecnológica
-            </h3>
-            <p className="text-sm text-gray-600">
-              Arraste tecnologias da barra lateral para o canvas e conecte-as
-              para criar seu fluxo de produção de biogás.
-            </p>
+        {/* Instructions overlay when canvas is empty */}
+        {nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-gradient-to-br from-white to-cp2b-lime-light/30 backdrop-blur-sm rounded-2xl shadow-xl border-2 border-cp2b-green/20 p-8 max-w-md text-center">
+              <div className="mb-4">
+                <span className="text-6xl">🌾</span>
+              </div>
+              <h3 className="text-lg font-bold text-cp2b-dark-green mb-2">
+                Comece criando sua rota tecnológica
+              </h3>
+              <p className="text-sm text-gray-700 mb-4">
+                Arraste tecnologias da barra lateral para o canvas e conecte-as
+                para criar seu fluxo de produção de biogás.
+              </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-cp2b-lime-light/50 border border-cp2b-lime rounded-lg text-xs text-cp2b-dark-green font-medium">
+                💡 Dica: Comece com um resíduo!
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Toast Notifications */}
+      {toasts.map((toast) => (
+        <ConnectionToast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+    </>
   );
 }
