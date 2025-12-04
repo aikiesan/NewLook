@@ -390,3 +390,33 @@
   background-color: var(--cp2b-lime-light);
   color: var(--cp2b-dark-green);
 }
+
+/* Technology Routes Animations */
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-progress {
+  animation: progress linear forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
