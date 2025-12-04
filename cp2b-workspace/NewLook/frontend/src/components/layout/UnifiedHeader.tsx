@@ -23,7 +23,8 @@ import {
   BarChart3,
   BookOpen,
   Target,
-  TrendingUp
+  TrendingUp,
+  Workflow
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -91,6 +92,12 @@ const authenticatedNavItems: NavItem[] = [
     href: '/dashboard/proximity',
     label: 'Proximidade',
     icon: <Target className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/technology-routes',
+    label: 'Rotas Tecnológicas',
+    icon: <Workflow className="h-4 w-4" />,
+    description: 'Organize rotas visuais de biogás'
   },
   {
     href: 'https://nipe.unicamp.br/cp2b/',
