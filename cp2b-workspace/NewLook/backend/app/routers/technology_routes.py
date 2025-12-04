@@ -31,6 +31,61 @@ router = APIRouter()
 
 
 # ============================================================================
+# HEALTH CHECK ENDPOINT
+# ============================================================================
+
+@router.get("/health")
+async def health_check(db: Session = Depends(get_db)):
+    """
+    Health check endpoint to verify database tables and data exist.
+    Public access, no authentication required.
+    """
+    try:
+        # Check if technology_cards table exists and count rows
+        result = db.execute(text("""
+            SELECT COUNT(*) as count
+            FROM technology_cards
+            WHERE is_custom = FALSE
+        """))
+        tech_count = result.fetchone()[0]
+
+        # Check custom technologies count
+        custom_result = db.execute(text("""
+            SELECT COUNT(*) as count
+            FROM technology_cards
+            WHERE is_custom = TRUE
+        """))
+        custom_count = custom_result.fetchone()[0]
+
+        # Check user routes count
+        routes_result = db.execute(text("SELECT COUNT(*) FROM user_routes"))
+        routes_count = routes_result.fetchone()[0]
+
+        return {
+            "status": "ok",
+            "database": "connected",
+            "technology_cards": {
+                "predefined": tech_count,
+                "custom": custom_count,
+                "total": tech_count + custom_count
+            },
+            "user_routes": routes_count,
+            "tables_exist": True,
+            "ready": tech_count > 0
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "database": "error",
+            "error": str(e),
+            "tables_exist": False,
+            "ready": False,
+            "message": "Database tables may not exist. Run migration 010_technology_routes.sql and seed data."
+        }
+
+
+# ============================================================================
 # TECHNOLOGY CARDS ENDPOINTS
 # ============================================================================
 

@@ -31,13 +31,17 @@ export default function TechnologyPalette() {
     try {
       setLoading(true);
       setError(null);
+      console.log('[TechnologyPalette] Starting to load technologies...');
       const data = await technologyRoutesApi.getTechnologies();
+      console.log('[TechnologyPalette] Loaded technologies:', data.length);
       setTechnologies(data);
     } catch (error) {
-      console.error('Failed to load technologies:', error);
-      setError('Erro ao carregar tecnologias');
+      console.error('[TechnologyPalette] Failed to load technologies:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+      setError(`Erro ao carregar tecnologias: ${errorMsg}`);
     } finally {
       setLoading(false);
+      console.log('[TechnologyPalette] Loading complete');
     }
   };
 
