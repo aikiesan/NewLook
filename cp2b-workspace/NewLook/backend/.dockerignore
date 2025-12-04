@@ -27,11 +27,13 @@ venv.bak/
 .tox/
 htmlcov/
 *.cover
+coverage.xml
 
 # Build
 build/
 dist/
 *.egg-info/
+*.egg
 
 # Logs
 *.log

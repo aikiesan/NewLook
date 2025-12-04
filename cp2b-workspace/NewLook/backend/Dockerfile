@@ -1,8 +1,8 @@
 # Multi-stage build for CP2B Maps V3 Backend
 # Stage 1: Builder - Install dependencies
-FROM python:3.10-slim as builder
+FROM python:3.11-slim as builder
 
-# Install build dependencies
+# Install build dependencies including GDAL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
@@ -20,13 +20,13 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime - Minimal production image
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Install only runtime dependencies
+# Install only runtime dependencies (use libgdal32 for Debian Trixie/Python 3.11)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     gdal-bin \
-    libgdal30 \
+    libgdal32 \
     curl \
     unzip \
     && rm -rf /var/lib/apt/lists/*
