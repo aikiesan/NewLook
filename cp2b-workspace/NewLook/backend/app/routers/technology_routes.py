@@ -35,7 +35,7 @@ router = APIRouter()
 # ============================================================================
 
 @router.get("/health")
-async def health_check(db: Session = Depends(get_db)):
+def health_check(db: Session = Depends(get_db)):
     """
     Health check endpoint to verify database tables and data exist.
     Public access, no authentication required.
@@ -90,7 +90,7 @@ async def health_check(db: Session = Depends(get_db)):
 # ============================================================================
 
 @router.get("/technologies", response_model=List[TechnologyCardWithReferences])
-async def get_all_technologies(
+def get_all_technologies(
     category: Optional[str] = None,
     include_custom: bool = True,
     db: Session = Depends(get_db),
@@ -190,7 +190,7 @@ async def get_all_technologies(
 
 
 @router.get("/technologies/{tech_id}", response_model=TechnologyCardWithReferences)
-async def get_technology_by_id(
+def get_technology_by_id(
     tech_id: str,
     db: Session = Depends(get_db)
 ):
@@ -270,7 +270,7 @@ async def get_technology_by_id(
 
 
 @router.post("/technologies/custom", response_model=TechnologyCard, status_code=status.HTTP_201_CREATED)
-async def create_custom_technology(
+def create_custom_technology(
     technology: TechnologyCardCreate,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -353,7 +353,7 @@ async def create_custom_technology(
 
 
 @router.delete("/technologies/custom/{tech_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_custom_technology(
+def delete_custom_technology(
     tech_id: str,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -402,7 +402,7 @@ async def delete_custom_technology(
 # ============================================================================
 
 @router.get("/routes", response_model=List[UserRoute])
-async def get_user_routes(
+def get_user_routes(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -443,7 +443,7 @@ async def get_user_routes(
 
 
 @router.get("/routes/{route_id}", response_model=UserRoute)
-async def get_route_by_id(
+def get_route_by_id(
     route_id: UUID,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -491,7 +491,7 @@ async def get_route_by_id(
 
 
 @router.post("/routes", response_model=UserRoute, status_code=status.HTTP_201_CREATED)
-async def create_route(
+def create_route(
     route: UserRouteCreate,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -548,7 +548,7 @@ async def create_route(
 
 
 @router.put("/routes/{route_id}", response_model=UserRoute)
-async def update_route(
+def update_route(
     route_id: UUID,
     route_update: UserRouteUpdate,
     db: Session = Depends(get_db),
@@ -604,7 +604,7 @@ async def update_route(
 
         if not updates:
             # Nothing to update, return current state
-            return await get_route_by_id(route_id, db, current_user)
+            return get_route_by_id(route_id, db, current_user)
 
         update_query = f"""
             UPDATE user_routes
@@ -642,7 +642,7 @@ async def update_route(
 
 
 @router.delete("/routes/{route_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_route(
+def delete_route(
     route_id: UUID,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -688,7 +688,7 @@ async def delete_route(
 # ============================================================================
 
 @router.get("/public/routes", response_model=List[UserRoutePublic])
-async def get_public_routes(
+def get_public_routes(
     limit: int = 20,
     offset: int = 0,
     db: Session = Depends(get_db)
@@ -728,7 +728,7 @@ async def get_public_routes(
 
 
 @router.get("/share/{share_token}", response_model=UserRoutePublic)
-async def get_route_by_share_token(
+def get_route_by_share_token(
     share_token: str,
     db: Session = Depends(get_db)
 ):
@@ -773,7 +773,7 @@ async def get_route_by_share_token(
 # ============================================================================
 
 @router.post("/validate-connection", response_model=ConnectionValidationResponse)
-async def validate_connection(
+def validate_connection(
     request: ConnectionValidationRequest,
     db: Session = Depends(get_db)
 ):
