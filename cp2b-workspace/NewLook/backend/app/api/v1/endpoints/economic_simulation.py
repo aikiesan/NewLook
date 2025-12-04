@@ -358,6 +358,174 @@ async def get_state_summary(
 
 
 # ============================================================================
+# BRAZIL-WIDE SIMULATION ENDPOINTS
+# ============================================================================
+
+@router.get(
+    "/regions/brazil",
+    response_model=RegionsListResponse,
+    summary="Get all Brazil intermediary regions",
+    description="""
+    Retrieve all 133 intermediary regions of Brazil with VAB data.
+
+    Returns economic data for each region including:
+    - Total VAB and breakdown by sector
+    - Population and GDP per capita
+    - Geographic centroid coordinates
+    - State (UF) information
+
+    **Use case**: Display Brazil-wide regions for simulation.
+    """,
+    response_description="List of 133 Brazil regions with economic data"
+)
+async def get_brazil_regions(
+    orchestrator: EconomicSimulationOrchestrator = Depends(get_orchestrator)
+):
+    """
+    Get all 133 Brazil intermediary regions with VAB data.
+
+    Example response:
+    ```json
+    {
+        "regions": [
+            {
+                "cd_rgint": "3501",
+                "nm_rgint": "São Paulo",
+                "sigla_uf": "SP",
+                "vab_total_brl": 500000000000,
+                ...
+            }
+        ],
+        "total_regions": 133,
+        "total_state_vab_brl": 10000000000000
+    }
+    ```
+    """
+    try:
+        logger.info("GET /simulation/regions/brazil - Fetching all Brazil regions")
+
+        # Get Brazil regions from orchestrator
+        from app.services.economic_data_service import get_economic_data_service
+        data_service = get_economic_data_service()
+        regions = data_service.get_all_brazil_regions()
+
+        # Calculate total Brazil VAB
+        total_brazil_vab = sum(r['vab_total_brl'] for r in regions if r['vab_total_brl'])
+
+        response = RegionsListResponse(
+            regions=regions,
+            total_regions=len(regions),
+            total_state_vab_brl=total_brazil_vab
+        )
+
+        logger.info(f"✅ Returned {len(regions)} Brazil regions")
+        return response
+
+    except Exception as e:
+        logger.error(f"❌ Error fetching Brazil regions: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "Failed to fetch Brazil regions",
+                "code": "BRAZIL_REGIONS_FETCH_ERROR",
+                "details": {"message": str(e)}
+            }
+        )
+
+
+@router.post(
+    "/shock/brazil",
+    response_model=ShockSimulationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Execute Brazil-wide economic shock simulation",
+    description="""
+    Execute economic shock simulation for Brazil intermediary regions (133 regions).
+
+    Same process as São Paulo simulation but with Brazil-wide spillover effects.
+
+    **Process**:
+    1. Calculate economic impact using national Leontief matrix
+    2. Convert production to VAB using sector coefficients
+    3. Calculate tax revenue and jobs created
+    4. Distribute impact spatially across all 133 regions using pre-computed distances
+
+    **Use case**: Simulate economic shocks for any of Brazil's 133 intermediary regions.
+    """,
+    response_description="Complete simulation results with regional impacts across Brazil"
+)
+async def execute_brazil_shock_simulation(
+    request: ShockSimulationRequest,
+    orchestrator: EconomicSimulationOrchestrator = Depends(get_orchestrator)
+):
+    """
+    Execute economic shock simulation for Brazil.
+
+    Args:
+        request: Simulation parameters (region code, investment, sector)
+
+    Returns:
+        Complete simulation results with Brazil-wide spillover
+    """
+    try:
+        logger.info(
+            f"POST /simulation/shock/brazil - "
+            f"Region: {request.region_code}, "
+            f"Investment: R$ {request.investment_brl:,.2f}, "
+            f"Sector: {request.sector}"
+        )
+
+        # Execute simulation (orchestrator will auto-detect Brazil vs SP based on region code)
+        result = orchestrator.simulate_shock(
+            region_code=request.region_code,
+            investment_brl=request.investment_brl,
+            sector=request.sector.value,
+            include_spatial_spillover=request.options.get('include_spatial_spillover', True),
+            tax_rate=request.options.get('tax_rate', 0.18)
+        )
+
+        # Convert to response schema
+        response_dict = result.to_dict()
+
+        logger.info(
+            f"✅ Brazil simulation complete - "
+            f"VAB: R$ {result.total_vab_impact:,.2f}, "
+            f"Multiplier: {result.economic_multiplier:.2f}×, "
+            f"Regions affected: {len(result.regional_impacts)}"
+        )
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=response_dict
+        )
+
+    except ValueError as e:
+        logger.warning(f"⚠️  Validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": str(e),
+                "code": "VALIDATION_ERROR",
+                "details": {
+                    "region_code": request.region_code,
+                    "investment_brl": request.investment_brl,
+                    "sector": request.sector
+                }
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"❌ Brazil simulation error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "Brazil simulation failed",
+                "code": "BRAZIL_SIMULATION_ERROR",
+                "details": {"message": str(e)}
+            }
+        )
+
+
+# ============================================================================
 # HEALTH CHECK (for this module)
 # ============================================================================
 

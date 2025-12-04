@@ -2,7 +2,7 @@
 
 /**
  * Economic Shock Simulation Page for CP2B Maps V3
- * Full-page map showing 53 immediate regions with floating simulation panels
+ * Full-page map showing 133 Brazil intermediary regions with floating simulation panels
  * Leontief Input-Output Analysis with spatial spillover effects
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
@@ -35,36 +35,40 @@ const RegionMarkersLayer = dynamic(
   () => import('@/components/map/RegionMarkersLayer'),
   { ssr: false }
 )
+const RegionChoroplethLayer = dynamic(
+  () => import('@/components/map/RegionChoroplethLayer'),
+  { ssr: false }
+)
 
 interface SimulationResult {
   simulation_id: string
   timestamp: string
   input: {
-    region_code: string
-    region_name: string
+    origin_region: string
+    origin_region_name: string
     investment_brl: number
-    sector: string
+    primary_sector: string
   }
   results: {
-    total_impact: {
-      total_vab_brl: number
-      economic_multiplier: number
-      jobs_created: number
-      tax_revenue_brl: number
-    }
-    sectoral_breakdown: {
+    total_vab_impact_brl: number
+    economic_multiplier: number
+    tax_revenue_brl: number
+    jobs_created: number
+    vab_by_sector: {
       agriculture: number
       industry: number
       services: number
       public: number
     }
-    regional_impacts: Array<{
-      region_code: string
+    regional_impacts: Record<string, {
       region_name: string
       vab_impact_brl: number
       spillover_weight: number
-      impact_intensity: string
     }>
+  }
+  metadata: {
+    calculation_time_ms: number
+    data_year: number
   }
 }
 
@@ -75,7 +79,8 @@ function EconomicSimulationContent() {
   // Simulation state
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
   const [selectedRegionName, setSelectedRegionName] = useState<string>('')
-  const [investment, setInvestment] = useState(100000000) // 100 million BRL default
+  const [selectedRegionVAB, setSelectedRegionVAB] = useState<number>(0)
+  const [investmentPercent, setInvestmentPercent] = useState(10) // 10% default
   const [sector, setSector] = useState('industry')
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -84,6 +89,11 @@ function EconomicSimulationContent() {
   // Panel visibility
   const [controlsVisible, setControlsVisible] = useState(true)
   const [resultsVisible, setResultsVisible] = useState(false)
+  const [regionImpactVisible, setRegionImpactVisible] = useState(false)
+
+  // Individual region impact view (for clicking regions after simulation)
+  const [viewedRegionCode, setViewedRegionCode] = useState<string | null>(null)
+  const [viewedRegionData, setViewedRegionData] = useState<any>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -92,25 +102,27 @@ function EconomicSimulationContent() {
     }
   }, [authLoading, isAuthenticated, router])
 
-  // Fetch region name when selected
+  // Fetch region data when selected
   useEffect(() => {
     if (selectedRegion) {
-      const fetchRegionName = async () => {
+      const fetchRegionData = async () => {
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-          const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
           if (response.ok) {
             const data = await response.json()
+            // API returns cd_rgi (transformed from cd_rgint in database)
             const region = data.regions.find((r: any) => r.cd_rgi === selectedRegion)
             if (region) {
               setSelectedRegionName(region.nm_rgi)
+              setSelectedRegionVAB(region.vab_total_brl)
             }
           }
         } catch (err) {
-          console.error('Error fetching region name:', err)
+          console.error('Error fetching region data:', err)
         }
       }
-      fetchRegionName()
+      fetchRegionData()
     }
   }, [selectedRegion])
 
@@ -125,15 +137,18 @@ function EconomicSimulationContent() {
     setError(null)
 
     try {
+      // Calculate actual investment amount as percentage of region's VAB
+      const investmentAmount = selectedRegionVAB * (investmentPercent / 100)
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const response = await fetch(`${API_URL}/api/v1/simulation/shock`, {
+      const response = await fetch(`${API_URL}/api/v1/simulation/shock/brazil`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           region_code: selectedRegion,
-          investment_brl: investment,
+          investment_brl: investmentAmount,
           sector: sector,
           options: {}
         })
@@ -153,7 +168,7 @@ function EconomicSimulationContent() {
     } finally {
       setLoading(false)
     }
-  }, [selectedRegion, investment, sector])
+  }, [selectedRegion, selectedRegionVAB, investmentPercent, sector])
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -169,6 +184,56 @@ function EconomicSimulationContent() {
   const formatNumber = (value: number) => {
     return new Intl.NumberFormat('pt-BR').format(Math.round(value))
   }
+
+  // Reset simulation to start a new one
+  const handleNewSimulation = useCallback(() => {
+    setSimulationResult(null)
+    setResultsVisible(false)
+    setRegionImpactVisible(false)
+    setViewedRegionCode(null)
+    setViewedRegionData(null)
+    setSelectedRegion(null)
+    setSelectedRegionName('')
+    setSelectedRegionVAB(0)
+    setInvestmentPercent(10)
+    setSector('industry')
+    setError(null)
+    setControlsVisible(true)
+  }, [])
+
+  // Handle region click - different behavior if simulation exists
+  const handleRegionClick = useCallback(async (regionCode: string) => {
+    if (!simulationResult) {
+      // No simulation yet - just select region for running simulation
+      setSelectedRegion(regionCode)
+    } else {
+      // Simulation exists - show this region's impact
+      const impact = simulationResult.results.regional_impacts[regionCode]
+      if (impact) {
+        // Fetch region name from API
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+          const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
+          if (response.ok) {
+            const data = await response.json()
+            // API returns cd_rgi (transformed from cd_rgint in database)
+            const region = data.regions.find((r: any) => r.cd_rgi === regionCode)
+            if (region) {
+              setViewedRegionCode(regionCode)
+              setViewedRegionData({
+                ...impact,
+                region_name: region.nm_rgi,
+                region_vab: region.vab_total_brl
+              })
+              setRegionImpactVisible(true)
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching region data for impact view:', err)
+        }
+      }
+    }
+  }, [simulationResult])
 
   // Show loading state while checking authentication
   if (authLoading || !user) {
@@ -192,8 +257,8 @@ function EconomicSimulationContent() {
         {/* Leaflet Map */}
         <div className="absolute inset-0">
           <MapContainer
-            center={[-23.5505, -46.6333]} // São Paulo center
-            zoom={7}
+            center={[-15.7939, -47.8828]} // Brazil center (Brasília)
+            zoom={4}
             style={{ height: '100%', width: '100%' }}
             zoomControl={true}
           >
@@ -202,7 +267,14 @@ function EconomicSimulationContent() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {/* 53 Region Markers */}
+            {/* 133 Brazil Region Boundaries (Choropleth) */}
+            <RegionChoroplethLayer
+              selectedRegion={selectedRegion}
+              simulationResult={simulationResult}
+              onRegionClick={handleRegionClick}
+            />
+
+            {/* 133 Region Markers (Points) */}
             <RegionMarkersLayer
               selectedRegion={selectedRegion}
               onRegionSelect={setSelectedRegion}
@@ -221,7 +293,7 @@ function EconomicSimulationContent() {
           <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-5 w-5" />
-              <h2 className="font-semibold">Simulação Econômica</h2>
+              <h2 className="font-semibold">Modelo Insumo-Produto</h2>
             </div>
             <button
               onClick={() => setControlsVisible(!controlsVisible)}
@@ -261,20 +333,23 @@ function EconomicSimulationContent() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Valor do Investimento: {formatCurrency(investment)}
+                    Percentual do VAB Regional: {investmentPercent}%
                   </label>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    Valor estimado: {formatCurrency(selectedRegionVAB * (investmentPercent / 100))}
+                  </div>
                   <input
                     type="range"
-                    min="10000000"
-                    max="10000000000"
-                    step="10000000"
-                    value={investment}
-                    onChange={(e) => setInvestment(Number(e.target.value))}
+                    min="0"
+                    max="50"
+                    step="0.5"
+                    value={investmentPercent}
+                    onChange={(e) => setInvestmentPercent(Number(e.target.value))}
                     className="w-full h-2 bg-emerald-200 dark:bg-emerald-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                   />
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>R$ 10 M</span>
-                    <span>R$ 10 B</span>
+                    <span>0%</span>
+                    <span>50%</span>
                   </div>
                 </div>
 
@@ -375,28 +450,28 @@ function EconomicSimulationContent() {
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">VAB Total</p>
                   <p className="text-base font-bold text-emerald-700 dark:text-emerald-400">
-                    {formatCurrency(simulationResult.results.total_impact.total_vab_brl)}
+                    {formatCurrency(simulationResult.results.total_vab_impact_brl)}
                   </p>
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Multiplicador</p>
                   <p className="text-base font-bold text-blue-700 dark:text-blue-400">
-                    {simulationResult.results.total_impact.economic_multiplier.toFixed(2)}×
+                    {simulationResult.results.economic_multiplier.toFixed(2)}×
                   </p>
                 </div>
 
                 <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Empregos</p>
                   <p className="text-base font-bold text-purple-700 dark:text-purple-400">
-                    {formatNumber(simulationResult.results.total_impact.jobs_created)}
+                    {formatNumber(simulationResult.results.jobs_created)}
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Arrecadação</p>
                   <p className="text-base font-bold text-orange-700 dark:text-orange-400">
-                    {formatCurrency(simulationResult.results.total_impact.tax_revenue_brl)}
+                    {formatCurrency(simulationResult.results.tax_revenue_brl)}
                   </p>
                 </div>
               </div>
@@ -410,47 +485,210 @@ function EconomicSimulationContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🌾 Agricultura</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.agriculture)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.agriculture)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🏭 Indústria</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.industry)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.industry)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">💼 Serviços</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.services)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.services)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">🏛️ Público</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(simulationResult.results.sectoral_breakdown.public)}
+                      {formatCurrency(simulationResult.results.vab_by_sector.public)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Download Button */}
+              {/* Investment Input Info */}
+              <div className="mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Investimento Inicial</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(simulationResult.input.investment_brl)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Região: {simulationResult.input.origin_region_name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Setor: {simulationResult.input.primary_sector === 'industry' ? '🏭 Indústria' :
+                           simulationResult.input.primary_sector === 'agriculture' ? '🌾 Agricultura' :
+                           simulationResult.input.primary_sector === 'services' ? '💼 Serviços' : '🏛️ Público'}
+                </p>
+              </div>
+
+              {/* Regional Impacts Summary */}
+              <div className="mb-4 p-3 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
+                  📍 Spillover Espacial
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Impacto distribuído em{' '}
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {Object.keys(simulationResult.results.regional_impacts).length}
+                  </span>{' '}
+                  regiões
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Clique nas regiões coloridas no mapa para ver detalhes
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={handleNewSimulation}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Nova Simulação
+                </button>
+
+                <button
+                  onClick={() => {
+                    const dataStr = JSON.stringify(simulationResult, null, 2)
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+                    const url = URL.createObjectURL(dataBlob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = `simulation_${simulationResult.input.origin_region}_${Date.now()}.json`
+                    link.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="w-full bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar Resultados (JSON)
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Region Impact Panel */}
+        {regionImpactVisible && viewedRegionData && (
+          <div className="absolute bottom-4 right-4 w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-[1000]">
+            {/* Panel Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5" />
+                <h2 className="font-semibold">Impacto Regional</h2>
+              </div>
               <button
-                onClick={() => {
-                  const dataStr = JSON.stringify(simulationResult, null, 2)
-                  const dataBlob = new Blob([dataStr], { type: 'application/json' })
-                  const url = URL.createObjectURL(dataBlob)
-                  const link = document.createElement('a')
-                  link.href = url
-                  link.download = `simulation_${simulationResult.input.region_code}_${Date.now()}.json`
-                  link.click()
-                  URL.revokeObjectURL(url)
-                }}
-                className="w-full bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                onClick={() => setRegionImpactVisible(false)}
+                className="p-1 hover:bg-white/20 rounded transition-colors"
+                aria-label="Fechar painel"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Baixar Resultados (JSON)
+                <X className="h-5 w-5" />
               </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {/* Region Info */}
+              <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <h3 className="font-bold text-lg text-purple-900 dark:text-purple-100">
+                  {viewedRegionData.region_name}
+                </h3>
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  Código: {viewedRegionCode}
+                </p>
+              </div>
+
+              {/* Impact Metrics */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg col-span-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Impacto VAB Total</p>
+                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
+                    {formatCurrency(viewedRegionData.vab_impact_brl)}
+                  </p>
+                  {/* Visual Progress Bar */}
+                  <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min((viewedRegionData.spillover_weight || 0) * 100 * 2, 100)}%`
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">📊 Peso Spillover</p>
+                  <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
+                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
+                      ? (viewedRegionData.spillover_weight * 100 * 100).toFixed(2) + '%'
+                      : '0.00%'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    (Visualização amplificada 100x)
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">📍 VAB Regional</p>
+                  <p className="text-sm font-bold text-purple-700 dark:text-purple-400">
+                    {formatCurrency(viewedRegionData.region_vab)}
+                  </p>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg col-span-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🎯 Intensidade do Impacto</p>
+                  <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                    {viewedRegionData.spillover_weight !== undefined && !isNaN(viewedRegionData.spillover_weight)
+                      ? (viewedRegionData.spillover_weight * 100 >= 30
+                        ? '🔥 Alto Impacto - Região Próxima'
+                        : viewedRegionData.spillover_weight * 100 >= 10
+                        ? '📈 Médio Impacto - Região Adjacente'
+                        : viewedRegionData.spillover_weight * 100 >= 2
+                        ? '📊 Baixo Impacto - Região Distante'
+                        : '📉 Impacto Mínimo - Região Muito Distante')
+                      : '⚠️ Dados não disponíveis'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detailed Impact Breakdown */}
+              <div className="mb-4 p-3 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-700/50 dark:to-blue-900/20 rounded-lg border border-gray-200 dark:border-slate-600">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  📈 Crescimento Estimado
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Percentual do VAB regional:{' '}
+                  <span className="font-bold text-blue-600 dark:text-blue-400">
+                    {((viewedRegionData.vab_impact_brl / viewedRegionData.region_vab) * 100).toFixed(3)}%
+                  </span>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Este choque econômico representa um crescimento adicional do VAB desta região
+                </p>
+              </div>
+
+              {/* Region Info */}
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded">
+                <p className="mb-1">
+                  <strong>VAB Regional Total:</strong> {formatCurrency(viewedRegionData.region_vab)}
+                </p>
+                <p>
+                  <strong>Proporção do Impacto:</strong>{' '}
+                  {((viewedRegionData.vab_impact_brl / viewedRegionData.region_vab) * 100).toFixed(2)}% do VAB regional
+                </p>
+              </div>
+
+              {/* Help Text */}
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-xs text-blue-800 dark:text-blue-200">
+                  💡 O peso spillover indica quanto do investimento inicial transborda para esta região através de conexões econômicas (Matriz de Leontief).
+                </p>
+              </div>
             </div>
           </div>
         )}

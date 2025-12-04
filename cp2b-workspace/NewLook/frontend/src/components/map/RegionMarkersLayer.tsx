@@ -2,19 +2,20 @@
 
 /**
  * Region Markers Layer for Economic Simulation
- * Displays 53 immediate regions of São Paulo as clickable markers
+ * Displays 133 Brazil intermediary regions as clickable markers
  */
 import { useEffect, useState } from 'react'
 import { Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 
 interface Region {
-  cd_rgi: string
-  nm_rgi: string
+  cd_rgint: string
+  nm_rgint: string
+  sigla_uf: string
   vab_total_brl: number
   population: number
-  centroid_lat: number
-  centroid_lng: number
+  centroid_lat: number | null
+  centroid_lng: number | null
 }
 
 interface RegionMarkersLayerProps {
@@ -33,21 +34,21 @@ export default function RegionMarkersLayer({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch regions from API
+  // Fetch Brazil regions from API
   useEffect(() => {
     const fetchRegions = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-        const response = await fetch(`${API_URL}/api/v1/simulation/regions`)
+        const response = await fetch(`${API_URL}/api/v1/simulation/regions/brazil`)
 
         if (!response.ok) {
-          throw new Error('Failed to fetch regions')
+          throw new Error('Failed to fetch Brazil regions')
         }
 
         const data = await response.json()
         setRegions(data.regions || [])
       } catch (err: any) {
-        console.error('Error fetching regions:', err)
+        console.error('Error fetching Brazil regions:', err)
         setError(err.message)
       } finally {
         setLoading(false)
@@ -96,17 +97,15 @@ export default function RegionMarkersLayer({
   // Check if region has simulation impact
   const hasImpact = (regionCode: string) => {
     if (!simulationResult?.results?.regional_impacts) return false
-    return simulationResult.results.regional_impacts.some(
-      (impact: any) => impact.region_code === regionCode
-    )
+    // regional_impacts is a Record/dict: { "3501": {...}, "3502": {...}, ... }
+    return regionCode in simulationResult.results.regional_impacts
   }
 
   // Get impact data for region
   const getImpact = (regionCode: string) => {
     if (!simulationResult?.results?.regional_impacts) return null
-    return simulationResult.results.regional_impacts.find(
-      (impact: any) => impact.region_code === regionCode
-    )
+    // regional_impacts is a Record/dict: { "3501": { region_name, vab_impact_brl, spillover_weight }, ... }
+    return simulationResult.results.regional_impacts[regionCode]
   }
 
   if (loading) {
@@ -120,37 +119,53 @@ export default function RegionMarkersLayer({
 
   return (
     <>
-      {regions.map((region) => {
-        const isSelected = selectedRegion === region.cd_rgi
-        const impact = getImpact(region.cd_rgi)
-        const hasRegionImpact = !!impact
+      {regions
+        .filter((region) => {
+          // Only render regions with valid coordinates
+          return region.centroid_lat != null && region.centroid_lng != null
+        })
+        .map((region) => {
+          const isSelected = selectedRegion === region.cd_rgint
+          const impact = getImpact(region.cd_rgint)
+          const hasRegionImpact = !!impact
 
-        return (
-          <Marker
-            key={region.cd_rgi}
-            position={[region.centroid_lat, region.centroid_lng]}
-            icon={createMarkerIcon(isSelected, hasRegionImpact)}
-            eventHandlers={{
-              click: () => {
-                onRegionSelect(region.cd_rgi)
-                map.setView([region.centroid_lat, region.centroid_lng], 10, {
-                  animate: true,
-                  duration: 0.5
-                })
-              }
-            }}
-          >
+          // Safe to use non-null assertion here because we filtered above
+          const lat = region.centroid_lat!
+          const lng = region.centroid_lng!
+
+          return (
+            <Marker
+              key={region.cd_rgint}
+              position={[lat, lng]}
+              icon={createMarkerIcon(isSelected, hasRegionImpact)}
+              eventHandlers={{
+                click: () => {
+                  onRegionSelect(region.cd_rgint)
+                  map.setView([lat, lng], 8, {
+                    animate: true,
+                    duration: 0.5
+                  })
+                }
+              }}
+            >
             <Popup>
               <div className="p-2 min-w-[200px]">
                 <h3 className="font-bold text-base text-gray-900 dark:text-white mb-2">
-                  {region.nm_rgi}
+                  {region.nm_rgint}
                 </h3>
 
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Estado:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {region.sigla_uf}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Código:</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {region.cd_rgi}
+                      {region.cd_rgint}
                     </span>
                   </div>
 
@@ -164,7 +179,7 @@ export default function RegionMarkersLayer({
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">População:</span>
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {region.population.toLocaleString('pt-BR')}
+                      {region.population ? region.population.toLocaleString('pt-BR') : 'N/A'}
                     </span>
                   </div>
 
@@ -193,7 +208,7 @@ export default function RegionMarkersLayer({
                 </div>
 
                 <button
-                  onClick={() => onRegionSelect(region.cd_rgi)}
+                  onClick={() => onRegionSelect(region.cd_rgint)}
                   className="w-full mt-3 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded transition-colors"
                 >
                   Selecionar Região

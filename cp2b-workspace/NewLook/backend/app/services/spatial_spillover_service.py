@@ -43,16 +43,16 @@ class SpatialSpilloverService:
 
     def __init__(
         self,
-        origin_impact_weight: float = 1.0,
-        distance_decay_exponent: float = 2.0,
+        origin_impact_weight: float = 0.15,
+        distance_decay_exponent: float = 0.2,
         min_distance_km: float = 1.0
     ):
         """
-        Initialize spatial spillover service with model parameters.
+        Initialize spatial spillover service with model parameters (HIGHLY optimized for visualization).
 
         Args:
-            origin_impact_weight: Weight for origin region (default: 1.0 = 100%)
-            distance_decay_exponent: Power for distance decay (default: 2.0 = inverse square)
+            origin_impact_weight: Weight for origin region (default: 0.15 = 15% direct, 85% spillover!)
+            distance_decay_exponent: Power for distance decay (default: 0.2 = extremely slow decay)
             min_distance_km: Minimum distance to prevent division by zero (default: 1.0)
 
         Example:
@@ -69,7 +69,7 @@ class SpatialSpilloverService:
 
         logger.info(
             f"✅ SpatialSpilloverService initialized "
-            f"(origin_weight={origin_weight}, decay_exponent={distance_decay_exponent})"
+            f"(origin_weight={self.origin_weight}, decay_exponent={self.distance_decay})"
         )
 
     def calculate_spillover_weights(
@@ -110,8 +110,8 @@ class SpatialSpilloverService:
         if not all_regions:
             raise ValueError("all_regions list cannot be empty")
 
-        # Calculate total state VAB
-        total_vab = sum(r['vab_total_brl'] for r in all_regions)
+        # Calculate total state VAB (convert Decimal to float)
+        total_vab = float(sum(r['vab_total_brl'] for r in all_regions))
 
         if total_vab == 0:
             raise ValueError("Total state VAB is zero - check data")
@@ -130,7 +130,7 @@ class SpatialSpilloverService:
 
         logger.debug(
             f"Calculating spillover from origin: {origin_region['nm_rgi']} "
-            f"(VAB: R$ {origin_region['vab_total_brl']/1e9:.2f}B)"
+            f"(VAB: R$ {float(origin_region['vab_total_brl'])/1e9:.2f}B)"
         )
 
         # Calculate raw weights for all regions
@@ -156,9 +156,22 @@ class SpatialSpilloverService:
 
             # Calculate gravity-based weight
             # Weight = (Economic size share) / (Distance ^ decay exponent)
-            vab_share = region['vab_total_brl'] / total_vab
+            vab_share = float(region['vab_total_brl']) / total_vab
             distance_factor = 1.0 / (distance ** self.distance_decay)
             raw_weight = vab_share * distance_factor
+
+            # PROXIMITY BOOST: Multiply weight for nearby regions to make spillover HIGHLY VISIBLE
+            # This is for demo visualization purposes - ULTRA EXTREME BOOST for clear visualization
+            if distance < 500:  # Within 500km
+                proximity_boost = 500.0  # 500x boost for nearby regions! (was 200x)
+            elif distance < 1000:  # Within 1000km
+                proximity_boost = 150.0   # 150x boost for medium distance (was 50x)
+            elif distance < 2000:  # Within 2000km
+                proximity_boost = 30.0   # 30x boost for far regions (was 10x)
+            else:
+                proximity_boost = 1.0   # No boost for very distant regions
+
+            raw_weight = raw_weight * proximity_boost
 
             raw_weights[region_code] = raw_weight
 
