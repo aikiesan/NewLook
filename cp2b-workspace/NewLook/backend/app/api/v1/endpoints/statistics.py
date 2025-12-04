@@ -3,25 +3,29 @@ CP2B Maps V3 - Statistics API Endpoint
 Provides summary statistics for municipalities and biogas potential
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import logging
 from typing import Dict, Any
 
 from app.core.database import get_db
+from app.middleware.auth import require_authenticated
+from app.models.auth import UserProfile
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_authenticated)])
 
 
 @router.get(
     "/summary",
     summary="Get Summary Statistics",
-    description="Get summary statistics for all municipalities including biogas potential"
+    description="Get summary statistics for all municipalities including biogas potential (requires authentication)"
 )
-async def get_summary_statistics() -> Dict[str, Any]:
+async def get_summary_statistics(
+    current_user: UserProfile = Depends(require_authenticated)
+) -> Dict[str, Any]:
     """
-    Get summary statistics for the entire dataset.
-    
+    Get summary statistics for the entire dataset (requires authentication).
+
     Returns:
         Dictionary with total municipalities, biogas potential, and category breakdowns
     """
@@ -107,15 +111,18 @@ async def get_summary_statistics() -> Dict[str, Any]:
 @router.get(
     "/category/{category}",
     summary="Get Category Statistics",
-    description="Get detailed statistics for a specific biogas category"
+    description="Get detailed statistics for a specific biogas category (requires authentication)"
 )
-async def get_category_statistics(category: str) -> Dict[str, Any]:
+async def get_category_statistics(
+    category: str,
+    current_user: UserProfile = Depends(require_authenticated)
+) -> Dict[str, Any]:
     """
-    Get statistics for a specific biogas category.
-    
+    Get statistics for a specific biogas category (requires authentication).
+
     Args:
         category: One of 'urban', 'agricultural', 'livestock'
-        
+
     Returns:
         Dictionary with category-specific statistics
     """

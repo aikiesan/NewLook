@@ -11,12 +11,14 @@ Author: Claude Code
 Date: 2024-11-19
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
 import logging
 import traceback
 
 from app.core.database import get_db
+from app.middleware.auth import require_authenticated
+from app.models.auth import UserProfile
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -158,10 +160,11 @@ async def get_residuos(
     subsector_codigo: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = Query(default=100, le=500),
-    offset: int = Query(default=0, ge=0)
+    offset: int = Query(default=0, ge=0),
+    current_user: UserProfile = Depends(require_authenticated)
 ):
     """
-    Get all residuos with chemical parameters.
+    Get all residuos with chemical parameters (requires authentication).
 
     Args:
         sector_codigo: Filter by sector (e.g., 'AG_AGRICULTURA', 'PC_PECUARIA')
@@ -288,9 +291,12 @@ async def get_residuos(
 
 
 @router.get("/{residuo_id}")
-async def get_residuo(residuo_id: int):
+async def get_residuo(
+    residuo_id: int,
+    current_user: UserProfile = Depends(require_authenticated)
+):
     """
-    Get a specific residue by ID with all details and references.
+    Get a specific residue by ID with all details and references (requires authentication).
     """
     try:
         with get_db() as conn:

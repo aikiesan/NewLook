@@ -36,14 +36,14 @@ app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 # 1. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 2. CORS middleware - Allow Vercel and Cloudflare Pages deployments
+# 2. CORS middleware - Allow specific CP2B Maps deployments only
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes localhost origins
-    # Allow all Vercel and Cloudflare Pages preview deployments
-    # Vercel: *.vercel.app (production + previews)
-    # Cloudflare: *.pages.dev (production + previews)
-    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.pages\.dev",
+    # Restrict to CP2B Maps specific subdomains only
+    # Vercel: new-look*.vercel.app, cp2b-maps*.vercel.app
+    # Cloudflare: cp2bmaps.pages.dev and numbered previews
+    allow_origin_regex=r"https://(new-look.*|cp2b-maps.*)\.vercel\.app|https://(cp2bmaps|\w{8}\.cp2bmaps)\.pages\.dev",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
     allow_headers=["*"],  # Allow all headers for preflight compatibility
