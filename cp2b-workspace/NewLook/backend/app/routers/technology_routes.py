@@ -12,7 +12,7 @@ import secrets
 from uuid import UUID
 import json
 
-from app.database import get_db
+from app.core.database import get_db
 from app.schemas.technology_routes import (
     TechnologyCard,
     TechnologyCardCreate,
