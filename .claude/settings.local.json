@@ -60,7 +60,8 @@
       "Bash(uvicorn app.main:app:*)",
       "Bash(gh pr create:*)",
       "Bash(git remote get-url:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
