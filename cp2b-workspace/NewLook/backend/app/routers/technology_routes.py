@@ -5,14 +5,12 @@ Calculation-free, reference-based learning platform.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from sqlalchemy import text
 from typing import List, Optional
 import secrets
 from uuid import UUID
 import json
 
-from app.core.database import get_db
+from app.core.database import get_db, get_db_transaction
 from app.schemas.technology_routes import (
     TechnologyCard,
     TechnologyCardCreate,
@@ -35,44 +33,49 @@ router = APIRouter()
 # ============================================================================
 
 @router.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check():
     """
     Health check endpoint to verify database tables and data exist.
     Public access, no authentication required.
     """
     try:
-        # Check if technology_cards table exists and count rows
-        result = db.execute(text("""
-            SELECT COUNT(*) as count
-            FROM technology_cards
-            WHERE is_custom = FALSE
-        """))
-        tech_count = result.fetchone()[0]
+        with get_db() as conn:
+            cursor = conn.cursor()
 
-        # Check custom technologies count
-        custom_result = db.execute(text("""
-            SELECT COUNT(*) as count
-            FROM technology_cards
-            WHERE is_custom = TRUE
-        """))
-        custom_count = custom_result.fetchone()[0]
+            # Check if technology_cards table exists and count rows
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM technology_cards
+                WHERE is_custom = FALSE
+            """)
+            tech_count = cursor.fetchone()[0]
 
-        # Check user routes count
-        routes_result = db.execute(text("SELECT COUNT(*) FROM user_routes"))
-        routes_count = routes_result.fetchone()[0]
+            # Check custom technologies count
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM technology_cards
+                WHERE is_custom = TRUE
+            """)
+            custom_count = cursor.fetchone()[0]
 
-        return {
-            "status": "ok",
-            "database": "connected",
-            "technology_cards": {
-                "predefined": tech_count,
-                "custom": custom_count,
-                "total": tech_count + custom_count
-            },
-            "user_routes": routes_count,
-            "tables_exist": True,
-            "ready": tech_count > 0
-        }
+            # Check user routes count
+            cursor.execute("SELECT COUNT(*) FROM user_routes")
+            routes_count = cursor.fetchone()[0]
+
+            cursor.close()
+
+            return {
+                "status": "ok",
+                "database": "connected",
+                "technology_cards": {
+                    "predefined": tech_count,
+                    "custom": custom_count,
+                    "total": tech_count + custom_count
+                },
+                "user_routes": routes_count,
+                "tables_exist": True,
+                "ready": tech_count > 0
+            }
 
     except Exception as e:
         return {
@@ -93,7 +96,6 @@ def health_check(db: Session = Depends(get_db)):
 def get_all_technologies(
     category: Optional[str] = None,
     include_custom: bool = True,
-    db: Session = Depends(get_db),
     current_user = Depends(optional_auth)
 ):
     """
@@ -101,86 +103,90 @@ def get_all_technologies(
     Optionally filter by category.
     """
     try:
-        # Build query
-        query = """
-            SELECT
-                tc.id, tc.category, tc.name_pt, tc.name_en, tc.emoji,
-                tc.description_pt, tc.description_en, tc.color,
-                tc.can_connect_to, tc.can_receive_from,
-                tc.is_custom, tc.created_by, tc.created_at, tc.updated_at
-            FROM technology_cards tc
-            WHERE 1=1
-        """
-        params = {}
+        with get_db() as conn:
+            cursor = conn.cursor()
 
-        if category:
-            query += " AND tc.category = :category"
-            params['category'] = category
-
-        if not include_custom:
-            query += " AND tc.is_custom = FALSE"
-        elif current_user:
-            # Include only user's custom cards
-            query += " AND (tc.is_custom = FALSE OR tc.created_by = :user_id)"
-            params['user_id'] = str(current_user.id)
-        else:
-             # No user, only return public cards
-             query += " AND tc.is_custom = FALSE"
-
-        query += " ORDER BY tc.category, tc.name_pt"
-
-        result = db.execute(text(query), params)
-        rows = result.fetchall()
-
-        technologies = []
-        for row in rows:
-            # Get references for this technology
-            ref_query = """
+            # Build query
+            query = """
                 SELECT
-                    tr.reference_id, tr.relevance_note,
-                    r.title, r.authors, r.year, r.journal, r.doi, r.url
-                FROM technology_references tr
-                LEFT JOIN references r ON tr.reference_id = r.id
-                WHERE tr.technology_id = :tech_id
-                ORDER BY tr.display_order, tr.created_at
+                    tc.id, tc.category, tc.name_pt, tc.name_en, tc.emoji,
+                    tc.description_pt, tc.description_en, tc.color,
+                    tc.can_connect_to, tc.can_receive_from,
+                    tc.is_custom, tc.created_by, tc.created_at, tc.updated_at
+                FROM technology_cards tc
+                WHERE 1=1
             """
-            ref_result = db.execute(text(ref_query), {'tech_id': row.id})
-            ref_rows = ref_result.fetchall()
+            params = {}
 
-            references = [
-                TechnologyReference(
-                    reference_id=ref.reference_id,
-                    title=ref.title or "Unknown",
-                    authors=json.loads(ref.authors) if ref.authors else [],
-                    year=ref.year or 0,
-                    journal=ref.journal,
-                    doi=ref.doi,
-                    url=ref.url,
-                    relevance_note=ref.relevance_note
+            if category:
+                query += " AND tc.category = %(category)s"
+                params['category'] = category
+
+            if not include_custom:
+                query += " AND tc.is_custom = FALSE"
+            elif current_user:
+                # Include only user's custom cards
+                query += " AND (tc.is_custom = FALSE OR tc.created_by = %(user_id)s)"
+                params['user_id'] = str(current_user.id)
+            else:
+                 # No user, only return public cards
+                 query += " AND tc.is_custom = FALSE"
+
+            query += " ORDER BY tc.category, tc.name_pt"
+
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+            technologies = []
+            for row in rows:
+                # Get references for this technology
+                ref_query = """
+                    SELECT
+                        tr.reference_id, tr.relevance_note,
+                        r.title, r.authors, r.year, r.journal, r.doi, r.url
+                    FROM technology_references tr
+                    LEFT JOIN references r ON tr.reference_id = r.id
+                    WHERE tr.technology_id = %(tech_id)s
+                    ORDER BY tr.display_order, tr.created_at
+                """
+                cursor.execute(ref_query, {'tech_id': row['id']})
+                ref_rows = cursor.fetchall()
+
+                references = [
+                    TechnologyReference(
+                        reference_id=ref['reference_id'],
+                        title=ref['title'] or "Unknown",
+                        authors=json.loads(ref['authors']) if ref['authors'] else [],
+                        year=ref['year'] or 0,
+                        journal=ref['journal'],
+                        doi=ref['doi'],
+                        url=ref['url'],
+                        relevance_note=ref['relevance_note']
+                    )
+                    for ref in ref_rows
+                ]
+
+                tech = TechnologyCardWithReferences(
+                    id=row['id'],
+                    category=row['category'],
+                    name_pt=row['name_pt'],
+                    name_en=row['name_en'],
+                    emoji=row['emoji'],
+                    description_pt=row['description_pt'],
+                    description_en=row['description_en'],
+                    color=row['color'],
+                    can_connect_to=row['can_connect_to'] or [],
+                    can_receive_from=row['can_receive_from'] or [],
+                    is_custom=row['is_custom'],
+                    created_by=str(row['created_by']) if row['created_by'] else None,
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    references=references
                 )
-                for ref in ref_rows
-            ]
+                technologies.append(tech)
 
-            tech = TechnologyCardWithReferences(
-                id=row.id,
-                category=row.category,
-                name_pt=row.name_pt,
-                name_en=row.name_en,
-                emoji=row.emoji,
-                description_pt=row.description_pt,
-                description_en=row.description_en,
-                color=row.color,
-                can_connect_to=row.can_connect_to or [],
-                can_receive_from=row.can_receive_from or [],
-                is_custom=row.is_custom,
-                created_by=str(row.created_by) if row.created_by else None,
-                created_at=row.created_at,
-                updated_at=row.updated_at,
-                references=references
-            )
-            technologies.append(tech)
-
-        return technologies
+            cursor.close()
+            return technologies
 
     except Exception as e:
         raise HTTPException(
@@ -190,75 +196,78 @@ def get_all_technologies(
 
 
 @router.get("/technologies/{tech_id}", response_model=TechnologyCardWithReferences)
-def get_technology_by_id(
-    tech_id: str,
-    db: Session = Depends(get_db)
-):
+def get_technology_by_id(tech_id: str):
     """Get a specific technology card with its references."""
     try:
-        # Get technology
-        query = """
-            SELECT
-                id, category, name_pt, name_en, emoji,
-                description_pt, description_en, color,
-                can_connect_to, can_receive_from,
-                is_custom, created_by, created_at, updated_at
-            FROM technology_cards
-            WHERE id = :tech_id
-        """
-        result = db.execute(text(query), {'tech_id': tech_id})
-        row = result.fetchone()
+        with get_db() as conn:
+            cursor = conn.cursor()
 
-        if not row:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Technology {tech_id} not found"
+            # Get technology
+            query = """
+                SELECT
+                    id, category, name_pt, name_en, emoji,
+                    description_pt, description_en, color,
+                    can_connect_to, can_receive_from,
+                    is_custom, created_by, created_at, updated_at
+                FROM technology_cards
+                WHERE id = %(tech_id)s
+            """
+            cursor.execute(query, {'tech_id': tech_id})
+            row = cursor.fetchone()
+
+            if not row:
+                cursor.close()
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Technology {tech_id} not found"
+                )
+
+            # Get references
+            ref_query = """
+                SELECT
+                    tr.reference_id, tr.relevance_note,
+                    r.title, r.authors, r.year, r.journal, r.doi, r.url
+                FROM technology_references tr
+                LEFT JOIN references r ON tr.reference_id = r.id
+                WHERE tr.technology_id = %(tech_id)s
+                ORDER BY tr.display_order, tr.created_at
+            """
+            cursor.execute(ref_query, {'tech_id': tech_id})
+            ref_rows = cursor.fetchall()
+
+            references = [
+                TechnologyReference(
+                    reference_id=ref['reference_id'],
+                    title=ref['title'] or "Unknown",
+                    authors=json.loads(ref['authors']) if ref['authors'] else [],
+                    year=ref['year'] or 0,
+                    journal=ref['journal'],
+                    doi=ref['doi'],
+                    url=ref['url'],
+                    relevance_note=ref['relevance_note']
+                )
+                for ref in ref_rows
+            ]
+
+            cursor.close()
+
+            return TechnologyCardWithReferences(
+                id=row['id'],
+                category=row['category'],
+                name_pt=row['name_pt'],
+                name_en=row['name_en'],
+                emoji=row['emoji'],
+                description_pt=row['description_pt'],
+                description_en=row['description_en'],
+                color=row['color'],
+                can_connect_to=row['can_connect_to'] or [],
+                can_receive_from=row['can_receive_from'] or [],
+                is_custom=row['is_custom'],
+                created_by=str(row['created_by']) if row['created_by'] else None,
+                created_at=row['created_at'],
+                updated_at=row['updated_at'],
+                references=references
             )
-
-        # Get references
-        ref_query = """
-            SELECT
-                tr.reference_id, tr.relevance_note,
-                r.title, r.authors, r.year, r.journal, r.doi, r.url
-            FROM technology_references tr
-            LEFT JOIN references r ON tr.reference_id = r.id
-            WHERE tr.technology_id = :tech_id
-            ORDER BY tr.display_order, tr.created_at
-        """
-        ref_result = db.execute(text(ref_query), {'tech_id': tech_id})
-        ref_rows = ref_result.fetchall()
-
-        references = [
-            TechnologyReference(
-                reference_id=ref.reference_id,
-                title=ref.title or "Unknown",
-                authors=json.loads(ref.authors) if ref.authors else [],
-                year=ref.year or 0,
-                journal=ref.journal,
-                doi=ref.doi,
-                url=ref.url,
-                relevance_note=ref.relevance_note
-            )
-            for ref in ref_rows
-        ]
-
-        return TechnologyCardWithReferences(
-            id=row.id,
-            category=row.category,
-            name_pt=row.name_pt,
-            name_en=row.name_en,
-            emoji=row.emoji,
-            description_pt=row.description_pt,
-            description_en=row.description_en,
-            color=row.color,
-            can_connect_to=row.can_connect_to or [],
-            can_receive_from=row.can_receive_from or [],
-            is_custom=row.is_custom,
-            created_by=str(row.created_by) if row.created_by else None,
-            created_at=row.created_at,
-            updated_at=row.updated_at,
-            references=references
-        )
 
     except HTTPException:
         raise
@@ -773,70 +782,72 @@ def get_route_by_share_token(
 # ============================================================================
 
 @router.post("/validate-connection", response_model=ConnectionValidationResponse)
-def validate_connection(
-    request: ConnectionValidationRequest,
-    db: Session = Depends(get_db)
-):
+def validate_connection(request: ConnectionValidationRequest):
     """
     Validate if two technologies can be connected.
     Returns: {valid: bool, reason: string}
     """
     try:
-        # Get both technologies
-        query = """
-            SELECT id, category, name_pt, can_connect_to, can_receive_from
-            FROM technology_cards
-            WHERE id = :tech_id
-        """
+        with get_db() as conn:
+            cursor = conn.cursor()
 
-        source_result = db.execute(text(query), {'tech_id': request.source_tech_id})
-        source = source_result.fetchone()
+            # Get both technologies
+            query = """
+                SELECT id, category, name_pt, can_connect_to, can_receive_from
+                FROM technology_cards
+                WHERE id = %(tech_id)s
+            """
 
-        target_result = db.execute(text(query), {'tech_id': request.target_tech_id})
-        target = target_result.fetchone()
+            cursor.execute(query, {'tech_id': request.source_tech_id})
+            source = cursor.fetchone()
 
-        if not source:
+            cursor.execute(query, {'tech_id': request.target_tech_id})
+            target = cursor.fetchone()
+
+            cursor.close()
+
+            if not source:
+                return ConnectionValidationResponse(
+                    valid=False,
+                    reason=f"Source technology '{request.source_tech_id}' not found"
+                )
+
+            if not target:
+                return ConnectionValidationResponse(
+                    valid=False,
+                    reason=f"Target technology '{request.target_tech_id}' not found"
+                )
+
+            # Check if connection is allowed
+            source_can_connect = source['can_connect_to'] or []
+            target_can_receive = target['can_receive_from'] or []
+
+            # Validate both directions
+            source_allows = target['category'] in source_can_connect
+            target_allows = source['category'] in target_can_receive
+
+            if not source_allows:
+                return ConnectionValidationResponse(
+                    valid=False,
+                    reason=f"{source['name_pt']} cannot connect to {target['category']} technologies",
+                    source_category=source['category'],
+                    target_category=target['category']
+                )
+
+            if not target_allows:
+                return ConnectionValidationResponse(
+                    valid=False,
+                    reason=f"{target['name_pt']} cannot receive connections from {source['category']} technologies",
+                    source_category=source['category'],
+                    target_category=target['category']
+                )
+
             return ConnectionValidationResponse(
-                valid=False,
-                reason=f"Source technology '{request.source_tech_id}' not found"
+                valid=True,
+                reason="Connection is valid",
+                source_category=source['category'],
+                target_category=target['category']
             )
-
-        if not target:
-            return ConnectionValidationResponse(
-                valid=False,
-                reason=f"Target technology '{request.target_tech_id}' not found"
-            )
-
-        # Check if connection is allowed
-        source_can_connect = source.can_connect_to or []
-        target_can_receive = target.can_receive_from or []
-
-        # Validate both directions
-        source_allows = target.category in source_can_connect
-        target_allows = source.category in target_can_receive
-
-        if not source_allows:
-            return ConnectionValidationResponse(
-                valid=False,
-                reason=f"{source.name_pt} cannot connect to {target.category} technologies",
-                source_category=source.category,
-                target_category=target.category
-            )
-
-        if not target_allows:
-            return ConnectionValidationResponse(
-                valid=False,
-                reason=f"{target.name_pt} cannot receive connections from {source.category} technologies",
-                source_category=source.category,
-                target_category=target.category
-            )
-
-        return ConnectionValidationResponse(
-            valid=True,
-            reason="Connection is valid",
-            source_category=source.category,
-            target_category=target.category
-        )
 
     except Exception as e:
         raise HTTPException(
