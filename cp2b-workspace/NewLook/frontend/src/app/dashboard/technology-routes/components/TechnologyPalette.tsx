@@ -6,13 +6,13 @@ import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
 import TechnologyCard from './TechnologyCard';
 
-const CATEGORIES: { id: TechnologyCategory; label: string; emoji: string; step?: string }[] = [
-  { id: 'feedstock', label: 'Resíduos', emoji: '🌾', step: '①' },
-  { id: 'pretreatment', label: 'Pré-Tratamento', emoji: '⚙️', step: '②' },
-  { id: 'digestion', label: 'Digestão', emoji: '🏭', step: '③' },
-  { id: 'upgrading', label: 'Purificação', emoji: '🔬', step: '④' },
-  { id: 'enduse', label: 'Aplicação', emoji: '⚡', step: '⑤' },
-  { id: 'byproduct', label: 'Subprodutos', emoji: '🌱', step: '⑥' },
+const CATEGORIES: { id: TechnologyCategory; label: string; emoji: string; step?: number }[] = [
+  { id: 'feedstock', label: 'Resíduos', emoji: '🌾', step: 1 },
+  { id: 'pretreatment', label: 'Pré-Tratamento', emoji: '⚙️', step: 2 },
+  { id: 'digestion', label: 'Digestão', emoji: '🏭', step: 3 },
+  { id: 'upgrading', label: 'Purificação', emoji: '🔬', step: 4 },
+  { id: 'enduse', label: 'Aplicação', emoji: '⚡', step: 5 },
+  { id: 'byproduct', label: 'Subprodutos', emoji: '🌱', step: 6 },
   { id: 'custom', label: 'Personalizados', emoji: '✨' },
 ];
 
@@ -128,18 +128,24 @@ export default function TechnologyPalette() {
                 if (techs.length === 0) return null;
 
                 return (
-                  <div key={cat.id} className="mb-6">
-                    <div className="sticky top-0 z-10 bg-gradient-to-r from-cp2b-lime-light/40 to-white px-3 py-2 -mx-3 rounded-lg mb-3 border-l-4 border-cp2b-green">
-                      <h3 className="text-sm font-bold text-cp2b-dark-green flex items-center gap-2">
+                  <div key={cat.id} className="mb-8">
+                    <div className="bg-white px-4 py-3 -mx-4 rounded-lg mb-3 border-l-4 border-cp2b-green shadow-sm">
+                      <div className="flex items-center gap-3">
                         {cat.step && (
-                          <span className="flex items-center justify-center w-6 h-6 bg-cp2b-green text-white rounded-full text-xs font-bold">
+                          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-cp2b-green to-cp2b-dark-green text-white rounded-full font-bold text-base shadow-md">
                             {cat.step}
-                          </span>
+                          </div>
                         )}
-                        <span>{cat.emoji}</span>
-                        <span>{cat.label}</span>
-                        <span className="text-cp2b-green font-normal">({techs.length})</span>
-                      </h3>
+                        <span className="text-2xl">{cat.emoji}</span>
+                        <div className="flex-1">
+                          <h3 className="text-base font-bold text-cp2b-dark-green leading-tight">
+                            {cat.label}
+                          </h3>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            {techs.length} {techs.length === 1 ? 'opção' : 'opções'} disponíveis
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       {techs.map((tech) => (

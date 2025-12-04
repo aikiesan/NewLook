@@ -28,11 +28,14 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         borderLeftWidth: '4px',
       }}
     >
-      {/* Target handle (left - receives input from previous stage) */}
+      {/* Target handle (left - receives input from previous stage) - LARGE & VISIBLE */}
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-blue-500 border-2 border-white"
+        className="w-5 h-5 !bg-blue-500 border-3 border-white shadow-lg hover:scale-125 transition-transform cursor-pointer"
+        style={{
+          boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.3)',
+        }}
       />
 
       <div className="flex items-center gap-2">
@@ -49,11 +52,14 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         </div>
       </div>
 
-      {/* Source handle (right - outputs to next stage) */}
+      {/* Source handle (right - outputs to next stage) - LARGE & VISIBLE */}
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-green-500 border-2 border-white"
+        className="w-5 h-5 !bg-cp2b-green border-3 border-white shadow-lg hover:scale-125 transition-transform cursor-pointer"
+        style={{
+          boxShadow: '0 0 0 3px rgba(47, 125, 50, 0.3)',
+        }}
       />
     </div>
   );
