@@ -28,10 +28,10 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         borderLeftWidth: '4px',
       }}
     >
-      {/* Target handle (top) */}
+      {/* Target handle (left - receives input from previous stage) */}
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         className="w-3 h-3 !bg-blue-500 border-2 border-white"
       />
 
@@ -49,10 +49,10 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         </div>
       </div>
 
-      {/* Source handle (bottom) */}
+      {/* Source handle (right - outputs to next stage) */}
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         className="w-3 h-3 !bg-green-500 border-2 border-white"
       />
     </div>
