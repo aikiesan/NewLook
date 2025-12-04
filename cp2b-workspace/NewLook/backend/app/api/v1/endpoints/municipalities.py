@@ -4,7 +4,7 @@ Municipalities API endpoints
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional, Dict, Any, List
 from app.services.supabase_client import get_supabase_client
-from app.middleware.auth import require_authenticated
+from app.middleware.auth import require_authenticated, optional_auth
 from app.models.auth import UserProfile
 import logging
 import json
@@ -28,10 +28,10 @@ _municipalities_gdf = None
 @router.get("/geojson")
 async def get_municipalities_geojson(
     limit: int = Query(default=1000, le=1000),
-    current_user: UserProfile = Depends(require_authenticated)
+    current_user: Optional[UserProfile] = Depends(optional_auth)
 ):
     """
-    Get all municipalities as GeoJSON FeatureCollection with POLYGON boundaries (requires authentication).
+    Get all municipalities as GeoJSON FeatureCollection with POLYGON boundaries (public access).
     Loads polygon geometries from local shapefile and merges with biogas data from Supabase.
     """
     global _municipalities_gdf

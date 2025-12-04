@@ -25,7 +25,7 @@ from app.schemas.technology_routes import (
     ConnectionValidationRequest,
     ConnectionValidationResponse,
 )
-from app.middleware.auth import get_current_user
+from app.middleware.auth import get_current_user, optional_auth
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ async def get_all_technologies(
     category: Optional[str] = None,
     include_custom: bool = True,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(optional_auth)
 ):
     """
     Get all available technology cards with their references.
@@ -64,10 +64,13 @@ async def get_all_technologies(
 
         if not include_custom:
             query += " AND tc.is_custom = FALSE"
-        else:
+        elif current_user:
             # Include only user's custom cards
             query += " AND (tc.is_custom = FALSE OR tc.created_by = :user_id)"
-            params['user_id'] = str(current_user['id'])
+            params['user_id'] = str(current_user.id)
+        else:
+             # No user, only return public cards
+             query += " AND tc.is_custom = FALSE"
 
         query += " ORDER BY tc.category, tc.name_pt"
 
