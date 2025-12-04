@@ -281,7 +281,6 @@ def get_technology_by_id(tech_id: str):
 @router.post("/technologies/custom", response_model=TechnologyCard, status_code=status.HTTP_201_CREATED)
 def create_custom_technology(
     technology: TechnologyCardCreate,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Create a custom user-defined technology card."""
@@ -364,7 +363,6 @@ def create_custom_technology(
 @router.delete("/technologies/custom/{tech_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_custom_technology(
     tech_id: str,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Delete a custom technology card (only by owner)."""
@@ -412,7 +410,7 @@ def delete_custom_technology(
 
 @router.get("/routes", response_model=List[UserRoute])
 def get_user_routes(
-    db: Session = Depends(get_db),
+    
     current_user = Depends(get_current_user)
 ):
     """Get all routes created by the current user."""
@@ -454,7 +452,6 @@ def get_user_routes(
 @router.get("/routes/{route_id}", response_model=UserRoute)
 def get_route_by_id(
     route_id: UUID,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Get a specific route by ID (must be owner)."""
@@ -502,7 +499,6 @@ def get_route_by_id(
 @router.post("/routes", response_model=UserRoute, status_code=status.HTTP_201_CREATED)
 def create_route(
     route: UserRouteCreate,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Create a new technology route."""
@@ -560,7 +556,6 @@ def create_route(
 def update_route(
     route_id: UUID,
     route_update: UserRouteUpdate,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Update an existing route (must be owner)."""
@@ -653,7 +648,6 @@ def update_route(
 @router.delete("/routes/{route_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_route(
     route_id: UUID,
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Delete a route (must be owner)."""
@@ -699,8 +693,7 @@ def delete_route(
 @router.get("/public/routes", response_model=List[UserRoutePublic])
 def get_public_routes(
     limit: int = 20,
-    offset: int = 0,
-    db: Session = Depends(get_db)
+    offset: int = 0
 ):
     """Get all public routes (no authentication required)."""
     try:
@@ -738,8 +731,7 @@ def get_public_routes(
 
 @router.get("/share/{share_token}", response_model=UserRoutePublic)
 def get_route_by_share_token(
-    share_token: str,
-    db: Session = Depends(get_db)
+    share_token: str
 ):
     """Get a route by its public share token (no authentication required)."""
     try:
