@@ -1,9 +1,11 @@
 """
 Municipalities API endpoints
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional, Dict, Any, List
 from app.services.supabase_client import get_supabase_client
+from app.middleware.auth import require_authenticated
+from app.models.auth import UserProfile
 import logging
 import json
 from pathlib import Path
@@ -26,9 +28,10 @@ _municipalities_gdf = None
 @router.get("/geojson")
 async def get_municipalities_geojson(
     limit: int = Query(default=1000, le=1000),
+    current_user: UserProfile = Depends(require_authenticated)
 ):
     """
-    Get all municipalities as GeoJSON FeatureCollection with POLYGON boundaries.
+    Get all municipalities as GeoJSON FeatureCollection with POLYGON boundaries (requires authentication).
     Loads polygon geometries from local shapefile and merges with biogas data from Supabase.
     """
     global _municipalities_gdf
@@ -196,8 +199,10 @@ async def test_shapefile():
         }
 
 @router.get("/stats/summary")
-async def get_municipalities_stats():
-    """Get summary statistics for all municipalities"""
+async def get_municipalities_stats(
+    current_user: UserProfile = Depends(require_authenticated)
+):
+    """Get summary statistics for all municipalities (requires authentication)"""
     try:
         supabase = get_supabase_client()
 
@@ -236,9 +241,10 @@ async def get_municipalities_stats():
 async def get_municipalities(
     limit: int = Query(default=100, le=1000),
     offset: int = Query(default=0, ge=0),
-    search: Optional[str] = Query(default=None)
+    search: Optional[str] = Query(default=None),
+    current_user: UserProfile = Depends(require_authenticated)
 ):
-    """Get list of municipalities with optional filtering"""
+    """Get list of municipalities with optional filtering (requires authentication)"""
     try:
         supabase = get_supabase_client()
 
@@ -271,8 +277,11 @@ async def get_municipalities(
         raise HTTPException(status_code=500, detail=f"Error fetching municipalities: {str(e)}")
 
 @router.get("/{municipality_id}")
-async def get_municipality(municipality_id: str):
-    """Get specific municipality details by ID or IBGE code"""
+async def get_municipality(
+    municipality_id: str,
+    current_user: UserProfile = Depends(require_authenticated)
+):
+    """Get specific municipality details by ID or IBGE code (requires authentication)"""
     try:
         supabase = get_supabase_client()
 
