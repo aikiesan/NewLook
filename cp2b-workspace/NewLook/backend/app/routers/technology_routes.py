@@ -25,7 +25,7 @@ from app.schemas.technology_routes import (
     ConnectionValidationRequest,
     ConnectionValidationResponse,
 )
-from app.dependencies import get_current_user
+from app.middleware.auth import get_current_user
 
 router = APIRouter()
 
