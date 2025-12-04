@@ -145,7 +145,7 @@ def get_all_technologies(
                         tr.reference_id, tr.relevance_note,
                         r.title, r.authors, r.year, r.journal, r.doi, r.url
                     FROM technology_references tr
-                    LEFT JOIN references r ON tr.reference_id = r.id
+                    LEFT JOIN "references" r ON tr.reference_id = r.id
                     WHERE tr.technology_id = %(tech_id)s
                     ORDER BY tr.display_order, tr.created_at
                 """
@@ -228,7 +228,7 @@ def get_technology_by_id(tech_id: str):
                     tr.reference_id, tr.relevance_note,
                     r.title, r.authors, r.year, r.journal, r.doi, r.url
                 FROM technology_references tr
-                LEFT JOIN references r ON tr.reference_id = r.id
+                LEFT JOIN "references" r ON tr.reference_id = r.id
                 WHERE tr.technology_id = %(tech_id)s
                 ORDER BY tr.display_order, tr.created_at
             """
