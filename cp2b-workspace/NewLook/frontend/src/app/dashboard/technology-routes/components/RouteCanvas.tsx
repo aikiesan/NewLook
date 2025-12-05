@@ -471,10 +471,11 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
 
       try {
         const technology: TechnologyCardWithReferences = JSON.parse(techData);
-        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-        const position = reactFlowInstance.project({
-          x: event.clientX - reactFlowBounds.left,
-          y: event.clientY - reactFlowBounds.top,
+
+        // Use screenToFlowPosition instead of deprecated project method
+        const position = reactFlowInstance.screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
         });
 
         const newNode: Node = {

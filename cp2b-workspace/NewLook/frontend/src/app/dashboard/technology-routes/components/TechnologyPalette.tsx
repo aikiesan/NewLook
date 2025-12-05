@@ -26,7 +26,10 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
   const [selectedCategory, setSelectedCategory] = useState<TechnologyCategory | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<TechnologyCategory>>(new Set());
+  // Start with all categories collapsed by default
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<TechnologyCategory>>(
+    new Set(['feedstock', 'pretreatment', 'digestion', 'upgrading', 'enduse', 'byproduct', 'custom'])
+  );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
