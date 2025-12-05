@@ -8,10 +8,29 @@ const nextConfig = {
   // - Dynamic routes
   // If you need static export for Cloudflare Pages, set STATIC_EXPORT=true
 
-  // Enable image optimization on Vercel (supports it natively)
-  // Only disable if STATIC_EXPORT=true
+  // Performance: Enable experimental optimizations
+  experimental: {
+    // Optimize package imports for faster builds
+    optimizePackageImports: ['lucide-react', 'recharts', 'react-chartjs-2'],
+  },
+
+  // Performance: Enable SWC minification for faster builds
+  swcMinify: true,
+
+  // Performance: Optimize images
   images: {
     unoptimized: process.env.STATIC_EXPORT === 'true',
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Performance: Enable compiler optimizations
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 
   // Disabled React Strict Mode due to known incompatibility with Leaflet
@@ -22,6 +41,19 @@ const nextConfig = {
 
   // Vercel handles trailing slashes automatically
   trailingSlash: false,
+
+  // Performance: Enable HTTP compression
+  compress: true,
+
+  // Performance: Optimize production build
+  productionBrowserSourceMaps: false,
+
+  // Performance: Modularize imports for better tree-shaking
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
+  },
 
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -35,6 +67,22 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Performance: Configure webpack for better caching
+  webpack: (config, { isServer }) => {
+    // Optimize module resolution
+    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json'];
+
+    // Enable persistent caching for faster rebuilds
+    config.cache = {
+      type: 'filesystem',
+      buildDependencies: {
+        config: [__filename],
+      },
+    };
+
+    return config;
   },
 }
 

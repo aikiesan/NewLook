@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Plus } from 'lucide-react';
 import type { TechnologyCardWithReferences } from '@/types/technology-routes';
 
@@ -12,8 +13,9 @@ interface TechnologyCardProps {
  * Draggable technology card for the palette
  * User can drag this onto the canvas to create a node
  * Also supports click-to-add functionality
+ * Memoized to prevent unnecessary re-renders
  */
-export default function TechnologyCard({ technology, onAddToCanvas }: TechnologyCardProps) {
+function TechnologyCard({ technology, onAddToCanvas }: TechnologyCardProps) {
   const onDragStart = (event: React.DragEvent) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify(technology));
     event.dataTransfer.effectAllowed = 'move';
@@ -69,3 +71,12 @@ export default function TechnologyCard({ technology, onAddToCanvas }: Technology
     </div>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export default memo(TechnologyCard, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if technology ID or callback changes
+  return (
+    prevProps.technology.id === nextProps.technology.id &&
+    prevProps.onAddToCanvas === nextProps.onAddToCanvas
+  );
+});

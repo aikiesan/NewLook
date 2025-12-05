@@ -2,6 +2,11 @@
  * CP2B Maps V3 - Technology Routes API Service
  * Educational tool for visualizing biogas technology pathways
  * Calculation-free, reference-based learning platform
+ *
+ * Performance Optimizations:
+ * - In-memory caching with TTL
+ * - Request deduplication
+ * - Optimized error handling
  */
 
 import type {
@@ -14,6 +19,82 @@ import type {
 } from '@/types/technology-routes';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// ============================================================================
+// CACHING LAYER
+// ============================================================================
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+class ApiCache {
+  private cache = new Map<string, CacheEntry<any>>();
+  private pendingRequests = new Map<string, Promise<any>>();
+
+  /**
+   * Get data from cache if valid, otherwise return null
+   */
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data as T;
+  }
+
+  /**
+   * Store data in cache with TTL (time-to-live in milliseconds)
+   */
+  set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
+  }
+
+  /**
+   * Clear cache entry
+   */
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  /**
+   * Clear all cache
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Get pending request or set new one (request deduplication)
+   */
+  getPendingRequest<T>(key: string): Promise<T> | null {
+    return this.pendingRequests.get(key) || null;
+  }
+
+  /**
+   * Set pending request
+   */
+  setPendingRequest<T>(key: string, promise: Promise<T>): void {
+    this.pendingRequests.set(key, promise);
+    // Clean up after promise resolves/rejects
+    promise.finally(() => {
+      this.pendingRequests.delete(key);
+    });
+  }
+}
+
+const apiCache = new ApiCache();
 
 /**
  * Helper function to get auth headers from Supabase session
@@ -102,40 +183,72 @@ export const technologyRoutesApi = {
   /**
    * Get all technologies with their scientific references
    * Optionally filter by category
+   * CACHED: 5 minutes TTL for faster subsequent loads
    */
   getTechnologies: async (category?: string): Promise<TechnologyCardWithReferences[]> => {
-    const params = category ? `?category=${encodeURIComponent(category)}` : '';
-    const data = await apiCall<any[]>(
-      `/api/v1/technology-routes/technologies${params}`
-    );
+    const cacheKey = `technologies:${category || 'all'}`;
 
-    // Transform snake_case API response to camelCase TypeScript interface
-    return data.map(tech => ({
-      id: tech.id,
-      category: tech.category,
-      namePt: tech.name_pt,
-      nameEn: tech.name_en,
-      emoji: tech.emoji,
-      descriptionPt: tech.description_pt,
-      descriptionEn: tech.description_en,
-      color: tech.color,
-      canConnectTo: tech.can_connect_to,
-      canReceiveFrom: tech.can_receive_from,
-      isCustom: tech.is_custom,
-      createdBy: tech.created_by,
-      createdAt: tech.created_at,
-      updatedAt: tech.updated_at,
-      references: tech.references.map((ref: any) => ({
-        referenceId: ref.reference_id,
-        title: ref.title,
-        authors: ref.authors,
-        year: ref.year,
-        journal: ref.journal,
-        doi: ref.doi,
-        url: ref.url,
-        relevanceNote: ref.relevance_note,
-      })),
-    }));
+    // Check cache first
+    const cached = apiCache.get<TechnologyCardWithReferences[]>(cacheKey);
+    if (cached) {
+      console.log(`[Cache HIT] ${cacheKey}`);
+      return cached;
+    }
+
+    // Check if request is already pending (deduplication)
+    const pending = apiCache.getPendingRequest<TechnologyCardWithReferences[]>(cacheKey);
+    if (pending) {
+      console.log(`[Request DEDUP] ${cacheKey}`);
+      return pending;
+    }
+
+    // Make new request
+    console.log(`[Cache MISS] ${cacheKey} - fetching from API`);
+    const params = category ? `?category=${encodeURIComponent(category)}` : '';
+
+    const requestPromise = (async () => {
+      const data = await apiCall<any[]>(
+        `/api/v1/technology-routes/technologies${params}`
+      );
+
+      // Transform snake_case API response to camelCase TypeScript interface
+      const transformed = data.map(tech => ({
+        id: tech.id,
+        category: tech.category,
+        namePt: tech.name_pt,
+        nameEn: tech.name_en,
+        emoji: tech.emoji,
+        descriptionPt: tech.description_pt,
+        descriptionEn: tech.description_en,
+        color: tech.color,
+        canConnectTo: tech.can_connect_to,
+        canReceiveFrom: tech.can_receive_from,
+        isCustom: tech.is_custom,
+        createdBy: tech.created_by,
+        createdAt: tech.created_at,
+        updatedAt: tech.updated_at,
+        references: tech.references.map((ref: any) => ({
+          referenceId: ref.reference_id,
+          title: ref.title,
+          authors: ref.authors,
+          year: ref.year,
+          journal: ref.journal,
+          doi: ref.doi,
+          url: ref.url,
+          relevanceNote: ref.relevance_note,
+        })),
+      }));
+
+      // Cache for 5 minutes
+      apiCache.set(cacheKey, transformed, 5 * 60 * 1000);
+
+      return transformed;
+    })();
+
+    // Register as pending to prevent duplicate requests
+    apiCache.setPendingRequest(cacheKey, requestPromise);
+
+    return requestPromise;
   },
 
   /**
