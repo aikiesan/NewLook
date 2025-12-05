@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ReactFlowProvider } from 'reactflow';
+// import { ReactFlowProvider } from 'reactflow'; // TEMPORARILY DISABLED
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,7 +9,8 @@ import { HelpCircle, Info, ChevronLeft } from 'lucide-react';
 import 'reactflow/dist/style.css';
 
 // Dynamically import components to avoid SSR issues
-const RouteCanvas = dynamic(() => import('./components/RouteCanvas'), { ssr: false });
+// TEMPORARILY DISABLED to debug build error - testing RouteCanvas:
+// const RouteCanvas = dynamic(() => import('./components/RouteCanvas'), { ssr: false });
 const TechnologyPalette = dynamic(() => import('./components/TechnologyPalette'), { ssr: false });
 const ReferencePanel = dynamic(() => import('./components/ReferencePanel'), { ssr: false });
 const RouteToolbar = dynamic(() => import('./components/RouteToolbar'), { ssr: false });
@@ -114,7 +115,12 @@ export default function TechnologyRoutesPage() {
         )}
 
         {/* Center - Canvas */}
-        <main className="flex-1 relative">
+        <main className="flex-1 relative bg-gray-100 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <p>Canvas temporarily disabled for debugging</p>
+            <p className="text-sm mt-2">Testing React initialization error</p>
+          </div>
+          {/* TEMPORARILY DISABLED to debug build error:
           <ReactFlowProvider>
             <RouteCanvas
               onNodeSelect={handleNodeSelect}
@@ -122,6 +128,7 @@ export default function TechnologyRoutesPage() {
               onSetAddToCanvasCallback={handleSetAddToCanvasCallback}
             />
           </ReactFlowProvider>
+          */}
         </main>
 
         {/* Right Sidebar - References */}
