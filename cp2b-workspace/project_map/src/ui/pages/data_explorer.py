@@ -83,99 +83,130 @@ class ResidueSelector:
 
     def render_selection_controls(self) -> Tuple[List[str], str, str]:
         """Render modern selection controls with improved design"""
-        # Modern control section with enhanced styling
-        st.markdown("""
-        <div style='background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                    padding: 1.5rem; border-radius: 15px; margin: 1rem 0;
-                    border: 1px solid #dee2e6; box-shadow: 0 4px 6px rgba(0,0,0,0.07);'>
-        </div>
-        """, unsafe_allow_html=True)
 
-        # Three-column layout inspired by Análise de Proximidade
-        col1, col2, col3 = st.columns([1.5, 2.5, 2])
+        # Initialize collapse state if not exists
+        if 'controls_collapsed' not in st.session_state:
+            st.session_state.controls_collapsed = False
 
-        # Column 1: Category and Residue Selection
-        with col1:
-            st.markdown("##### 📂 Seleção de Resíduos")
-            category = st.selectbox(
-                "🏷️ Categoria:",
-                options=["Todos"] + list(self.RESIDUE_CATEGORIES.keys()),
-                key="residue_category",
-                help="Escolha a categoria de resíduos para análise"
-            )
+        # Collapse/Expand button
+        col_btn, col_spacer = st.columns([1, 5])
+        with col_btn:
+            if st.button("🔽 Ocultar Filtros" if not st.session_state.controls_collapsed else "🔼 Mostrar Filtros",
+                        key="toggle_controls",
+                        help="Clique para expandir/recolher os controles de seleção"):
+                st.session_state.controls_collapsed = not st.session_state.controls_collapsed
+                st.rerun()
 
-            # Get available residues based on category
-            if category == "Todos":
-                available_residues = {}
-                for cat_residues in self.RESIDUE_CATEGORIES.values():
-                    available_residues.update(cat_residues)
+        # Only render controls if not collapsed
+        if not st.session_state.controls_collapsed:
+            # Modern control section with enhanced styling
+            st.markdown("""
+            <div style='background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        padding: 1.5rem; border-radius: 15px; margin: 1rem 0;
+                        border: 1px solid #dee2e6; box-shadow: 0 4px 6px rgba(0,0,0,0.07);'>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Three-column layout inspired by Análise de Proximidade
+            col1, col2, col3 = st.columns([1.5, 2.5, 2])
+
+            # Column 1: Category and Residue Selection
+            with col1:
+                st.markdown("##### 📂 Seleção de Resíduos")
+                category = st.selectbox(
+                    "🏷️ Categoria:",
+                    options=["Todos"] + list(self.RESIDUE_CATEGORIES.keys()),
+                    key="residue_category",
+                    help="Escolha a categoria de resíduos para análise"
+                )
+
+                # Get available residues based on category
+                if category == "Todos":
+                    available_residues = {}
+                    for cat_residues in self.RESIDUE_CATEGORIES.values():
+                        available_residues.update(cat_residues)
+                else:
+                    available_residues = self.RESIDUE_CATEGORIES[category]
+
+                selected_residues = st.multiselect(
+                    "🌾 Resíduos:",
+                    options=list(available_residues.keys()),
+                    default=list(available_residues.keys())[:3],  # Select first 3 by default
+                    format_func=lambda x: available_residues[x],
+                    key="selected_residues",
+                    help="Selecione um ou mais tipos de resíduos"
+                )
+
+                # Status indicator
+                if selected_residues:
+                    st.success(f"✅ {len(selected_residues)} resíduo(s) selecionado(s)")
+                else:
+                    st.warning("⚠️ Selecione pelo menos um resíduo")
+
+            # Column 2: Metrics and Visualization
+            with col2:
+                st.markdown("##### 📊 Configuração de Análise")
+
+                metric_type = st.selectbox(
+                    "📈 Métrica de análise:",
+                    options=["Potencial (m³/ano)", "Energia (MWh/ano)", "Redução CO₂ (ton/ano)"],
+                    key="metric_type",
+                    help="Escolha a métrica para visualização dos dados"
+                )
+
+                display_type = st.selectbox(
+                    "🎯 Tipo de visualização:",
+                    options=["Individual", "Agregado", "Comparativo"],
+                    key="display_type",
+                    help="Defina como os dados serão apresentados"
+                )
+
+                # Metric explanation
+                if metric_type == "Potencial (m³/ano)":
+                    st.caption("📏 Volume de biogás em metros cúbicos por ano")
+                elif metric_type == "Energia (MWh/ano)":
+                    st.caption("⚡ Potencial energético em megawatts-hora por ano")
+                else:
+                    st.caption("🌱 Redução de emissões de CO₂ em toneladas por ano")
+
+            # Column 3: Analysis Summary and Actions
+            with col3:
+                st.markdown("##### 🎯 Resumo da Análise")
+
+                if selected_residues:
+                    st.info(f"""
+                    **📋 Configuração Atual:**
+                    - **Resíduos:** {len(selected_residues)}
+                    - **Métrica:** {metric_type.split('(')[0].strip()}
+                    - **Visualização:** {display_type}
+                    """)
+
+                    # Quick analysis button
+                    if st.button("🚀 Executar Análise Rápida", help="Gera análise automática dos dados selecionados"):
+                        st.success("✨ Análise executada! Verifique os resultados abaixo.")
+                else:
+                    st.warning("📌 Configure os parâmetros ao lado para iniciar a análise")
+
+            # Elegant separator
+            st.markdown("""
+            <div style='height: 2px; background: linear-gradient(90deg, transparent, #4a90e2, transparent);
+                        margin: 2rem 0 1rem 0; border-radius: 1px;'></div>
+            """, unsafe_allow_html=True)
+        else:
+            # Show compact summary when collapsed
+            if 'selected_residues' in st.session_state and st.session_state.selected_residues:
+                selected_count = len(st.session_state.selected_residues)
+                metric = st.session_state.get('metric_type', 'Potencial (m³/ano)')
+                display = st.session_state.get('display_type', 'Individual')
+
+                st.info(f"📊 **Filtros Ativos:** {selected_count} resíduo(s) | Métrica: {metric.split('(')[0].strip()} | Visualização: {display}")
             else:
-                available_residues = self.RESIDUE_CATEGORIES[category]
+                st.warning("⚠️ Nenhum filtro configurado")
 
-            selected_residues = st.multiselect(
-                "🌾 Resíduos:",
-                options=list(available_residues.keys()),
-                default=list(available_residues.keys())[:3],  # Select first 3 by default
-                format_func=lambda x: available_residues[x],
-                key="selected_residues",
-                help="Selecione um ou mais tipos de resíduos"
-            )
-
-            # Status indicator
-            if selected_residues:
-                st.success(f"✅ {len(selected_residues)} resíduo(s) selecionado(s)")
-            else:
-                st.warning("⚠️ Selecione pelo menos um resíduo")
-
-        # Column 2: Metrics and Visualization
-        with col2:
-            st.markdown("##### 📊 Configuração de Análise")
-
-            metric_type = st.selectbox(
-                "📈 Métrica de análise:",
-                options=["Potencial (m³/ano)", "Energia (MWh/ano)", "Redução CO₂ (ton/ano)"],
-                key="metric_type",
-                help="Escolha a métrica para visualização dos dados"
-            )
-
-            display_type = st.selectbox(
-                "🎯 Tipo de visualização:",
-                options=["Individual", "Agregado", "Comparativo"],
-                key="display_type",
-                help="Defina como os dados serão apresentados"
-            )
-
-            # Metric explanation
-            if metric_type == "Potencial (m³/ano)":
-                st.caption("📏 Volume de biogás em metros cúbicos por ano")
-            elif metric_type == "Energia (MWh/ano)":
-                st.caption("⚡ Potencial energético em megawatts-hora por ano")
-            else:
-                st.caption("🌱 Redução de emissões de CO₂ em toneladas por ano")
-
-        # Column 3: Analysis Summary and Actions
-        with col3:
-            st.markdown("##### 🎯 Resumo da Análise")
-
-            if selected_residues:
-                st.info(f"""
-                **📋 Configuração Atual:**
-                - **Resíduos:** {len(selected_residues)}
-                - **Métrica:** {metric_type.split('(')[0].strip()}
-                - **Visualização:** {display_type}
-                """)
-
-                # Quick analysis button
-                if st.button("🚀 Executar Análise Rápida", help="Gera análise automática dos dados selecionados"):
-                    st.success("✨ Análise executada! Verifique os resultados abaixo.")
-            else:
-                st.warning("📌 Configure os parâmetros ao lado para iniciar a análise")
-
-        # Elegant separator
-        st.markdown("""
-        <div style='height: 2px; background: linear-gradient(90deg, transparent, #4a90e2, transparent);
-                    margin: 2rem 0 1rem 0; border-radius: 1px;'></div>
-        """, unsafe_allow_html=True)
+        # Return current values from session state or defaults
+        selected_residues = st.session_state.get('selected_residues', [])
+        metric_type = st.session_state.get('metric_type', "Potencial (m³/ano)")
+        display_type = st.session_state.get('display_type', "Individual")
 
         return selected_residues, metric_type, display_type
 
