@@ -131,6 +131,47 @@ def get_db():
             logger.debug("Connection returned to pool")
 
 
+def get_db_fastapi():
+    """
+    FastAPI dependency for database connections (REQUIRED for FastAPI Depends()).
+    This is a generator function that yields connections directly for FastAPI's dependency injection.
+
+    Usage in FastAPI:
+        @router.get("/endpoint")
+        def endpoint(db = Depends(get_db_fastapi)):
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM table")
+            # ... use connection
+            cursor.close()
+
+    Yields:
+        psycopg2 connection from pool
+    """
+    conn = None
+    connection_pool = get_connection_pool()
+
+    try:
+        # Get connection from pool
+        conn = connection_pool.getconn()
+
+        # Ensure UTF-8 encoding
+        conn.set_client_encoding('UTF8')
+        logger.debug(f"FastAPI dependency: Connection acquired from pool")
+
+        yield conn
+
+    except psycopg2.Error as e:
+        logger.error(f"Database error in FastAPI dependency: {e}")
+        if conn:
+            conn.rollback()
+        raise
+    finally:
+        if conn:
+            # Return connection to pool
+            connection_pool.putconn(conn)
+            logger.debug("FastAPI dependency: Connection returned to pool")
+
+
 @contextmanager
 def get_db_transaction():
     """

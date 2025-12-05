@@ -5,14 +5,13 @@ Calculation-free, reference-based learning platform.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import List, Optional
 import secrets
 from uuid import UUID
 import json
 
-from app.core.database import get_db
+from app.core.database import get_db_fastapi
 from app.schemas.technology_routes import (
     TechnologyCard,
     TechnologyCardCreate,
@@ -35,7 +34,7 @@ router = APIRouter()
 # ============================================================================
 
 @router.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check(db = Depends(get_db_fastapi)):
     """
     Health check endpoint to verify database tables and data exist.
     Public access, no authentication required.
@@ -93,7 +92,7 @@ def health_check(db: Session = Depends(get_db)):
 def get_all_technologies(
     category: Optional[str] = None,
     include_custom: bool = True,
-    db: Session = Depends(get_db),
+    db = Depends(get_db_fastapi),
     current_user = Depends(optional_auth)
 ):
     """
@@ -192,7 +191,7 @@ def get_all_technologies(
 @router.get("/technologies/{tech_id}", response_model=TechnologyCardWithReferences)
 def get_technology_by_id(
     tech_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db_fastapi)
 ):
     """Get a specific technology card with its references."""
     try:
@@ -272,7 +271,7 @@ def get_technology_by_id(
 @router.post("/technologies/custom", response_model=TechnologyCard, status_code=status.HTTP_201_CREATED)
 def create_custom_technology(
     technology: TechnologyCardCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Create a custom user-defined technology card."""
@@ -355,7 +354,7 @@ def create_custom_technology(
 @router.delete("/technologies/custom/{tech_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_custom_technology(
     tech_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Delete a custom technology card (only by owner)."""
@@ -403,7 +402,7 @@ def delete_custom_technology(
 
 @router.get("/routes", response_model=List[UserRoute])
 def get_user_routes(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Get all routes created by the current user."""
@@ -445,7 +444,7 @@ def get_user_routes(
 @router.get("/routes/{route_id}", response_model=UserRoute)
 def get_route_by_id(
     route_id: UUID,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Get a specific route by ID (must be owner)."""
@@ -493,7 +492,7 @@ def get_route_by_id(
 @router.post("/routes", response_model=UserRoute, status_code=status.HTTP_201_CREATED)
 def create_route(
     route: UserRouteCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Create a new technology route."""
@@ -551,7 +550,7 @@ def create_route(
 def update_route(
     route_id: UUID,
     route_update: UserRouteUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Update an existing route (must be owner)."""
@@ -644,7 +643,7 @@ def update_route(
 @router.delete("/routes/{route_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_route(
     route_id: UUID,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db_fastapi),
     current_user = Depends(get_current_user)
 ):
     """Delete a route (must be owner)."""
@@ -691,7 +690,7 @@ def delete_route(
 def get_public_routes(
     limit: int = 20,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db_fastapi)
 ):
     """Get all public routes (no authentication required)."""
     try:
@@ -730,7 +729,7 @@ def get_public_routes(
 @router.get("/share/{share_token}", response_model=UserRoutePublic)
 def get_route_by_share_token(
     share_token: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db_fastapi)
 ):
     """Get a route by its public share token (no authentication required)."""
     try:
@@ -775,7 +774,7 @@ def get_route_by_share_token(
 @router.post("/validate-connection", response_model=ConnectionValidationResponse)
 def validate_connection(
     request: ConnectionValidationRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db_fastapi)
 ):
     """
     Validate if two technologies can be connected.
