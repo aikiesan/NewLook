@@ -15,7 +15,7 @@ import ReactFlow, {
   useReactFlow,
   NodeDragHandler,
 } from 'reactflow';
-import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Trash2, Undo2, Redo2, LayoutGrid, Download } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Trash2, Undo2, Redo2, LayoutGrid, Download, Eraser } from 'lucide-react';
 import CustomNode from './CustomNode';
 import ConnectionToast, { ToastType } from './ConnectionToast';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
@@ -28,6 +28,7 @@ const nodeTypes = {
 interface RouteCanvasProps {
   onNodeSelect: (nodeId: string | null) => void;
   selectedNodeId: string | null;
+  onSetAddToCanvasCallback?: (callback: (tech: TechnologyCardWithReferences) => void) => void;
 }
 
 interface ToastState {
@@ -45,7 +46,7 @@ interface HistoryState {
  * Main React Flow canvas for building technology routes
  * Handles drag-and-drop, connections, and validation
  */
-export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanvasProps) {
+export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCanvasCallback }: RouteCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -61,6 +62,12 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
   const [history, setHistory] = useState<HistoryState[]>([{ nodes: [], edges: [] }]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const isHistoryUpdate = useRef(false);
+
+  // Clear All confirmation state
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+
+  // Click-to-add counter for positioning
+  const clickAddCounter = useRef(0);
 
   // Hide zoom hint after 5 seconds
   useEffect(() => {
@@ -273,6 +280,66 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
     // Fit view to show everything
     reactFlowInstance.fitView({ padding: 0.2, duration: 400 });
   }, [reactFlowInstance, showToast]);
+
+  // Clear All function
+  const handleClearAll = useCallback(() => {
+    setShowClearConfirmation(true);
+  }, []);
+
+  const handleConfirmClear = useCallback(() => {
+    setNodes([]);
+    setEdges([]);
+    setShowClearConfirmation(false);
+    showToast('🗑️ Todos os cards foram removidos', 'success');
+  }, [setNodes, setEdges, showToast]);
+
+  const handleCancelClear = useCallback(() => {
+    setShowClearConfirmation(false);
+  }, []);
+
+  // Handle click-to-add from palette
+  const handleAddToCanvas = useCallback(
+    (technology: TechnologyCardWithReferences) => {
+      if (!reactFlowInstance) return;
+
+      // Calculate position: stagger cards in a diagonal pattern
+      const baseX = 200;
+      const baseY = 150;
+      const offsetX = (clickAddCounter.current % 5) * 50;
+      const offsetY = Math.floor(clickAddCounter.current / 5) * 50;
+
+      clickAddCounter.current += 1;
+
+      const position = {
+        x: baseX + offsetX,
+        y: baseY + offsetY,
+      };
+
+      const newNode: Node = {
+        id: `${technology.id}-${Date.now()}`,
+        type: 'technology',
+        position,
+        data: {
+          techId: technology.id,
+          label: technology.namePt,
+          emoji: technology.emoji,
+          color: technology.color,
+          category: technology.category,
+        },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+      showToast(`✅ "${technology.namePt}" adicionado ao canvas`, 'success');
+    },
+    [reactFlowInstance, setNodes, showToast]
+  );
+
+  // Register the callback with parent component
+  useEffect(() => {
+    if (onSetAddToCanvasCallback) {
+      onSetAddToCanvasCallback(handleAddToCanvas);
+    }
+  }, [handleAddToCanvas, onSetAddToCanvasCallback]);
 
   // Show toast notification
   const showToast = useCallback((message: string, type: ToastType) => {
@@ -599,6 +666,22 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
                   Exportar
                 </span>
               </button>
+
+              <button
+                onClick={handleClearAll}
+                disabled={nodes.length === 0}
+                className={`group relative p-2 rounded transition-all duration-200 ${
+                  nodes.length === 0
+                    ? 'opacity-40 cursor-not-allowed'
+                    : 'hover:bg-red-50 hover:scale-110'
+                }`}
+                title="Limpar Tudo"
+              >
+                <Eraser className="text-red-500" size={20} />
+                <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-red-500 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  Limpar Tudo
+                </span>
+              </button>
             </div>
           </div>
 
@@ -693,6 +776,43 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
                   <p className="text-white/90 text-sm">
                     {isOverTrash ? '🗑️ Card será removido' : 'Zona de exclusão'}
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Clear All Confirmation Dialog */}
+          {showClearConfirmation && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 border-2 border-red-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <Eraser className="text-red-500" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Limpar Tudo?</h3>
+                    <p className="text-sm text-gray-600">Esta ação não pode ser desfeita</p>
+                  </div>
+                </div>
+
+                <p className="text-gray-700 mb-6">
+                  Tem certeza que deseja remover <strong>todos os {nodes.length} cards</strong> e suas conexões do canvas?
+                  Todo o progresso será perdido.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleCancelClear}
+                    className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleConfirmClear}
+                    className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                  >
+                    Sim, Limpar Tudo
+                  </button>
                 </div>
               </div>
             </div>

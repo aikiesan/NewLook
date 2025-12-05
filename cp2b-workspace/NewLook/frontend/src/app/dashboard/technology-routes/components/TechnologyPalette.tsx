@@ -16,7 +16,11 @@ const CATEGORIES: { id: TechnologyCategory; label: string; emoji: string; step?:
   { id: 'custom', label: 'Personalizados', emoji: '✨' },
 ];
 
-export default function TechnologyPalette() {
+interface TechnologyPaletteProps {
+  onAddToCanvas?: (technology: TechnologyCardWithReferences) => void;
+}
+
+export default function TechnologyPalette({ onAddToCanvas }: TechnologyPaletteProps) {
   const [technologies, setTechnologies] = useState<TechnologyCardWithReferences[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TechnologyCategory | 'all'>('all');
@@ -185,7 +189,7 @@ export default function TechnologyPalette() {
                     </div>
                     <div className="space-y-2">
                       {techs.map((tech) => (
-                        <TechnologyCard key={tech.id} technology={tech} />
+                        <TechnologyCard key={tech.id} technology={tech} onAddToCanvas={onAddToCanvas} />
                       ))}
                     </div>
                   </div>

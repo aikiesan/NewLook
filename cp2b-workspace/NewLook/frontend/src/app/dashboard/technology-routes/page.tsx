@@ -25,6 +25,7 @@ export default function TechnologyRoutesPage() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [addToCanvasCallback, setAddToCanvasCallback] = useState<((tech: any) => void) | null>(null);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -34,6 +35,10 @@ export default function TechnologyRoutesPage() {
   const handleStartBuilding = useCallback(() => {
     setShowWelcome(false);
     setIsPaletteOpen(true);
+  }, []);
+
+  const handleSetAddToCanvasCallback = useCallback((callback: (tech: any) => void) => {
+    setAddToCanvasCallback(() => callback);
   }, []);
 
   return (
@@ -102,7 +107,7 @@ export default function TechnologyRoutesPage() {
         {/* Left Sidebar - Technology Palette */}
         {isPaletteOpen && (
           <aside className="w-80 bg-white border-r border-cp2b-green/20 shadow-sm overflow-y-auto">
-            <TechnologyPalette />
+            <TechnologyPalette onAddToCanvas={addToCanvasCallback || undefined} />
           </aside>
         )}
 
@@ -112,6 +117,7 @@ export default function TechnologyRoutesPage() {
             <RouteCanvas
               onNodeSelect={handleNodeSelect}
               selectedNodeId={selectedNodeId}
+              onSetAddToCanvasCallback={handleSetAddToCanvasCallback}
             />
           </ReactFlowProvider>
         </main>
