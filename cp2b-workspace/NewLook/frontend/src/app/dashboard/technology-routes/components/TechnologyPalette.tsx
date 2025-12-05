@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
 import TechnologyCard from './TechnologyCard';
@@ -22,6 +22,7 @@ export default function TechnologyPalette() {
   const [selectedCategory, setSelectedCategory] = useState<TechnologyCategory | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<TechnologyCategory>>(new Set());
 
   useEffect(() => {
     loadTechnologies();
@@ -53,6 +54,18 @@ export default function TechnologyPalette() {
     acc[cat.id] = filteredTechnologies.filter((tech) => tech.category === cat.id);
     return acc;
   }, {} as Record<TechnologyCategory, TechnologyCardWithReferences[]>);
+
+  const toggleCategory = (categoryId: TechnologyCategory) => {
+    setCollapsedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -119,18 +132,31 @@ export default function TechnologyPalette() {
                 const techs = groupedTechnologies[cat.id];
                 if (techs.length === 0) return null;
 
+                const isCollapsed = collapsedCategories.has(cat.id);
+
                 return (
-                  <div key={cat.id} className="mb-6">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <div key={cat.id} className="mb-4">
+                    <button
+                      onClick={() => toggleCategory(cat.id)}
+                      className="w-full text-left text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
                       <span>{cat.emoji}</span>
                       <span>{cat.label}</span>
                       <span className="text-gray-400">({techs.length})</span>
-                    </h3>
-                    <div className="space-y-2">
-                      {techs.map((tech) => (
-                        <TechnologyCard key={tech.id} technology={tech} />
-                      ))}
-                    </div>
+                    </button>
+
+                    {!isCollapsed && (
+                      <div className="space-y-2 ml-6">
+                        {techs.map((tech) => (
+                          <TechnologyCard key={tech.id} technology={tech} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               }

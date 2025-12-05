@@ -56,8 +56,15 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
         );
 
         if (!validation.valid) {
-          alert(validation.reason || 'Conexão inválida');
-          return;
+          console.warn('Connection validation failed:', validation.reason);
+          // Still allow connection but show warning
+          const shouldContinue = confirm(
+            `⚠️ Aviso: ${validation.reason || 'Esta conexão pode não ser ideal.'}\n\nDeseja continuar mesmo assim?`
+          );
+
+          if (!shouldContinue) {
+            return;
+          }
         }
 
         // Add edge with animation
@@ -65,8 +72,12 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
           addEdge(
             {
               ...connection,
-              animated: true,
-              style: { stroke: '#3B82F6', strokeWidth: 2 },
+              animated: validation.valid,
+              style: {
+                stroke: validation.valid ? '#3B82F6' : '#F59E0B',
+                strokeWidth: 2,
+                strokeDasharray: validation.valid ? '0' : '5,5'
+              },
               type: 'smoothstep',
             },
             eds
@@ -74,7 +85,19 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
         );
       } catch (error) {
         console.error('Connection validation failed:', error);
-        alert('Erro ao validar conexão. Tente novamente.');
+        // Fallback: allow connection even if validation fails
+        console.log('Adding connection without validation due to error');
+        setEdges((eds) =>
+          addEdge(
+            {
+              ...connection,
+              animated: false,
+              style: { stroke: '#94a3b8', strokeWidth: 2 },
+              type: 'smoothstep',
+            },
+            eds
+          )
+        );
       }
     },
     [nodes, setEdges]
