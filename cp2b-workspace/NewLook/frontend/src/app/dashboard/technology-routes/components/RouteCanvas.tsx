@@ -69,6 +69,17 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
   // Click-to-add counter for positioning
   const clickAddCounter = useRef(0);
 
+  // Show toast notification - MOVED UP to fix initialization order
+  const showToast = useCallback((message: string, type: ToastType) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { message, type, id }]);
+  }, []);
+
+  // Remove toast
+  const removeToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   // Hide zoom hint after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -340,17 +351,6 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
       onSetAddToCanvasCallback(handleAddToCanvas);
     }
   }, [handleAddToCanvas, onSetAddToCanvasCallback]);
-
-  // Show toast notification
-  const showToast = useCallback((message: string, type: ToastType) => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { message, type, id }]);
-  }, []);
-
-  // Remove toast
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
 
   // Categorize connection type based on categories
   const categorizeConnection = (sourceCategory: string, targetCategory: string): 'standard' | 'experimental' => {
