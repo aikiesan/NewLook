@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
@@ -32,7 +32,7 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
     loadTechnologies();
   }, []);
 
-  const loadTechnologies = async () => {
+  const loadTechnologies = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -48,20 +48,27 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
       setLoading(false);
       console.log('[TechnologyPalette] Loading complete');
     }
-  };
+  }, []);
 
-  const filteredTechnologies = technologies.filter((tech) => {
-    const matchesSearch =
-      tech.namePt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tech.nameEn.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || tech.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Memoize filtered technologies for performance
+  const filteredTechnologies = useMemo(() => {
+    return technologies.filter((tech) => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        tech.namePt.toLowerCase().includes(searchLower) ||
+        tech.nameEn.toLowerCase().includes(searchLower);
+      const matchesCategory = selectedCategory === 'all' || tech.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [technologies, searchQuery, selectedCategory]);
 
-  const groupedTechnologies = CATEGORIES.reduce((acc, cat) => {
-    acc[cat.id] = filteredTechnologies.filter((tech) => tech.category === cat.id);
-    return acc;
-  }, {} as Record<TechnologyCategory, TechnologyCardWithReferences[]>);
+  // Memoize grouped technologies for performance
+  const groupedTechnologies = useMemo(() => {
+    return CATEGORIES.reduce((acc, cat) => {
+      acc[cat.id] = filteredTechnologies.filter((tech) => tech.category === cat.id);
+      return acc;
+    }, {} as Record<TechnologyCategory, TechnologyCardWithReferences[]>);
+  }, [filteredTechnologies]);
 
   return (
     <div className="flex flex-col h-full">
@@ -153,7 +160,22 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
       {/* Technology List */}
       <div className="flex-1 overflow-y-auto p-4">
         {loading && (
-          <div className="text-center text-gray-500 py-8">Carregando...</div>
+          <div className="space-y-6">
+            {/* Loading Skeletons */}
+            {[...Array(6)].map((_, categoryIndex) => (
+              <div key={categoryIndex} className="animate-pulse">
+                {/* Category Header Skeleton */}
+                <div className="bg-gray-200 rounded-lg h-16 mb-3"></div>
+
+                {/* Card Skeletons */}
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, cardIndex) => (
+                    <div key={cardIndex} className="bg-gray-100 rounded-lg h-24 border-l-4 border-gray-300"></div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {error && (
