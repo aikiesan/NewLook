@@ -13,7 +13,8 @@ const RouteCanvas = dynamic(() => import('./components/RouteCanvas'), { ssr: fal
 const TechnologyPalette = dynamic(() => import('./components/TechnologyPalette'), { ssr: false });
 const ReferencePanel = dynamic(() => import('./components/ReferencePanel'), { ssr: false });
 const RouteToolbar = dynamic(() => import('./components/RouteToolbar'), { ssr: false });
-const WelcomeWizard = dynamic(() => import('./components/WelcomeWizard'), { ssr: false });
+// TEMPORARILY DISABLED to debug build error:
+// const WelcomeWizard = dynamic(() => import('./components/WelcomeWizard'), { ssr: false });
 
 /**
  * CP2B Technology Routes Page
@@ -24,7 +25,7 @@ export default function TechnologyRoutesPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false); // TEMPORARILY DISABLED
   const [addToCanvasCallback, setAddToCanvasCallback] = useState<((tech: any) => void) | null>(null);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
@@ -94,10 +95,10 @@ export default function TechnologyRoutesPage() {
         </div>
       </header>
 
-      {/* Welcome Wizard Overlay */}
-      {showWelcome && (
+      {/* Welcome Wizard Overlay - TEMPORARILY DISABLED */}
+      {/* {showWelcome && (
         <WelcomeWizard onClose={handleStartBuilding} />
-      )}
+      )} */}
 
       {/* Toolbar */}
       <RouteToolbar />
