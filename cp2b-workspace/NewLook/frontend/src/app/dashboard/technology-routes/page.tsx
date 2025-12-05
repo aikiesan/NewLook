@@ -58,11 +58,11 @@ export default function TechnologyRoutesPage() {
             <div className="h-6 w-px bg-white/30" />
             <div className="flex items-center gap-3">
               <Image
-                src="/images/cp2b-logo-white.svg"
+                src="/images/logotipo-full-black.png"
                 alt="CP2B"
                 width={32}
                 height={32}
-                className="h-8 w-8"
+                className="h-8 w-auto brightness-0 invert"
               />
               <div>
                 <h1 className="text-lg font-bold text-white">Rotas Tecnológicas</h1>
