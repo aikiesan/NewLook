@@ -20,6 +20,7 @@ const RouteToolbar = dynamic(() => import('./components/RouteToolbar'), { ssr: f
  * CP2B Technology Routes Page
  * Educational tool for creating visual biogas technology pathways
  * Zero calculations - pure visual organization with scientific references
+ * Force redeploy: 2025-12-05
  */
 export default function TechnologyRoutesPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
