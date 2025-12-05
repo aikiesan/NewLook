@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -12,7 +12,9 @@ import ReactFlow, {
   Node,
   Edge,
   ReactFlowInstance,
+  useReactFlow,
 } from 'reactflow';
+import { ZoomIn, ZoomOut, Maximize2, MousePointer2 } from 'lucide-react';
 import CustomNode from './CustomNode';
 import ConnectionToast, { ToastType } from './ConnectionToast';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
@@ -43,6 +45,34 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [toasts, setToasts] = useState<ToastState[]>([]);
+  const [showZoomHint, setShowZoomHint] = useState(true);
+
+  // Hide zoom hint after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowZoomHint(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Custom zoom functions
+  const handleZoomIn = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomIn({ duration: 400 });
+    }
+  }, [reactFlowInstance]);
+
+  const handleZoomOut = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomOut({ duration: 400 });
+    }
+  }, [reactFlowInstance]);
+
+  const handleFitView = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 400 });
+    }
+  }, [reactFlowInstance]);
 
   // Show toast notification
   const showToast = useCallback((message: string, type: ToastType) => {
@@ -109,17 +139,19 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
           targetNode.data.category
         );
 
-        // Determine edge style based on connection type
+        // Determine edge style based on connection type with enhanced animations
         const edgeStyle = {
           standard: {
             stroke: '#2F7D32', // cp2b-green
-            strokeWidth: 2,
+            strokeWidth: 3,
             strokeDasharray: undefined,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           experimental: {
             stroke: '#F59E0B', // amber-500
-            strokeWidth: 2,
-            strokeDasharray: '5 5',
+            strokeWidth: 3,
+            strokeDasharray: '8 4',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
         }[connectionType];
 
@@ -235,12 +267,79 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId }: RouteCanva
           attributionPosition="bottom-left"
           defaultEdgeOptions={{
             type: 'smoothstep',
-            animated: false,
-            style: { strokeWidth: 2, stroke: '#94a3b8' },
+            animated: true,
+            style: {
+              strokeWidth: 3,
+              stroke: '#94a3b8',
+              transition: 'all 0.2s ease-in-out',
+            },
           }}
+          connectionLineStyle={{
+            strokeWidth: 3,
+            stroke: '#2F7D32',
+            strokeDasharray: '5, 5',
+          }}
+          connectionLineType="smoothstep"
         >
           <Background color="#e5e7eb" gap={16} />
-          <Controls />
+
+          {/* Custom Zoom Controls */}
+          <div className="absolute bottom-8 right-8 z-10 flex flex-col gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="group relative p-3 bg-white hover:bg-cp2b-lime-light border-2 border-cp2b-green/30 hover:border-cp2b-green rounded-lg shadow-lg transition-all duration-200 hover:scale-110"
+              title="Aumentar Zoom (ou use a roda do mouse)"
+            >
+              <ZoomIn className="text-cp2b-dark-green" size={24} />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-cp2b-dark-green text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Aumentar Zoom
+              </span>
+            </button>
+
+            <button
+              onClick={handleZoomOut}
+              className="group relative p-3 bg-white hover:bg-cp2b-lime-light border-2 border-cp2b-green/30 hover:border-cp2b-green rounded-lg shadow-lg transition-all duration-200 hover:scale-110"
+              title="Diminuir Zoom (ou use a roda do mouse)"
+            >
+              <ZoomOut className="text-cp2b-dark-green" size={24} />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-cp2b-dark-green text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Diminuir Zoom
+              </span>
+            </button>
+
+            <button
+              onClick={handleFitView}
+              className="group relative p-3 bg-white hover:bg-cp2b-lime-light border-2 border-cp2b-green/30 hover:border-cp2b-green rounded-lg shadow-lg transition-all duration-200 hover:scale-110"
+              title="Ajustar Visualização"
+            >
+              <Maximize2 className="text-cp2b-dark-green" size={24} />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-cp2b-dark-green text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Ajustar ao Canvas
+              </span>
+            </button>
+          </div>
+
+          {/* Zoom Hint - Shows for first 8 seconds */}
+          {showZoomHint && (
+            <div className="absolute top-8 right-8 z-10 animate-bounce">
+              <div className="bg-gradient-to-r from-cp2b-green to-cp2b-dark-green text-white px-5 py-3 rounded-lg shadow-xl border-2 border-white">
+                <div className="flex items-center gap-3">
+                  <MousePointer2 className="flex-shrink-0" size={20} />
+                  <div className="text-sm">
+                    <p className="font-bold">💡 Dica de Navegação</p>
+                    <p className="text-cp2b-lime-light">Use a roda do mouse para zoom</p>
+                  </div>
+                  <button
+                    onClick={() => setShowZoomHint(false)}
+                    className="ml-2 text-white/80 hover:text-white text-xl leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <MiniMap
             nodeColor={(node) => node.data.color || '#2F7D32'}
             maskColor="rgba(0, 0, 0, 0.1)"

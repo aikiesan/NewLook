@@ -14,8 +14,18 @@ interface CustomNodeData {
 /**
  * Custom node component for React Flow canvas
  * Displays technology cards with emoji, label, and category
+ * Connection handles are directional based on card type:
+ * - Residues (feedstock): only source (right) - starting points
+ * - Subproducts (byproduct) & Applications (enduse): only target (left) - ending points
+ * - Others: both handles - intermediate processes
  */
 function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
+  // Determine which handles to show based on category
+  const isStartPoint = data.category === 'feedstock'; // Residues are starting points
+  const isEndPoint = data.category === 'byproduct' || data.category === 'enduse'; // Subproducts and Applications are ending points
+  const showTargetHandle = !isStartPoint; // Show target (left) unless it's a starting point
+  const showSourceHandle = !isEndPoint; // Show source (right) unless it's an ending point
+
   return (
     <div
       className={`
@@ -28,15 +38,18 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         borderLeftWidth: '4px',
       }}
     >
-      {/* Target handle (left - receives input from previous stage) - LARGE & VISIBLE */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="w-5 h-5 !bg-blue-500 border-3 border-white shadow-lg hover:scale-125 transition-transform cursor-pointer"
-        style={{
-          boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.3)',
-        }}
-      />
+      {/* Target handle (left - receives input from previous stage) - EXTRA LARGE & PROMINENT */}
+      {showTargetHandle && (
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="w-7 h-7 !bg-blue-500 border-4 border-white shadow-xl hover:scale-150 hover:!bg-blue-600 transition-all cursor-grab active:cursor-grabbing"
+          style={{
+            boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.4), 0 0 12px rgba(59, 130, 246, 0.6)',
+            left: '-14px',
+          }}
+        />
+      )}
 
       <div className="flex items-center gap-2">
         <span className="text-2xl" role="img" aria-label={data.label}>
@@ -52,15 +65,18 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
         </div>
       </div>
 
-      {/* Source handle (right - outputs to next stage) - LARGE & VISIBLE */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-5 h-5 !bg-cp2b-green border-3 border-white shadow-lg hover:scale-125 transition-transform cursor-pointer"
-        style={{
-          boxShadow: '0 0 0 3px rgba(47, 125, 50, 0.3)',
-        }}
-      />
+      {/* Source handle (right - outputs to next stage) - EXTRA LARGE & PROMINENT */}
+      {showSourceHandle && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="w-7 h-7 !bg-cp2b-green border-4 border-white shadow-xl hover:scale-150 hover:!bg-cp2b-dark-green transition-all cursor-grab active:cursor-grabbing"
+          style={{
+            boxShadow: '0 0 0 4px rgba(47, 125, 50, 0.4), 0 0 12px rgba(47, 125, 50, 0.6)',
+            right: '-14px',
+          }}
+        />
+      )}
     </div>
   );
 }
