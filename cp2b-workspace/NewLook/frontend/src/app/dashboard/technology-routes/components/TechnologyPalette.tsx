@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown, ChevronRight } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
 import TechnologyCard from './TechnologyCard';
@@ -26,6 +26,7 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
   const [selectedCategory, setSelectedCategory] = useState<TechnologyCategory | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<TechnologyCategory>>(new Set());
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -76,6 +77,18 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
       return acc;
     }, {} as Record<TechnologyCategory, TechnologyCardWithReferences[]>);
   }, [filteredTechnologies]);
+
+  const toggleCategory = (categoryId: TechnologyCategory) => {
+    setCollapsedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -196,17 +209,27 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
                 const techs = groupedTechnologies[cat.id];
                 if (techs.length === 0) return null;
 
+                const isCollapsed = collapsedCategories.has(cat.id);
+
                 return (
                   <div key={cat.id} className="mb-8">
-                    <div className="bg-white px-4 py-3 -mx-4 rounded-lg mb-3 border-l-4 border-cp2b-green shadow-sm">
+                    <button
+                      onClick={() => toggleCategory(cat.id)}
+                      className="w-full bg-white px-4 py-3 -mx-4 rounded-lg mb-3 border-l-4 border-cp2b-green shadow-sm hover:shadow-md transition-all"
+                    >
                       <div className="flex items-center gap-3">
+                        {isCollapsed ? (
+                          <ChevronRight className="w-5 h-5 text-cp2b-green flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-cp2b-green flex-shrink-0" />
+                        )}
                         {cat.step && (
                           <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-cp2b-green to-cp2b-dark-green text-white rounded-full font-bold text-base shadow-md">
                             {cat.step}
                           </div>
                         )}
                         <span className="text-2xl">{cat.emoji}</span>
-                        <div className="flex-1">
+                        <div className="flex-1 text-left">
                           <h3 className="text-base font-bold text-cp2b-dark-green leading-tight">
                             {cat.label}
                           </h3>
@@ -215,12 +238,15 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
                           </p>
                         </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      {techs.map((tech) => (
-                        <TechnologyCard key={tech.id} technology={tech} onAddToCanvas={onAddToCanvas} />
-                      ))}
-                    </div>
+                    </button>
+
+                    {!isCollapsed && (
+                      <div className="space-y-2">
+                        {techs.map((tech) => (
+                          <TechnologyCard key={tech.id} technology={tech} onAddToCanvas={onAddToCanvas} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               }
