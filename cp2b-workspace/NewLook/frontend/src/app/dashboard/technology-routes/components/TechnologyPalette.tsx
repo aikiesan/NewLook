@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
 import TechnologyCard from './TechnologyCard';
@@ -16,12 +16,17 @@ const CATEGORIES: { id: TechnologyCategory; label: string; emoji: string; step?:
   { id: 'custom', label: 'Personalizados', emoji: '✨' },
 ];
 
-export default function TechnologyPalette() {
+interface TechnologyPaletteProps {
+  onAddToCanvas?: (technology: TechnologyCardWithReferences) => void;
+}
+
+export default function TechnologyPalette({ onAddToCanvas }: TechnologyPaletteProps) {
   const [technologies, setTechnologies] = useState<TechnologyCardWithReferences[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TechnologyCategory | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     loadTechnologies();
@@ -81,32 +86,67 @@ export default function TechnologyPalette() {
           />
         </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-2 mt-3 flex-wrap">
+        {/* Category Filter Dropdown */}
+        <div className="relative mt-3">
           <button
-            onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-gradient-to-r from-cp2b-green to-cp2b-lime text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-cp2b-lime-light/30 hover:border-cp2b-lime border border-transparent'
-            }`}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-white border-2 border-cp2b-green/30 rounded-lg hover:border-cp2b-green focus:outline-none focus:ring-2 focus:ring-cp2b-lime transition-all shadow-sm"
           >
-            Todas
+            <div className="flex items-center gap-2">
+              <Filter className="text-cp2b-green" size={18} />
+              <span className="text-sm font-medium text-gray-700">
+                {selectedCategory === 'all'
+                  ? 'Todas as Categorias'
+                  : CATEGORIES.find(cat => cat.id === selectedCategory)?.emoji + ' ' + CATEGORIES.find(cat => cat.id === selectedCategory)?.label
+                }
+              </span>
+            </div>
+            <ChevronDown
+              className={`text-cp2b-green transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+              size={18}
+            />
           </button>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                selectedCategory === cat.id
-                  ? 'bg-gradient-to-r from-cp2b-green to-cp2b-lime text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-cp2b-lime-light/30 hover:border-cp2b-lime border border-transparent'
-              }`}
-            >
-              {cat.step && <span className="mr-1">{cat.step}</span>}
-              {cat.emoji} {cat.label}
-            </button>
-          ))}
+
+          {isDropdownOpen && (
+            <div className="absolute z-10 w-full mt-2 bg-white border-2 border-cp2b-green/20 rounded-lg shadow-xl max-h-80 overflow-y-auto">
+              <button
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setIsDropdownOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors hover:bg-cp2b-lime-light/30 ${
+                  selectedCategory === 'all' ? 'bg-gradient-to-r from-cp2b-green to-cp2b-lime text-white' : 'text-gray-700'
+                }`}
+              >
+                ✨ Todas as Categorias
+              </button>
+
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors border-t border-cp2b-green/10 hover:bg-cp2b-lime-light/30 ${
+                    selectedCategory === cat.id ? 'bg-gradient-to-r from-cp2b-green to-cp2b-lime text-white' : 'text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {cat.step && (
+                      <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                        selectedCategory === cat.id ? 'bg-white text-cp2b-green' : 'bg-cp2b-lime-light text-cp2b-dark-green'
+                      }`}>
+                        {cat.step}
+                      </span>
+                    )}
+                    <span className="text-xl">{cat.emoji}</span>
+                    <span>{cat.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -149,7 +189,7 @@ export default function TechnologyPalette() {
                     </div>
                     <div className="space-y-2">
                       {techs.map((tech) => (
-                        <TechnologyCard key={tech.id} technology={tech} />
+                        <TechnologyCard key={tech.id} technology={tech} onAddToCanvas={onAddToCanvas} />
                       ))}
                     </div>
                   </div>
