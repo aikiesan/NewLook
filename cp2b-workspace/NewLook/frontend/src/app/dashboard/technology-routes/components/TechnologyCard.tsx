@@ -1,31 +1,50 @@
 'use client';
 
+import { memo } from 'react';
+import { Plus } from 'lucide-react';
 import type { TechnologyCardWithReferences } from '@/types/technology-routes';
 
 interface TechnologyCardProps {
   technology: TechnologyCardWithReferences;
+  onAddToCanvas?: (technology: TechnologyCardWithReferences) => void;
 }
 
 /**
  * Draggable technology card for the palette
  * User can drag this onto the canvas to create a node
+ * Also supports click-to-add functionality
+ * Memoized to prevent unnecessary re-renders
  */
-export default function TechnologyCard({ technology }: TechnologyCardProps) {
+function TechnologyCard({ technology, onAddToCanvas }: TechnologyCardProps) {
   const onDragStart = (event: React.DragEvent) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify(technology));
     event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleClick = () => {
+    if (onAddToCanvas) {
+      onAddToCanvas(technology);
+    }
   };
 
   return (
     <div
       draggable
       onDragStart={onDragStart}
-      className="p-3 rounded-lg border border-gray-200 cursor-move hover:shadow-md hover:border-gray-300 transition-all bg-white"
+      onClick={handleClick}
+      className="group relative p-3 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md hover:border-cp2b-green transition-all bg-white"
       style={{
         borderLeftColor: technology.color,
         borderLeftWidth: '4px',
       }}
     >
+      {/* Click-to-add indicator */}
+      <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 bg-cp2b-green text-white text-xs px-2 py-1 rounded-full">
+          <Plus size={12} />
+          <span>Clique para adicionar</span>
+        </div>
+      </div>
       <div className="flex items-center gap-3">
         <span className="text-2xl flex-shrink-0" role="img" aria-label={technology.namePt}>
           {technology.emoji}
@@ -52,3 +71,12 @@ export default function TechnologyCard({ technology }: TechnologyCardProps) {
     </div>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export default memo(TechnologyCard, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if technology ID or callback changes
+  return (
+    prevProps.technology.id === nextProps.technology.id &&
+    prevProps.onAddToCanvas === nextProps.onAddToCanvas
+  );
+});
