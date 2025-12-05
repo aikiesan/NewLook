@@ -39,6 +39,7 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
       console.log('[TechnologyPalette] Starting to load technologies...');
       const data = await technologyRoutesApi.getTechnologies();
       console.log('[TechnologyPalette] Loaded technologies:', data.length);
+      console.log('[TechnologyPalette] First tech object:', data[0]); // Debug data structure
       setTechnologies(data);
     } catch (error) {
       console.error('[TechnologyPalette] Failed to load technologies:', error);
@@ -53,6 +54,12 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
   // Memoize filtered technologies for performance
   const filteredTechnologies = useMemo(() => {
     return technologies.filter((tech) => {
+      // Safety check for undefined properties
+      if (!tech.namePt || !tech.nameEn) {
+        console.warn('[TechnologyPalette] Tech missing name properties:', tech);
+        return false;
+      }
+
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         tech.namePt.toLowerCase().includes(searchLower) ||
