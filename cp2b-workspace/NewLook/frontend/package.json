@@ -13,6 +13,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.29.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.45.4",
     "@types/leaflet": "^1.9.12",

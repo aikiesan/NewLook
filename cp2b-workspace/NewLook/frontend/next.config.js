@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // IMPORTANT: Removed static export for Vercel deployment
@@ -12,6 +14,8 @@ const nextConfig = {
   experimental: {
     // Optimize package imports for faster builds
     optimizePackageImports: ['lucide-react', 'recharts', 'react-chartjs-2'],
+    // Enable instrumentation for Sentry
+    instrumentationHook: true,
   },
 
   // Performance: Optimize images
@@ -83,4 +87,29 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+// Sentry configuration options
+const sentryOptions = {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  // Suppresses source map uploading logs during build
+  silent: true,
+
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Only upload source maps in production
+  widenClientFileUpload: true,
+
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
+
+  // Automatically annotate errors with commit information
+  automaticVercelMonitors: true,
+};
+
+// Make sure adding Sentry options is the last code to run before exporting
+module.exports = withSentryConfig(nextConfig, sentryOptions);
