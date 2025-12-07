@@ -3,6 +3,11 @@ CP2B Maps V3 Backend API
 FastAPI application for geospatial biogas potential analysis
 Sprint 4: Performance optimizations, error handling, and production deployment
 """
+import os
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -12,6 +17,35 @@ from datetime import datetime, timezone
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+
+# Initialize Sentry for error tracking and performance monitoring
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=os.getenv("APP_ENV", "development"),
+        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=0.1 if os.getenv("APP_ENV") == "production" else 1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=0.1 if os.getenv("APP_ENV") == "production" else 1.0,
+        integrations=[
+            FastApiIntegration(
+                transaction_style="endpoint",
+                failed_request_status_codes=[500, 502, 503, 504],
+            ),
+            SqlalchemyIntegration(),
+        ],
+        # Filter out certain errors
+        ignore_errors=[
+            # Don't track 404s
+            "fastapi.exceptions.HTTPException",
+        ],
+        before_send=lambda event, hint: (
+            None if os.getenv("APP_ENV") == "development" and not os.getenv("SENTRY_DEBUG")
+            else event
+        ),
+    )
 from app.core.database import test_db_connection
 from app.api.v1.api import api_router
 from app.middleware.rate_limiter import rate_limit_middleware

@@ -7,6 +7,18 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### 📊 Monitoramento e Observabilidade
+- **NOVO**: Integração completa com Sentry para rastreamento de erros
+  * Frontend (Next.js): Captura de erros, Session Replay, Performance Monitoring
+  * Backend (FastAPI): Rastreamento de exceções, Performance de API, Monitoramento de queries SQL
+  * Taxa de amostragem: 10% em produção (otimiza quota gratuita)
+  * Filtragem inteligente: Ignora erros de extensões e 404s
+  * Source maps automáticos em produção
+- Adicionado `@sentry/nextjs` (frontend) e `sentry-sdk[fastapi]` (backend)
+- Configuração completa com hooks de instrumentação
+- Documentação em `docs/SENTRY_SETUP.md` com guia passo-a-passo
+- Templates de variáveis de ambiente atualizados
+
 ### 🚀 Planejado
 - MCDA configurável
 - WCAG 2.1 AA compliance
