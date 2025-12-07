@@ -41,12 +41,13 @@ Professional platform for analyzing **biogas potential** from agricultural, live
 ## 🏗️ Architecture
 
 ### Frontend
-- **Framework**: Next.js 15 + React 18 + TypeScript
+- **Framework**: Next.js 15.5.7 + React 18 + TypeScript
 - **Styling**: Tailwind CSS
 - **Maps**: React Leaflet 4.2
 - **Charts**: Recharts 2.12
 - **Auth**: Supabase Auth
-- **Deployment**: Cloudflare Pages
+- **Deployment**: Cloudflare Pages / Vercel
+- **Security**: ✅ CVE-2025-66478 patched
 
 ### Backend
 - **Framework**: FastAPI 0.104 + Uvicorn 0.24
