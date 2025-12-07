@@ -14,9 +14,6 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'recharts', 'react-chartjs-2'],
   },
 
-  // Performance: Enable SWC minification for faster builds
-  swcMinify: true,
-
   // Performance: Optimize images
   images: {
     unoptimized: process.env.STATIC_EXPORT === 'true',
