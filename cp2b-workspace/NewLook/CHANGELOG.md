@@ -8,12 +8,43 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### 🚀 Planejado
-- Sistema de autenticação com Supabase
-- Landing page institucional
-- Dashboard com dados municipais
-- 8 módulos de análise migrados
 - MCDA configurável
 - WCAG 2.1 AA compliance
+- Bagacinho IA Assistant
+- Sistema completo de referências científicas
+
+---
+
+## [3.0.1] - 2025-12-07
+
+### 🔒 Segurança
+- **CRÍTICO**: Atualizado Next.js de 15.0.3 para 15.5.7
+- Corrigido CVE-2025-66478 (CVSS 10.0 - RCE em React Server Components)
+- 0 vulnerabilidades de segurança detectadas
+
+### 🧹 Limpeza e Organização
+- Removido código legado V2 (Streamlit) - ~97MB de arquivos
+- Removidas 31 arquivos da raiz do repositório → 8 arquivos essenciais
+- Organizados 18 documentos em `docs/` e `docs/archive/`
+- Movidos scripts SQL para `backend/migrations/`
+- Movidos scripts Python para `backend/scripts/utilities/`
+- Removidos diretórios: `config/`, `src/` (código Streamlit antigo)
+- Criado script de limpeza de branches: `scripts/cleanup-stale-branches.sh`
+
+### 📚 Documentação
+- Atualizado README.md com Next.js 15.5.7 e nota de segurança
+- Criado REPOSITORY_ORGANIZATION_REPORT.md com análise completa
+- Criado V2_PROJECT_MAP_ARCHIVED.md com instruções de restauração
+- Adicionado deployment para Vercel além de Cloudflare Pages
+
+### 🔧 Configuração
+- Removida opção deprecated `swcMinify` do next.config.js (agora padrão)
+- Atualizado eslint-config-next para 15.5.7
+
+### 📊 Impacto
+- Redução de 80% no tamanho do repositório (120MB → 23MB)
+- Estrutura mais profissional e organizada
+- Repositório 100% focado em V3 (Next.js + FastAPI)
 
 ---
 
