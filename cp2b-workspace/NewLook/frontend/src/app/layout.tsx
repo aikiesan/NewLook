@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ComparisonProvider } from '@/contexts/ComparisonContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { QueryProvider } from '@/contexts/QueryProvider'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
@@ -37,16 +38,18 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
-          <ThemeProvider>
-            <AuthProvider>
-              <ComparisonProvider>
-                <ErrorBoundary>
-                  {children}
-                  <ComparisonBar />
-                </ErrorBoundary>
-              </ComparisonProvider>
-            </AuthProvider>
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <ComparisonProvider>
+                  <ErrorBoundary>
+                    {children}
+                    <ComparisonBar />
+                  </ErrorBoundary>
+                </ComparisonProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </QueryProvider>
         </div>
       </body>
     </html>

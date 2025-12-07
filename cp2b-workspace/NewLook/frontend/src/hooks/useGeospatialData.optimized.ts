@@ -5,13 +5,14 @@
 
 'use client';
 
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries, UseQueryResult } from '@tanstack/react-query';
 import { geospatialClient } from '@/lib/api/geospatialClient';
 import { queryKeys } from '@/lib/queryClient';
 import type {
   MunicipalityCollection,
   SummaryStatistics,
   MunicipalityFeature,
+  RankingsResponse,
 } from '@/types/geospatial';
 
 /**
@@ -24,7 +25,7 @@ import type {
  * - Shared cache across components
  */
 export function useGeospatialData() {
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: queryKeys.municipalities.geojson(),
     queryFn: () => geospatialClient.getMunicipalitiesGeoJSON(),
     staleTime: 1000 * 60 * 5, // 5 minutes - geospatial data doesn't change often
@@ -32,45 +33,25 @@ export function useGeospatialData() {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
-
-  // Return in the old format for backward compatibility
-  return {
-    data: queryResult.data || null,
-    loading: queryResult.isLoading,
-    error: queryResult.error as Error | null,
-    // Additional React Query features
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    refetch: queryResult.refetch,
-  };
 }
 
 /**
  * Hook to fetch summary statistics with caching
  */
 export function useSummaryStatistics() {
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: queryKeys.statistics.summary(),
     queryFn: () => geospatialClient.getSummaryStatistics(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
-
-  return {
-    data: queryResult.data || null,
-    loading: queryResult.isLoading,
-    error: queryResult.error as Error | null,
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    refetch: queryResult.refetch,
-  };
 }
 
 /**
  * Hook to fetch municipality detail with caching
  */
 export function useMunicipalityDetail(municipalityId: string | null) {
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: queryKeys.municipalities.detail(municipalityId || ''),
     queryFn: () => {
       if (!municipalityId) {
@@ -82,15 +63,6 @@ export function useMunicipalityDetail(municipalityId: string | null) {
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
-
-  return {
-    data: queryResult.data || null,
-    loading: queryResult.isLoading,
-    error: queryResult.error as Error | null,
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    refetch: queryResult.refetch,
-  };
 }
 
 /**
@@ -100,21 +72,12 @@ export function useRankings(
   criteria: 'total' | 'agricultural' | 'livestock' | 'urban' = 'total',
   limit: number = 10
 ) {
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: queryKeys.statistics.rankings(criteria, limit),
     queryFn: () => geospatialClient.getRankings(criteria, limit),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
-
-  return {
-    data: queryResult.data || null,
-    loading: queryResult.isLoading,
-    error: queryResult.error as Error | null,
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    refetch: queryResult.refetch,
-  };
 }
 
 /**
@@ -133,7 +96,7 @@ export function useInfrastructureLayer(
       ? 'https://newlook-production.up.railway.app'
       : 'http://localhost:8000');
 
-  const queryResult = useQuery({
+  return useQuery({
     queryKey: queryKeys.infrastructure.layer(layerType),
     queryFn: async () => {
       const response = await fetch(
@@ -151,15 +114,6 @@ export function useInfrastructureLayer(
     gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache longer
     retry: 2,
   });
-
-  return {
-    data: queryResult.data || null,
-    loading: queryResult.isLoading,
-    error: queryResult.error as Error | null,
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    refetch: queryResult.refetch,
-  };
 }
 
 /**

@@ -299,6 +299,23 @@
   }
 }
 
+@keyframes loadingBar {
+  0% {
+    transform: scaleX(0);
+  }
+  50% {
+    transform: scaleX(0.7);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Loading bar animation utility */
+.animate-loading-bar {
+  animation: loadingBar 2s ease-in-out infinite;
+}
+
 /* Leaflet map styles */
 .leaflet-container {
   height: 100%;
