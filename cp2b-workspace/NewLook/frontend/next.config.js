@@ -14,8 +14,6 @@ const nextConfig = {
   experimental: {
     // Optimize package imports for faster builds
     optimizePackageImports: ['lucide-react', 'recharts', 'react-chartjs-2'],
-    // Enable instrumentation for Sentry
-    instrumentationHook: true,
   },
 
   // Performance: Optimize images
