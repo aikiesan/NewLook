@@ -16,7 +16,6 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
-import MapDebugPanel from './MapDebugPanel';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
@@ -200,20 +199,7 @@ export default function MapComponent({
 
   // Loading state - keep skeleton visible during data fetch AND initial rendering
   if (loading || (data && isRendering)) {
-    return (
-      <>
-        <MapLoadingSkeleton />
-        {data && isRendering && (
-          <MapDebugPanel
-            renderingState={{
-              isRendering: true,
-              layersRendered: 0,
-              totalLayers: 1,
-            }}
-          />
-        )}
-      </>
-    );
+    return <MapLoadingSkeleton />;
   }
 
   // Error state
@@ -363,15 +349,6 @@ export default function MapComponent({
           <span className="text-gray-500"> / {data.features.length} municípios</span>
         </p>
       </div>
-
-      {/* Debug Panel (Always Visible, can be toggled with ?debug=false) */}
-      <MapDebugPanel
-        renderingState={{
-          isRendering: false,
-          layersRendered: 1,
-          totalLayers: 1,
-        }}
-      />
     </div>
   );
 }
