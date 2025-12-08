@@ -7,10 +7,22 @@
 
 import { useGeospatialData } from '@/hooks/useGeospatialData';
 
-export default function MapDebugPanel() {
+interface MapDebugPanelProps {
+  renderingState?: {
+    isRendering: boolean;
+    layersRendered: number;
+    totalLayers: number;
+  };
+}
+
+export default function MapDebugPanel({ renderingState }: MapDebugPanelProps = {}) {
   const { data, loading, error, isSuccess, isFetching } = useGeospatialData();
 
-  if (process.env.NODE_ENV !== 'development') return null;
+  // Always show in production for debugging (can be toggled with ?debug=false)
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const debugEnabled = searchParams?.get('debug') !== 'false';
+
+  if (!debugEnabled) return null;
 
   return (
     <div className="fixed top-20 right-4 z-[1000] bg-black/90 text-white p-4 rounded-lg shadow-2xl max-w-sm text-xs font-mono">
@@ -18,37 +30,39 @@ export default function MapDebugPanel() {
 
       <div className="space-y-1">
         <div className="flex justify-between">
-          <span>Loading:</span>
-          <span className={loading ? 'text-yellow-400' : 'text-green-400'}>
-            {loading ? '⏳ YES' : '✓ NO'}
+          <span>1. Data Fetch:</span>
+          <span className={loading ? 'text-yellow-400' : isSuccess ? 'text-green-400' : 'text-gray-400'}>
+            {loading ? '⏳ LOADING' : isSuccess ? '✓ DONE' : '⏸️ PENDING'}
           </span>
         </div>
 
         <div className="flex justify-between">
-          <span>Success:</span>
-          <span className={isSuccess ? 'text-green-400' : 'text-gray-400'}>
-            {isSuccess ? '✓ YES' : '✗ NO'}
+          <span>2. Data Received:</span>
+          <span className={data ? 'text-green-400' : 'text-gray-400'}>
+            {data ? `✓ ${data.features?.length || 0} features` : '✗ NO'}
           </span>
         </div>
+
+        <div className="flex justify-between">
+          <span>3. Map Rendering:</span>
+          <span className={renderingState?.isRendering ? 'text-yellow-400' : data ? 'text-green-400' : 'text-gray-400'}>
+            {renderingState?.isRendering ? '⏳ RENDERING' : data ? '✓ READY' : '⏸️ WAITING'}
+          </span>
+        </div>
+
+        {renderingState && (
+          <div className="flex justify-between">
+            <span>Layers:</span>
+            <span className="text-blue-300">
+              {renderingState.layersRendered}/{renderingState.totalLayers}
+            </span>
+          </div>
+        )}
 
         <div className="flex justify-between">
           <span>Fetching:</span>
           <span className={isFetching ? 'text-blue-400' : 'text-gray-400'}>
             {isFetching ? '🔄 YES' : '- NO'}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Has Data:</span>
-          <span className={data ? 'text-green-400' : 'text-red-400'}>
-            {data ? '✓ YES' : '✗ NO'}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Features:</span>
-          <span className="text-blue-300">
-            {data?.features?.length || 0}
           </span>
         </div>
 
@@ -73,15 +87,22 @@ export default function MapDebugPanel() {
           </div>
         )}
 
-        {isSuccess && data && (
+        {isSuccess && data && !renderingState?.isRendering && (
           <div className="mt-2 p-2 bg-green-900/50 rounded text-[10px]">
-            <div className="text-green-200">✅ Map should be visible!</div>
+            <div className="text-green-200">✅ Map fully loaded!</div>
+          </div>
+        )}
+
+        {isSuccess && data && renderingState?.isRendering && (
+          <div className="mt-2 p-2 bg-yellow-900/50 rounded text-[10px]">
+            <div className="text-yellow-200">⏳ Rendering shapes on map...</div>
           </div>
         )}
       </div>
 
       <div className="mt-3 pt-2 border-t border-gray-600 text-[10px] text-gray-400">
-        Press F12 to see full console logs
+        <div>Press F12 for console logs</div>
+        <div>Add ?debug=false to URL to hide</div>
       </div>
     </div>
   );

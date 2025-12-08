@@ -25,8 +25,10 @@ interface QueryProviderProps {
  */
 export function QueryProvider({ children }: QueryProviderProps) {
   useEffect(() => {
-    // Log that QueryProvider is mounted
+    // Log that QueryProvider is mounted (always enabled for debugging)
     console.log('✅ QueryProvider mounted successfully');
+    console.log('🌍 Environment:', process.env.NODE_ENV);
+    console.log('🔗 API URL:', process.env.NEXT_PUBLIC_API_URL || 'default');
   }, []);
 
   return (
