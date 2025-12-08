@@ -53,7 +53,7 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
     logger.warn('Falling back to mock data...')
 
     // Fallback to mock data when backend is unavailable
-    const mockResiduos = MOCK_CHEMICAL_DATA.map(chem => ({
+    const mockResiduos = REAL_CHEMICAL_DATA.map(chem => ({
       id: chem.residue_id,
       nome: chem.residue_name,
       nome_en: chem.residue_name,
@@ -100,7 +100,7 @@ export async function getRealSectorSummary(): Promise<any> {
     logger.error('Error fetching sector summary:', error)
     logger.warn('Falling back to mock sector summary...')
 
-    // Fallback to mock summary generated from MOCK_CHEMICAL_DATA
+    // Fallback to mock summary generated from REAL_CHEMICAL_DATA
     const sectorCounts = {
       'AG_AGRICULTURA': 0,
       'PC_PECUARIA': 0,
@@ -108,7 +108,7 @@ export async function getRealSectorSummary(): Promise<any> {
       'UR_URBANO': 0
     }
 
-    MOCK_CHEMICAL_DATA.forEach(chem => {
+    REAL_CHEMICAL_DATA.forEach(chem => {
       const sectorCode = chem.sector === 'agricultural' ? 'AG_AGRICULTURA' :
                          chem.sector === 'livestock' ? 'PC_PECUARIA' :
                          chem.sector === 'industrial' ? 'IN_INDUSTRIAL' : 'UR_URBANO'
