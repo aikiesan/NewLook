@@ -136,6 +136,7 @@ export default function ScientificDatabasePage() {
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedResidue, setSelectedResidue] = useState<string>('')
   const [yearRange, setYearRange] = useState<[number, number]>([2010, new Date().getFullYear()])
   const [peerReviewedOnly, setPeerReviewedOnly] = useState(false)
 
@@ -379,6 +380,12 @@ export default function ScientificDatabasePage() {
       )
     }
 
+    if (selectedResidue) {
+      filtered = filtered.filter(ref =>
+        ref.residues_studied.some(r => r === selectedResidue)
+      )
+    }
+
     if (selectedSectors.length > 0) {
       filtered = filtered.filter(ref => selectedSectors.includes(ref.sector))
     }
@@ -392,7 +399,7 @@ export default function ScientificDatabasePage() {
     )
 
     return filtered
-  }, [references, searchQuery, selectedSectors, peerReviewedOnly, yearRange])
+  }, [references, searchQuery, selectedResidue, selectedSectors, peerReviewedOnly, yearRange])
 
   // Toggle reference expansion
   const toggleRefExpansion = (id: number) => {
@@ -597,63 +604,97 @@ export default function ScientificDatabasePage() {
                 ))}
               </div>
 
-              {/* Simplified Residues List - Grouped by Sector */}
+              {/* Database Information Overview */}
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6">
-                  Lista de Residuos por Setor
+                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                  <Info className="h-5 w-5 text-green-600" />
+                  Sobre a Base de Dados de Residuos
                 </h3>
 
                 <div className="space-y-6">
-                  {sectorSummary.map((sector: any) => {
-                    // Filter residues for this sector and deduplicate by ID
-                    const sectorResiduos = realResiduos
-                      .filter((r: any) => r.sector_codigo === sector.codigo)
-                      .filter((residuo: any, index: number, self: any[]) =>
-                        index === self.findIndex((r: any) => r.id === residuo.id)
-                      )
-
-                    return (
-                      <div key={sector.codigo} className="border-l-4 border-green-500 pl-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-2xl">{sector.emoji}</span>
-                          <h4 className="font-semibold text-gray-900 text-base">
-                            {sector.nome}
-                          </h4>
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            {sectorResiduos.length} residuos
-                          </span>
-                        </div>
-
-                        {sectorResiduos.length > 0 ? (
-                          <ul className="space-y-2 ml-6">
-                            {sectorResiduos.map((residuo: any) => (
-                              <li key={`residuo-${residuo.id}-${sector.codigo}`} className="text-gray-700 flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                <span>{residuo.nome}</span>
-                                {residuo.subsector_nome && (
-                                  <span className="text-xs text-gray-500">
-                                    ({residuo.subsector_nome})
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-sm text-gray-500 italic ml-6">
-                            Nenhum residuo cadastrado neste setor
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {realResiduos.length === 0 && (
-                  <div className="text-center py-8">
-                    <FlaskConical className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500">Nenhum residuo encontrado na base de dados</p>
+                  {/* Overview */}
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 leading-relaxed">
+                      A Base de Dados de Residuos do CP2B Maps V3 contém informações detalhadas sobre{' '}
+                      <span className="font-semibold text-green-700">{realResiduos.length} tipos de residuos</span>{' '}
+                      orgânicos disponíveis no estado de São Paulo para produção de biogás através da digestão anaeróbica.
+                    </p>
                   </div>
-                )}
+
+                  {/* Key Metrics Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                      <div className="text-3xl font-bold text-green-900 mb-1">
+                        {realResiduos.length}
+                      </div>
+                      <div className="text-sm text-green-700 font-medium">
+                        Residuos Caracterizados
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                      <div className="text-3xl font-bold text-blue-900 mb-1">
+                        {sectorSummary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)}
+                      </div>
+                      <div className="text-sm text-blue-700 font-medium">
+                        Referencias Cientificas
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
+                      <div className="text-3xl font-bold text-amber-900 mb-1">
+                        {sectorSummary.length}
+                      </div>
+                      <div className="text-sm text-amber-700 font-medium">
+                        Setores Economicos
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sector Distribution */}
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <FlaskConical className="h-4 w-4 text-green-600" />
+                      Distribuição por Setor Econômico
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {sectorSummary.map((sector: any) => {
+                        const sectorCount = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo).length
+                        return (
+                          <div key={sector.codigo} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-4xl">{sector.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{sector.nome}</div>
+                              <div className="text-sm text-gray-600 mt-1">
+                                {sectorCount} residuos • BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Navigation Helper */}
+                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Como explorar os dados
+                    </h4>
+                    <ul className="text-sm text-blue-800 space-y-1.5">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Use a aba <strong>Caracterização Química</strong> para ver detalhes de cada residuo</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Consulte a aba <strong>Referencias Científicas</strong> para acessar a literatura</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Use a aba <strong>Comparação Interativa</strong> para comparar até 5 residuos</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               {/* Conversion Factors */}
@@ -951,8 +992,12 @@ export default function ScientificDatabasePage() {
                             onClick={() => {
                               // Switch to References tab
                               setViewMode('references')
-                              // Filter by residue name
-                              setSearchQuery(residue.nome)
+                              // Filter by residue name using the residue filter
+                              setSelectedResidue(residue.nome)
+                              // Clear other filters for clean results
+                              setSearchQuery('')
+                              setSelectedSectors([])
+                              setPeerReviewedOnly(false)
                               // Scroll to top smoothly
                               window.scrollTo({ top: 0, behavior: 'smooth' })
                             }}
@@ -1031,6 +1076,23 @@ export default function ScientificDatabasePage() {
                     </div>
                   </div>
 
+                  {/* Residue Filter */}
+                  <div className="mb-4">
+                    <label className="text-xs text-gray-600 block mb-1.5">Filtrar por Residuo</label>
+                    <select
+                      value={selectedResidue}
+                      onChange={(e) => setSelectedResidue(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                    >
+                      <option value="">Todos os residuos</option>
+                      {realResidueNames.map(residue => (
+                        <option key={residue} value={residue}>
+                          {residue}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Sector Filter */}
                   <div className="mb-4">
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
@@ -1080,10 +1142,11 @@ export default function ScientificDatabasePage() {
                   </div>
 
                   {/* Clear Filters */}
-                  {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                  {(searchQuery || selectedResidue || selectedSectors.length > 0 || peerReviewedOnly) && (
                     <button
                       onClick={() => {
                         setSearchQuery('')
+                        setSelectedResidue('')
                         setSelectedSectors([])
                         setPeerReviewedOnly(false)
                       }}
@@ -1120,10 +1183,11 @@ export default function ScientificDatabasePage() {
                     <p className="text-gray-600 mb-4">
                       Tente ajustar seus filtros de busca
                     </p>
-                    {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                    {(searchQuery || selectedResidue || selectedSectors.length > 0 || peerReviewedOnly) && (
                       <button
                         onClick={() => {
                           setSearchQuery('')
+                          setSelectedResidue('')
                           setSelectedSectors([])
                           setPeerReviewedOnly(false)
                         }}
