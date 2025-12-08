@@ -4,7 +4,7 @@ Municipalities API endpoints
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional, Dict, Any, List
 from app.services.supabase_client import get_supabase_client
-from app.middleware.auth import require_authenticated, optional_auth
+from app.middleware.auth import optional_auth
 from app.models.auth import UserProfile
 import logging
 import json
@@ -199,10 +199,8 @@ async def test_shapefile():
         }
 
 @router.get("/stats/summary")
-async def get_municipalities_stats(
-    current_user: UserProfile = Depends(require_authenticated)
-):
-    """Get summary statistics for all municipalities (requires authentication)"""
+async def get_municipalities_stats():
+    """Get summary statistics for all municipalities"""
     try:
         supabase = get_supabase_client()
 
@@ -241,10 +239,9 @@ async def get_municipalities_stats(
 async def get_municipalities(
     limit: int = Query(default=100, le=1000),
     offset: int = Query(default=0, ge=0),
-    search: Optional[str] = Query(default=None),
-    current_user: UserProfile = Depends(require_authenticated)
+    search: Optional[str] = Query(default=None)
 ):
-    """Get list of municipalities with optional filtering (requires authentication)"""
+    """Get list of municipalities with optional filtering"""
     try:
         supabase = get_supabase_client()
 
@@ -278,10 +275,9 @@ async def get_municipalities(
 
 @router.get("/{municipality_id}")
 async def get_municipality(
-    municipality_id: str,
-    current_user: UserProfile = Depends(require_authenticated)
+    municipality_id: str
 ):
-    """Get specific municipality details by ID or IBGE code (requires authentication)"""
+    """Get specific municipality details by ID or IBGE code"""
     try:
         supabase = get_supabase_client()
 
