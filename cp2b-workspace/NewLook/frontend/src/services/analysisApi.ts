@@ -3,6 +3,8 @@
  * Handles all API calls related to biogas analysis
  */
 
+import { authenticatedFetch } from '@/lib/apiClient';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Types
@@ -133,7 +135,7 @@ export async function getAnalysisByResidue(
   const url = `${API_BASE_URL}/api/v1/analysis/by-residue?${params}`;
   console.log('Fetching analysis by residue:', url);
 
-  const response = await fetch(url);
+  const response = await authenticatedFetch(url);
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => response.statusText);
@@ -148,7 +150,7 @@ export async function getAnalysisByResidue(
  * Get statistics by category
  */
 export async function getStatisticsByCategory(): Promise<StatisticsByCategoryResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/statistics/by-category`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/analysis/statistics/by-category`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch category statistics: ${response.statusText}`);
@@ -168,7 +170,7 @@ export async function getStatisticsByRegion(
     params.append('category', category);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/statistics/by-region?${params}`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/analysis/statistics/by-region?${params}`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch regional statistics: ${response.statusText}`);
@@ -192,7 +194,7 @@ export async function getDistribution(
     params.append('bins', bins.toString());
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/distribution?${params}`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/analysis/distribution?${params}`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch distribution: ${response.statusText}`);
@@ -205,7 +207,7 @@ export async function getDistribution(
  * Get residue configuration
  */
 export async function getResidueConfig(): Promise<ResidueConfigResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/residue-config`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/analysis/residue-config`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch residue config: ${response.statusText}`);
