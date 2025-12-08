@@ -26,11 +26,31 @@ import type {
 export function useGeospatialData() {
   const queryResult = useQuery({
     queryKey: queryKeys.municipalities.geojson(),
-    queryFn: () => geospatialClient.getMunicipalitiesGeoJSON(),
+    queryFn: async () => {
+      console.log('🔍 Fetching municipalities GeoJSON...');
+      try {
+        const data = await geospatialClient.getMunicipalitiesGeoJSON();
+        console.log('✅ Municipalities fetched:', data?.features?.length, 'features');
+        return data;
+      } catch (error) {
+        console.error('❌ Error fetching municipalities:', error);
+        throw error;
+      }
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes - geospatial data doesn't change often
     gcTime: 1000 * 60 * 10, // 10 minutes
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
+  // Debug logging
+  console.log('📊 useGeospatialData:', {
+    isLoading: queryResult.isLoading,
+    isError: queryResult.isError,
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    hasData: !!queryResult.data,
+    error: queryResult.error,
   });
 
   // Return in the old format for backward compatibility
