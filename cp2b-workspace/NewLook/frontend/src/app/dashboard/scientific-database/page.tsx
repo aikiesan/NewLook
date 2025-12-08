@@ -227,9 +227,14 @@ export default function ScientificDatabasePage() {
       if (sectorSum.status === 'fulfilled') {
         // Deduplicate sector summary by codigo to prevent duplicate cards
         const rawSummary = sectorSum.value?.summary || []
-        const deduplicatedSummary = rawSummary.filter((sector: any, index: number, self: any[]) =>
-          index === self.findIndex((s: any) => s.codigo === sector.codigo)
-        )
+        // Use Map for more robust deduplication
+        const uniqueSectorsMap = new Map()
+        rawSummary.forEach((sector: any) => {
+          if (sector.codigo && !uniqueSectorsMap.has(sector.codigo)) {
+            uniqueSectorsMap.set(sector.codigo, sector)
+          }
+        })
+        const deduplicatedSummary = Array.from(uniqueSectorsMap.values())
         setSectorSummary(deduplicatedSummary)
       } else {
         console.warn('Failed to load sector summary:', sectorSum.reason)

@@ -333,8 +333,8 @@ export default function MapComponent({
         />
       )}
 
-      {/* Floating Stats Panel (Bottom-Left) */}
-      {isMounted && <FloatingStatsPanel />}
+      {/* Floating Stats Panel (Bottom-Left) - Removed to give more space to layers */}
+      {/* {isMounted && <FloatingStatsPanel />} */}
 
       {/* Legend (Bottom-Right) */}
       {visibleLayerIds.includes('municipalities') && <MapLegend />}
@@ -342,12 +342,18 @@ export default function MapComponent({
       {/* MapBiomas Legend (Bottom-Right, above MapLegend) */}
       {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
 
-      {/* Municipality Count Badge (Top-Right) */}
-      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-md">
-        <p className="text-xs text-gray-700">
-          <span className="font-bold text-green-700">{displayData.features.length}</span>
-          <span className="text-gray-500"> / {data.features.length} municípios</span>
-        </p>
+      {/* Municipality Count Badge (Top-Right) - Enhanced Design */}
+      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-4 py-2.5 flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-xs text-gray-500 font-medium">Municípios</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-green-700">{displayData.features.length}</span>
+            <span className="text-xs text-gray-400">/ {data.features.length}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

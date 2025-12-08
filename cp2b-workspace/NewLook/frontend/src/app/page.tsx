@@ -401,32 +401,38 @@ export default function HomePage() {
           <FadeIn delay={100}>
             <h1
               id="hero-heading"
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-cp2b-gray-900 mb-10 leading-tight"
+              className="text-4xl sm:text-5xl lg:text-7xl font-bold text-cp2b-gray-900 mb-12 leading-tight tracking-tight"
             >
               Mapeamento do Potencial de{' '}
-              <span className="bg-gradient-to-r from-cp2b-green to-cp2b-lime bg-clip-text text-transparent animate-gradient">
+              <span className="bg-gradient-to-r from-cp2b-green via-emerald-500 to-cp2b-lime bg-clip-text text-transparent animate-gradient">
                 Biogás em São Paulo
               </span>
             </h1>
+            <p className="text-lg sm:text-xl text-cp2b-gray-600 max-w-3xl mx-auto leading-relaxed mb-2">
+              Plataforma geoespacial para análise do potencial de produção de biogás
+              a partir de resíduos orgânicos no estado de São Paulo
+            </p>
           </FadeIn>
 
           {/* CTA Buttons */}
           <FadeIn delay={200}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 mt-8">
               <Link
                 href="/map"
-                className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-cp2b-green hover:bg-cp2b-dark-green rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
+                className="group relative inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-white bg-gradient-to-r from-cp2b-green to-emerald-600 hover:from-cp2b-dark-green hover:to-emerald-700 rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime overflow-hidden"
               >
-                Explorar Mapa Interativo
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                <span className="relative z-10 flex items-center gap-2">
+                  Explorar Mapa Interativo
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
               </Link>
 
               <button
                 onClick={() => setIsVideoModalOpen(true)}
-                className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white border-2 border-cp2b-green hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
+                className="group inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-cp2b-green bg-white/90 backdrop-blur-sm border-2 border-cp2b-green/20 hover:border-cp2b-green hover:bg-white rounded-2xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
                 aria-label="Assistir demonstração em vídeo da plataforma"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform duration-300" />
                 Ver Demonstração
               </button>
             </div>
