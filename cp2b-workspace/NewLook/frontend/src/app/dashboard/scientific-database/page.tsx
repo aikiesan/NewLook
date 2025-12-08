@@ -225,7 +225,12 @@ export default function ScientificDatabasePage() {
       setRealResiduos(deduplicatedResiduos)
 
       if (sectorSum.status === 'fulfilled') {
-        setSectorSummary(sectorSum.value?.summary || [])
+        // Deduplicate sector summary by codigo to prevent duplicate cards
+        const rawSummary = sectorSum.value?.summary || []
+        const deduplicatedSummary = rawSummary.filter((sector: any, index: number, self: any[]) =>
+          index === self.findIndex((s: any) => s.codigo === sector.codigo)
+        )
+        setSectorSummary(deduplicatedSummary)
       } else {
         console.warn('Failed to load sector summary:', sectorSum.reason)
       }
@@ -900,34 +905,26 @@ export default function ScientificDatabasePage() {
           {/* Chemical Data Tab */}
           {viewMode === 'chemical' && (
             <>
-              {/* Backend Connection Error Message */}
-              {!isBackendAvailable && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl shadow-md mb-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                        Conexão com Backend Necessária
-                      </h3>
-                      <p className="text-yellow-700 mb-3">
-                        Os dados de caracterização química requerem conexão com o backend. Por favor, inicie o servidor backend para visualizar os dados reais.
+              {/* Backend Connection Warning - using mock data */}
+              {!isBackendAvailable && realResiduos.length > 0 && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-1">
+                        Exibindo Dados de Referência
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        Conectando ao backend... Enquanto isso, dados de referência científica estão sendo exibidos.
+                        Para acessar dados completos da plataforma, verifique seu email ou contate o administrador.
                       </p>
-                      <div className="bg-yellow-100 rounded-lg p-3 font-mono text-sm text-yellow-800">
-                        <p className="font-semibold mb-1">Para iniciar o backend:</p>
-                        <code className="block">cd backend</code>
-                        <code className="block">uvicorn main:app --reload</code>
-                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Chemical Data Cards */}
-              {isBackendAvailable && (
+              {realResiduos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {realResiduos.map((residue) => {
                   const cnStatus = getCNStatus(residue.chemical_cn_ratio);
