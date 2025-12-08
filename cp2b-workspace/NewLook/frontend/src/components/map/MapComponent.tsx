@@ -16,6 +16,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
+import MapDebugPanel from './MapDebugPanel';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
@@ -69,6 +70,17 @@ export default function MapComponent({
 }: MapComponentProps = {}) {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🗺️ MapComponent State:', {
+      isMounted,
+      loading,
+      hasData: !!data,
+      dataFeatures: data?.features?.length,
+      error: error?.message,
+    });
+  }, [isMounted, loading, data, error]);
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -172,12 +184,39 @@ export default function MapComponent({
   // Error state
   if (error) {
     return (
-      <div className="w-full h-full">
-        <ErrorDisplay
-          error={error}
-          message="Erro ao carregar dados do mapa"
-          onRetry={() => window.location.reload()}
-        />
+      <div className="w-full h-full bg-gray-100 dark:bg-slate-900 flex items-center justify-center p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+              Erro ao Carregar Mapa
+            </h2>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-4 mb-6 text-left">
+              <p className="font-mono text-sm text-red-800 dark:text-red-200 break-words">
+                {error.message}
+              </p>
+            </div>
+            <div className="space-y-3 text-left text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="font-semibold">Possíveis causas:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Backend API não está respondendo</li>
+                <li>Erro de conexão com o banco de dados Supabase</li>
+                <li>Problema de rede ou CORS</li>
+                <li>React Query não configurado corretamente</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Recarregar Página
+            </button>
+            <p className="mt-4 text-xs text-gray-500">
+              Verifique o console (F12) para mais detalhes
+            </p>
+          </div>
+        </div>
+        <MapDebugPanel />
       </div>
     );
   }
@@ -185,8 +224,23 @@ export default function MapComponent({
   // No data state
   if (!data || data.features.length === 0) {
     return (
-      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-600">Nenhum dado disponível</p>
+      <div className="w-full h-full bg-gray-100 dark:bg-slate-900 flex items-center justify-center p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl text-center">
+          <div className="text-6xl mb-4">📭</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Nenhum Dado Disponível
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            O mapa não possui dados de municípios para exibir.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+        <MapDebugPanel />
       </div>
     );
   }
@@ -274,6 +328,9 @@ export default function MapComponent({
           <span className="text-gray-500"> / {data.features.length} municípios</span>
         </p>
       </div>
+
+      {/* Debug Panel (Development Only) */}
+      <MapDebugPanel />
     </div>
   );
 }
