@@ -15,6 +15,7 @@ import type { BiomassType } from './FloatingControlPanel';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
+import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
@@ -160,20 +161,12 @@ export default function MapComponent({
 
   // Don't render map on server
   if (!isMounted) {
-    return (
-      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <LoadingSpinner message="Carregando mapa..." />
-      </div>
-    );
+    return <MapLoadingSkeleton />;
   }
 
   // Loading state
   if (loading) {
-    return (
-      <div className="w-full h-full bg-gray-100">
-        <LoadingSpinner message="Carregando dados dos municípios..." />
-      </div>
-    );
+    return <MapLoadingSkeleton />;
   }
 
   // Error state
