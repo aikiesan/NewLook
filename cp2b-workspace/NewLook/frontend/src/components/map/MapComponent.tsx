@@ -12,8 +12,6 @@ import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import type { BiomassType } from './FloatingControlPanel';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
@@ -29,10 +27,6 @@ const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), {
 });
 
 const FloatingControlPanel = dynamic(() => import('./FloatingControlPanel'), {
-  ssr: false,
-});
-
-const FloatingStatsPanel = dynamic(() => import('./FloatingStatsPanel'), {
   ssr: false,
 });
 
@@ -72,19 +66,6 @@ export default function MapComponent({
   const [isRendering, setIsRendering] = useState(false);
   const [layersRendered, setLayersRendered] = useState(0);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🗺️ MapComponent State:', {
-      isMounted,
-      loading,
-      hasData: !!data,
-      dataFeatures: data?.features?.length,
-      isRendering,
-      layersRendered,
-      error: error?.message,
-    });
-  }, [isMounted, loading, data, error, isRendering, layersRendered]);
-
   // Layer state
   const [layers, setLayers] = useState([
     { id: 'municipalities', name: 'Municípios SP', visible: true, icon: '📍' },
@@ -107,13 +88,11 @@ export default function MapComponent({
   // Track when data is loaded and rendering starts
   useEffect(() => {
     if (data && !loading && isMounted) {
-      console.log('🎨 Starting map rendering...');
       setIsRendering(true);
       setLayersRendered(0);
 
       // Give Leaflet time to render the shapes
       const renderingTimer = setTimeout(() => {
-        console.log('✅ Map rendering complete');
         setIsRendering(false);
         setLayersRendered(1); // Mark as complete
       }, 1500); // Wait 1.5s for shapes to render
@@ -237,7 +216,6 @@ export default function MapComponent({
             </p>
           </div>
         </div>
-        <MapDebugPanel />
       </div>
     );
   }
@@ -261,7 +239,6 @@ export default function MapComponent({
             Tentar Novamente
           </button>
         </div>
-        <MapDebugPanel />
       </div>
     );
   }
@@ -332,9 +309,6 @@ export default function MapComponent({
           onLayerToggle={handleLayerToggle}
         />
       )}
-
-      {/* Floating Stats Panel (Bottom-Left) - Removed to give more space to layers */}
-      {/* {isMounted && <FloatingStatsPanel />} */}
 
       {/* Legend (Bottom-Right) */}
       {visibleLayerIds.includes('municipalities') && <MapLegend />}
