@@ -1,14 +1,12 @@
 """
 Analysis API endpoints for biogas potential calculations
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional, Dict, Any
 from enum import Enum
 from app.services.supabase_client import get_supabase_client
-from app.middleware.auth import require_authenticated
-from app.models.auth import UserProfile
 
-router = APIRouter(dependencies=[Depends(require_authenticated)])
+router = APIRouter()
 
 # Residue category enum
 class ResidueCategory(str, Enum):
@@ -58,10 +56,9 @@ RESIDUE_LABELS = {
 @router.get("/mcda")
 async def get_mcda_analysis(
     municipality_ids: Optional[List[int]] = None,
-    criteria_weights: Optional[Dict[str, float]] = None,
-    current_user: UserProfile = Depends(require_authenticated)
+    criteria_weights: Optional[Dict[str, float]] = None
 ):
-    """Run Multi-Criteria Decision Analysis (requires authentication)"""
+    """Run Multi-Criteria Decision Analysis"""
     # Sample MCDA results
     sample_results = [
         {
@@ -102,10 +99,8 @@ async def get_mcda_analysis(
     }
 
 @router.get("/proximity")
-async def get_proximity_analysis(
-    current_user: UserProfile = Depends(require_authenticated)
-):
-    """Run proximity analysis for optimal locations (requires authentication)"""
+async def get_proximity_analysis():
+    """Run proximity analysis for optimal locations"""
     return {
         "analysis": "proximity",
         "results": [
@@ -120,10 +115,9 @@ async def get_proximity_analysis(
 
 @router.post("/custom")
 async def run_custom_analysis(
-    analysis_config: Dict[str, Any],
-    current_user: UserProfile = Depends(require_authenticated)
+    analysis_config: Dict[str, Any]
 ):
-    """Run custom analysis with user-defined parameters (requires authentication)"""
+    """Run custom analysis with user-defined parameters"""
     return {
         "message": "Custom analysis completed",
         "config": analysis_config,
@@ -135,11 +129,10 @@ async def get_analysis_by_residue(
     category: ResidueCategory = Query(..., description="Residue category"),
     residue_types: Optional[List[str]] = Query(default=None, description="Specific residue types to include"),
     limit: int = Query(default=20, le=100, description="Number of results"),
-    min_value: float = Query(default=0, description="Minimum biogas value filter"),
-    current_user: UserProfile = Depends(require_authenticated)
+    min_value: float = Query(default=0, description="Minimum biogas value filter")
 ):
     """
-    Get top municipalities by biogas potential for specific residue types (requires authentication).
+    Get top municipalities by biogas potential for specific residue types.
 
     - **category**: agricultural, livestock, or urban
     - **residue_types**: specific residues to sum (if not provided, uses category total)
@@ -239,11 +232,9 @@ async def get_analysis_by_residue(
         )
 
 @router.get("/statistics/by-category")
-async def get_statistics_by_category(
-    current_user: UserProfile = Depends(require_authenticated)
-):
+async def get_statistics_by_category():
     """
-    Get summary statistics for each residue category (requires authentication).
+    Get summary statistics for each residue category.
     Returns total, average, min, max for agricultural, livestock, and urban sectors.
     """
     try:
@@ -308,11 +299,10 @@ async def get_statistics_by_category(
 
 @router.get("/statistics/by-region")
 async def get_statistics_by_region(
-    category: Optional[ResidueCategory] = Query(default=None, description="Filter by residue category"),
-    current_user: UserProfile = Depends(require_authenticated)
+    category: Optional[ResidueCategory] = Query(default=None, description="Filter by residue category")
 ):
     """
-    Get biogas potential aggregated by administrative region (requires authentication).
+    Get biogas potential aggregated by administrative region.
     Used for pie charts showing regional distribution.
     """
     try:
@@ -367,11 +357,10 @@ async def get_statistics_by_region(
 @router.get("/distribution")
 async def get_distribution(
     category: Optional[ResidueCategory] = Query(default=None, description="Filter by residue category"),
-    bins: int = Query(default=10, ge=5, le=50, description="Number of histogram bins"),
-    current_user: UserProfile = Depends(require_authenticated)
+    bins: int = Query(default=10, ge=5, le=50, description="Number of histogram bins")
 ):
     """
-    Get distribution data for histogram visualization (requires authentication).
+    Get distribution data for histogram visualization.
     Returns bin ranges and counts for biogas potential values.
     """
     try:
