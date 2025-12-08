@@ -43,15 +43,18 @@ export function useGeospatialData() {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Debug logging
-  console.log('📊 useGeospatialData:', {
-    isLoading: queryResult.isLoading,
-    isError: queryResult.isError,
-    isSuccess: queryResult.isSuccess,
-    isFetching: queryResult.isFetching,
-    hasData: !!queryResult.data,
-    error: queryResult.error,
-  });
+  // Debug logging (always enabled for production debugging)
+  if (typeof window !== 'undefined') {
+    console.log('📊 useGeospatialData:', {
+      isLoading: queryResult.isLoading,
+      isError: queryResult.isError,
+      isSuccess: queryResult.isSuccess,
+      isFetching: queryResult.isFetching,
+      hasData: !!queryResult.data,
+      featuresCount: queryResult.data?.features?.length || 0,
+      error: queryResult.error?.message,
+    });
+  }
 
   // Return in the old format for backward compatibility
   return {

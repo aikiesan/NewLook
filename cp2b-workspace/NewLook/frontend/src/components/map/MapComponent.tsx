@@ -70,6 +70,8 @@ export default function MapComponent({
 }: MapComponentProps = {}) {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
+  const [isRendering, setIsRendering] = useState(false);
+  const [layersRendered, setLayersRendered] = useState(0);
 
   // Debug logging
   useEffect(() => {
@@ -78,9 +80,11 @@ export default function MapComponent({
       loading,
       hasData: !!data,
       dataFeatures: data?.features?.length,
+      isRendering,
+      layersRendered,
       error: error?.message,
     });
-  }, [isMounted, loading, data, error]);
+  }, [isMounted, loading, data, error, isRendering, layersRendered]);
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -100,6 +104,24 @@ export default function MapComponent({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Track when data is loaded and rendering starts
+  useEffect(() => {
+    if (data && !loading && isMounted) {
+      console.log('🎨 Starting map rendering...');
+      setIsRendering(true);
+      setLayersRendered(0);
+
+      // Give Leaflet time to render the shapes
+      const renderingTimer = setTimeout(() => {
+        console.log('✅ Map rendering complete');
+        setIsRendering(false);
+        setLayersRendered(1); // Mark as complete
+      }, 1500); // Wait 1.5s for shapes to render
+
+      return () => clearTimeout(renderingTimer);
+    }
+  }, [data, loading, isMounted]);
 
   // Handle layer toggle
   const handleLayerToggle = (layerId: string, visible: boolean) => {
@@ -176,9 +198,22 @@ export default function MapComponent({
     return <MapLoadingSkeleton />;
   }
 
-  // Loading state
-  if (loading) {
-    return <MapLoadingSkeleton />;
+  // Loading state - keep skeleton visible during data fetch AND initial rendering
+  if (loading || (data && isRendering)) {
+    return (
+      <>
+        <MapLoadingSkeleton />
+        {data && isRendering && (
+          <MapDebugPanel
+            renderingState={{
+              isRendering: true,
+              layersRendered: 0,
+              totalLayers: 1,
+            }}
+          />
+        )}
+      </>
+    );
   }
 
   // Error state
@@ -329,8 +364,14 @@ export default function MapComponent({
         </p>
       </div>
 
-      {/* Debug Panel (Development Only) */}
-      <MapDebugPanel />
+      {/* Debug Panel (Always Visible, can be toggled with ?debug=false) */}
+      <MapDebugPanel
+        renderingState={{
+          isRendering: false,
+          layersRendered: 1,
+          totalLayers: 1,
+        }}
+      />
     </div>
   );
 }
