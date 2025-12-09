@@ -1,8 +1,8 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "cp2b-workspace/NewLook/backend/Dockerfile"
 # Enable build cache for faster subsequent builds
-watchPatterns = ["requirements.txt", "app/**/*.py", "scripts/**/*.sh"]
+watchPatterns = ["cp2b-workspace/NewLook/backend/requirements.txt", "cp2b-workspace/NewLook/backend/app/**/*.py", "cp2b-workspace/NewLook/backend/scripts/**/*.sh"]
 
 [build.cache]
 # Cache pip packages and shapefiles between builds
