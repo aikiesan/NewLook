@@ -219,14 +219,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
-      // to avoid race conditions and double fetching
-      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch')
+      // Note: Don't set loading to false here - let onAuthStateChange handle it
+      // to avoid race conditions where dashboard renders before user profile is fetched
+      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch and loading state')
 
-      // Set loading to false immediately after successful auth
-      // onAuthStateChange will fire but we want to allow navigation immediately
-      setLoading(false)
-      logger.debug('[Auth] Login complete, ready for navigation')
+      // Safety timeout: if onAuthStateChange doesn't fire within 10 seconds, force loading to false
+      // This prevents infinite loading states due to network issues or Supabase delays
+      setTimeout(() => {
+        logger.warn('[Auth] Login timeout - forcing loading to false')
+        setLoading(false)
+      }, 10000)
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)

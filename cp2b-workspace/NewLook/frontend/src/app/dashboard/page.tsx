@@ -56,7 +56,7 @@ export default function DashboardPage() {
   }, [searchQuery])
 
   // Show loading state while checking authentication
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
         <div className="text-center">
@@ -65,6 +65,11 @@ export default function DashboardPage() {
         </div>
       </div>
     )
+  }
+
+  // If not loading but no user, redirect (handled by useEffect above)
+  if (!user) {
+    return null
   }
 
   return (
