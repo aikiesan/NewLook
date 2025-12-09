@@ -230,6 +230,15 @@ export default function MethodologyPanel({
               Os fatores de correcao foram validados com dados de 521 plantas de biogas
               em operacao no estado de Sao Paulo, garantindo estimativas realistas.
             </p>
+            <div className="bg-green-100 rounded-md p-2 mb-3">
+              <p className="text-xs text-green-800 font-semibold mb-1">
+                🌱 Calibracao Setor Sucroenergetico (2024)
+              </p>
+              <p className="text-xs text-green-700">
+                Fatores calibrados com dados reais da UNICA: Cocal Narandiba (8.9M Nm³/ano)
+                e Raizen Geo Biogas Bonfim (19.0M Nm³/ano). FCP=0.801, FDE=0.143.
+              </p>
+            </div>
             <div className="flex items-center gap-2 text-xs">
               <ExternalLink className="h-3 w-3 text-blue-600" />
               <a

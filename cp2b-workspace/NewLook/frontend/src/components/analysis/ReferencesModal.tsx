@@ -35,6 +35,12 @@ const REFERENCES: ReferenceCategory[] = [
     color: 'border-green-500',
     references: [
       {
+        residue: 'Calibração UNICA - Fatores Sucroenergético',
+        authors: 'UNICA & CP2B Maps',
+        year: 2024,
+        description: 'Calibração com dados reais de plantas: FCP=0.801, FDE=0.143 (baseado em Cocal Narandiba 8.9M Nm³/ano e Raízen Geo Biogás Bonfim 19.0M Nm³/ano)'
+      },
+      {
         residue: 'Bagaço',
         authors: 'Silva et al.',
         year: 2021,
@@ -61,6 +67,12 @@ const REFERENCES: ReferenceCategory[] = [
         year: 2018,
         doi: '10.1016/j.biombioe.2017.11.024',
         description: 'Straw potential for biogas production'
+      },
+      {
+        residue: 'Metodologia Setor Sucroenergético',
+        authors: 'DBFZ & UNICA',
+        year: 2024,
+        description: 'Protocolo de calibração de fatores para vinhaça, torta de filtro e bagaço usando dados operacionais de plantas comerciais em São Paulo'
       }
     ]
   },
@@ -225,6 +237,8 @@ export default function ReferencesModal({ isOpen, onClose }: ReferencesModalProp
                 Todas as referências foram validadas e são utilizadas no cálculo dos fatores de conversão de resíduos para biogás.
                 <br />
                 Os fatores de disponibilidade foram calibrados para o contexto do Estado de São Paulo.
+                <br />
+                <strong>Setor Sucroenergético:</strong> Fatores calibrados com dados reais de plantas UNICA (Cocal Narandiba e Raízen Geo Biogás Bonfim).
               </p>
             </div>
           </div>
