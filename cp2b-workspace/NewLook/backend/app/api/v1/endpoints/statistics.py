@@ -3,11 +3,13 @@ CP2B Maps V3 - Statistics API Endpoint
 Provides summary statistics for municipalities and biogas potential
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import logging
 from typing import Dict, Any
 
 from app.core.database import get_db
+from app.middleware.auth import require_authenticated
+from app.models.auth import UserProfile
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
