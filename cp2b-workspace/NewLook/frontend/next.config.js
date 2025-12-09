@@ -8,6 +8,9 @@ const nextConfig = {
   // - Dynamic routes
   // If you need static export for Cloudflare Pages, set STATIC_EXPORT=true
 
+  // Next.js 16: Enable Turbopack (empty config silences warning)
+  turbopack: {},
+
   // Performance: Enable experimental optimizations
   experimental: {
     // Optimize package imports for faster builds
@@ -61,25 +64,6 @@ const nextConfig = {
   // Keep relaxed checks for faster builds
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
-  // Performance: Configure webpack for better caching
-  webpack: (config, { isServer }) => {
-    // Optimize module resolution
-    config.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.json'];
-
-    // Enable persistent caching for faster rebuilds
-    config.cache = {
-      type: 'filesystem',
-      buildDependencies: {
-        config: [__filename],
-      },
-    };
-
-    return config;
   },
 }
 
