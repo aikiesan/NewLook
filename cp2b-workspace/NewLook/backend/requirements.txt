@@ -41,9 +41,6 @@ requests==2.31.0
 # Supabase integration
 supabase==2.7.4
 
-# Error Monitoring
-sentry-sdk[fastapi]==2.16.0
-
 # Development and Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
