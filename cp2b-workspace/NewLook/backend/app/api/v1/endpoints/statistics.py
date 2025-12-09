@@ -12,19 +12,17 @@ from app.middleware.auth import require_authenticated
 from app.models.auth import UserProfile
 
 logger = logging.getLogger(__name__)
-router = APIRouter(dependencies=[Depends(require_authenticated)])
+router = APIRouter()
 
 
 @router.get(
     "/summary",
     summary="Get Summary Statistics",
-    description="Get summary statistics for all municipalities including biogas potential (requires authentication)"
+    description="Get summary statistics for all municipalities including biogas potential"
 )
-async def get_summary_statistics(
-    current_user: UserProfile = Depends(require_authenticated)
-) -> Dict[str, Any]:
+async def get_summary_statistics() -> Dict[str, Any]:
     """
-    Get summary statistics for the entire dataset (requires authentication).
+    Get summary statistics for the entire dataset.
 
     Returns:
         Dictionary with total municipalities, biogas potential, and category breakdowns

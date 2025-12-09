@@ -24,15 +24,15 @@ export default function MapLegend() {
 
   return (
     <div className="absolute bottom-4 right-4 z-[400]">
-      <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden w-44">
+      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden w-48">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
-          <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
+        <div className="flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+          <span className="text-[10px] font-semibold text-gray-700 uppercase tracking-wide">
             Biogás (m³/ano)
           </span>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+            className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors rounded-full hover:bg-gray-100 p-0.5"
             aria-label={isCollapsed ? 'Expandir legenda' : 'Recolher legenda'}
             aria-expanded={!isCollapsed}
           >
@@ -46,22 +46,22 @@ export default function MapLegend() {
 
         {/* Legend Items */}
         {!isCollapsed && (
-          <div className="p-2 space-y-1">
+          <div className="p-3 space-y-1.5">
             {legendItems.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2.5 hover:bg-gray-50 px-1.5 py-1 rounded-md transition-colors"
                 role="listitem"
               >
                 {/* Color box */}
                 <div
-                  className="w-4 h-3 rounded-sm border border-gray-300 flex-shrink-0"
+                  className="w-5 h-3.5 rounded border border-gray-200 shadow-sm flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                   aria-hidden="true"
                 />
 
                 {/* Label */}
-                <span className="text-[10px] text-gray-700 flex-1">
+                <span className="text-[10px] text-gray-700 font-medium flex-1">
                   {item.label}
                 </span>
               </div>

@@ -1,197 +1,219 @@
 /**
- * CP2B Maps V3 - Geospatial Data Hooks
- * React hooks for fetching and managing geospatial data
+ * CP2B Maps V3 - Optimized Geospatial Data Hooks
+ * React Query hooks for efficient data fetching and caching
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { geospatialClient } from '@/lib/api/geospatialClient';
+import { queryKeys } from '@/lib/queryClient';
 import type {
   MunicipalityCollection,
   SummaryStatistics,
   MunicipalityFeature,
 } from '@/types/geospatial';
 
-// Generic hook state interface
-interface DataState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
-}
-
 /**
- * Hook to fetch municipalities GeoJSON
+ * Hook to fetch municipalities GeoJSON with optimized caching
+ *
+ * Features:
+ * - Automatic caching (5 min stale time, 10 min cache time)
+ * - Background refetching
+ * - Retry on failure
+ * - Shared cache across components
  */
 export function useGeospatialData() {
-  const [state, setState] = useState<DataState<MunicipalityCollection>>({
-    data: null,
-    loading: true,
-    error: null,
+  const queryResult = useQuery({
+    queryKey: queryKeys.municipalities.geojson(),
+    queryFn: async () => {
+      console.log('🔍 Fetching municipalities GeoJSON...');
+      try {
+        const data = await geospatialClient.getMunicipalitiesGeoJSON();
+        console.log('✅ Municipalities fetched:', data?.features?.length, 'features');
+        return data;
+      } catch (error) {
+        console.error('❌ Error fetching municipalities:', error);
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - geospatial data doesn't change often
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  useEffect(() => {
-    let mounted = true;
+  // Debug logging (always enabled for production debugging)
+  if (typeof window !== 'undefined') {
+    console.log('📊 useGeospatialData:', {
+      isLoading: queryResult.isLoading,
+      isError: queryResult.isError,
+      isSuccess: queryResult.isSuccess,
+      isFetching: queryResult.isFetching,
+      hasData: !!queryResult.data,
+      featuresCount: queryResult.data?.features?.length || 0,
+      error: queryResult.error?.message,
+    });
+  }
 
-    const fetchData = async () => {
-      try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        const data = await geospatialClient.getMunicipalitiesGeoJSON();
-
-        if (mounted) {
-          setState({ data, loading: false, error: null });
-        }
-      } catch (error) {
-        if (mounted) {
-          setState({
-            data: null,
-            loading: false,
-            error: error instanceof Error ? error : new Error('Failed to fetch data'),
-          });
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return state;
+  // Return in the old format for backward compatibility
+  return {
+    data: queryResult.data || null,
+    loading: queryResult.isLoading,
+    error: queryResult.error as Error | null,
+    // Additional React Query features
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    refetch: queryResult.refetch,
+  };
 }
 
 /**
- * Hook to fetch summary statistics
+ * Hook to fetch summary statistics with caching
  */
 export function useSummaryStatistics() {
-  const [state, setState] = useState<DataState<SummaryStatistics>>({
-    data: null,
-    loading: true,
-    error: null,
+  const queryResult = useQuery({
+    queryKey: queryKeys.statistics.summary(),
+    queryFn: () => geospatialClient.getSummaryStatistics(),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchData = async () => {
-      try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        const data = await geospatialClient.getSummaryStatistics();
-
-        if (mounted) {
-          setState({ data, loading: false, error: null });
-        }
-      } catch (error) {
-        if (mounted) {
-          setState({
-            data: null,
-            loading: false,
-            error: error instanceof Error ? error : new Error('Failed to fetch statistics'),
-          });
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return state;
+  return {
+    data: queryResult.data || null,
+    loading: queryResult.isLoading,
+    error: queryResult.error as Error | null,
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    refetch: queryResult.refetch,
+  };
 }
 
 /**
- * Hook to fetch municipality detail
+ * Hook to fetch municipality detail with caching
  */
 export function useMunicipalityDetail(municipalityId: string | null) {
-  const [state, setState] = useState<DataState<MunicipalityFeature>>({
-    data: null,
-    loading: false,
-    error: null,
+  const queryResult = useQuery({
+    queryKey: queryKeys.municipalities.detail(municipalityId || ''),
+    queryFn: () => {
+      if (!municipalityId) {
+        throw new Error('Municipality ID is required');
+      }
+      return geospatialClient.getMunicipalityDetail(municipalityId);
+    },
+    enabled: !!municipalityId, // Only run query if ID is provided
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
-  useEffect(() => {
-    if (!municipalityId) {
-      setState({ data: null, loading: false, error: null });
-      return;
-    }
-
-    let mounted = true;
-
-    const fetchData = async () => {
-      try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        const data = await geospatialClient.getMunicipalityDetail(municipalityId);
-
-        if (mounted) {
-          setState({ data, loading: false, error: null });
-        }
-      } catch (error) {
-        if (mounted) {
-          setState({
-            data: null,
-            loading: false,
-            error: error instanceof Error ? error : new Error('Failed to fetch municipality detail'),
-          });
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, [municipalityId]);
-
-  return state;
+  return {
+    data: queryResult.data || null,
+    loading: queryResult.isLoading,
+    error: queryResult.error as Error | null,
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    refetch: queryResult.refetch,
+  };
 }
 
 /**
- * Hook to fetch rankings
+ * Hook to fetch rankings with caching
  */
 export function useRankings(
   criteria: 'total' | 'agricultural' | 'livestock' | 'urban' = 'total',
   limit: number = 10
 ) {
-  const [state, setState] = useState<DataState<any>>({
-    data: null,
-    loading: true,
-    error: null,
+  const queryResult = useQuery({
+    queryKey: queryKeys.statistics.rankings(criteria, limit),
+    queryFn: () => geospatialClient.getRankings(criteria, limit),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
-  useEffect(() => {
-    let mounted = true;
+  return {
+    data: queryResult.data || null,
+    loading: queryResult.isLoading,
+    error: queryResult.error as Error | null,
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    refetch: queryResult.refetch,
+  };
+}
 
-    const fetchData = async () => {
-      try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
-        const data = await geospatialClient.getRankings(criteria, limit);
+/**
+ * Hook to fetch infrastructure layer with caching
+ *
+ * @param layerType - Type of infrastructure layer
+ * @param enabled - Whether the query should run (for conditional loading)
+ */
+export function useInfrastructureLayer(
+  layerType: string,
+  enabled: boolean = true
+) {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://newlook-production.up.railway.app'
+      : 'http://localhost:8000');
 
-        if (mounted) {
-          setState({ data, loading: false, error: null });
-        }
-      } catch (error) {
-        if (mounted) {
-          setState({
-            data: null,
-            loading: false,
-            error: error instanceof Error ? error : new Error('Failed to fetch rankings'),
-          });
-        }
+  const queryResult = useQuery({
+    queryKey: queryKeys.infrastructure.layer(layerType),
+    queryFn: async () => {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/infrastructure/${layerType}/geojson`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${layerType} data: ${response.statusText}`);
       }
-    };
 
-    fetchData();
+      return response.json();
+    },
+    enabled, // Only fetch when layer is visible
+    staleTime: 1000 * 60 * 10, // 10 minutes - infrastructure data rarely changes
+    gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache longer
+    retry: 2,
+  });
 
-    return () => {
-      mounted = false;
-    };
-  }, [criteria, limit]);
+  return {
+    data: queryResult.data || null,
+    loading: queryResult.isLoading,
+    error: queryResult.error as Error | null,
+    isSuccess: queryResult.isSuccess,
+    isFetching: queryResult.isFetching,
+    refetch: queryResult.refetch,
+  };
+}
 
-  return state;
+/**
+ * Hook to prefetch all critical data in parallel
+ * Use this to warm up the cache before rendering heavy components
+ */
+export function usePrefetchCriticalData() {
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: queryKeys.municipalities.geojson(),
+        queryFn: () => geospatialClient.getMunicipalitiesGeoJSON(),
+        staleTime: 1000 * 60 * 5,
+      },
+      {
+        queryKey: queryKeys.statistics.summary(),
+        queryFn: () => geospatialClient.getSummaryStatistics(),
+        staleTime: 1000 * 60 * 5,
+      },
+    ],
+  });
+
+  const isLoading = results.some((result) => result.isLoading);
+  const isError = results.some((result) => result.isError);
+  const errors = results.filter((result) => result.error).map((r) => r.error);
+
+  return {
+    isLoading,
+    isError,
+    errors,
+    municipalitiesData: results[0].data as MunicipalityCollection | undefined,
+    statisticsData: results[1].data as SummaryStatistics | undefined,
+  };
 }

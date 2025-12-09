@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
+import MapLoadingSkeleton from '@/components/map/MapLoadingSkeleton'
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
 import type { BiomassType } from '@/components/map/FloatingControlPanel'
 import { logger } from '@/lib/logger'
@@ -19,14 +20,7 @@ import { logger } from '@/lib/logger'
 // Dynamically import Map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] dark:border-emerald-500 mx-auto"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando mapa...</p>
-      </div>
-    </div>
-  ),
+  loading: () => <MapLoadingSkeleton />,
 })
 
 export default function DashboardPage() {

@@ -136,6 +136,7 @@ export default function ScientificDatabasePage() {
 
   // Reference filter states
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedResidue, setSelectedResidue] = useState<string>('')
   const [yearRange, setYearRange] = useState<[number, number]>([2010, new Date().getFullYear()])
   const [peerReviewedOnly, setPeerReviewedOnly] = useState(false)
 
@@ -224,7 +225,17 @@ export default function ScientificDatabasePage() {
       setRealResiduos(deduplicatedResiduos)
 
       if (sectorSum.status === 'fulfilled') {
-        setSectorSummary(sectorSum.value?.summary || [])
+        // Deduplicate sector summary by codigo to prevent duplicate cards
+        const rawSummary = sectorSum.value?.summary || []
+        // Use Map for more robust deduplication
+        const uniqueSectorsMap = new Map()
+        rawSummary.forEach((sector: any) => {
+          if (sector.codigo && !uniqueSectorsMap.has(sector.codigo)) {
+            uniqueSectorsMap.set(sector.codigo, sector)
+          }
+        })
+        const deduplicatedSummary = Array.from(uniqueSectorsMap.values())
+        setSectorSummary(deduplicatedSummary)
       } else {
         console.warn('Failed to load sector summary:', sectorSum.reason)
       }
@@ -379,6 +390,12 @@ export default function ScientificDatabasePage() {
       )
     }
 
+    if (selectedResidue) {
+      filtered = filtered.filter(ref =>
+        ref.residues_studied.some(r => r === selectedResidue)
+      )
+    }
+
     if (selectedSectors.length > 0) {
       filtered = filtered.filter(ref => selectedSectors.includes(ref.sector))
     }
@@ -392,7 +409,7 @@ export default function ScientificDatabasePage() {
     )
 
     return filtered
-  }, [references, searchQuery, selectedSectors, peerReviewedOnly, yearRange])
+  }, [references, searchQuery, selectedResidue, selectedSectors, peerReviewedOnly, yearRange])
 
   // Toggle reference expansion
   const toggleRefExpansion = (id: number) => {
@@ -597,63 +614,97 @@ export default function ScientificDatabasePage() {
                 ))}
               </div>
 
-              {/* Simplified Residues List - Grouped by Sector */}
+              {/* Database Information Overview */}
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6">
-                  Lista de Residuos por Setor
+                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                  <Info className="h-5 w-5 text-green-600" />
+                  Sobre a Base de Dados de Residuos
                 </h3>
 
                 <div className="space-y-6">
-                  {sectorSummary.map((sector: any) => {
-                    // Filter residues for this sector and deduplicate by ID
-                    const sectorResiduos = realResiduos
-                      .filter((r: any) => r.sector_codigo === sector.codigo)
-                      .filter((residuo: any, index: number, self: any[]) =>
-                        index === self.findIndex((r: any) => r.id === residuo.id)
-                      )
-
-                    return (
-                      <div key={sector.codigo} className="border-l-4 border-green-500 pl-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-2xl">{sector.emoji}</span>
-                          <h4 className="font-semibold text-gray-900 text-base">
-                            {sector.nome}
-                          </h4>
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            {sectorResiduos.length} residuos
-                          </span>
-                        </div>
-
-                        {sectorResiduos.length > 0 ? (
-                          <ul className="space-y-2 ml-6">
-                            {sectorResiduos.map((residuo: any) => (
-                              <li key={`residuo-${residuo.id}-${sector.codigo}`} className="text-gray-700 flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                <span>{residuo.nome}</span>
-                                {residuo.subsector_nome && (
-                                  <span className="text-xs text-gray-500">
-                                    ({residuo.subsector_nome})
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-sm text-gray-500 italic ml-6">
-                            Nenhum residuo cadastrado neste setor
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {realResiduos.length === 0 && (
-                  <div className="text-center py-8">
-                    <FlaskConical className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500">Nenhum residuo encontrado na base de dados</p>
+                  {/* Overview */}
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 leading-relaxed">
+                      A Base de Dados de Residuos do CP2B Maps V3 contém informações detalhadas sobre{' '}
+                      <span className="font-semibold text-green-700">{realResiduos.length} tipos de residuos</span>{' '}
+                      orgânicos disponíveis no estado de São Paulo para produção de biogás através da digestão anaeróbica.
+                    </p>
                   </div>
-                )}
+
+                  {/* Key Metrics Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                      <div className="text-3xl font-bold text-green-900 mb-1">
+                        {realResiduos.length}
+                      </div>
+                      <div className="text-sm text-green-700 font-medium">
+                        Residuos Caracterizados
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                      <div className="text-3xl font-bold text-blue-900 mb-1">
+                        {sectorSummary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)}
+                      </div>
+                      <div className="text-sm text-blue-700 font-medium">
+                        Referencias Cientificas
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
+                      <div className="text-3xl font-bold text-amber-900 mb-1">
+                        {sectorSummary.length}
+                      </div>
+                      <div className="text-sm text-amber-700 font-medium">
+                        Setores Economicos
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sector Distribution */}
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <FlaskConical className="h-4 w-4 text-green-600" />
+                      Distribuição por Setor Econômico
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {sectorSummary.map((sector: any) => {
+                        const sectorCount = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo).length
+                        return (
+                          <div key={sector.codigo} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-4xl">{sector.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{sector.nome}</div>
+                              <div className="text-sm text-gray-600 mt-1">
+                                {sectorCount} residuos • BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Navigation Helper */}
+                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Como explorar os dados
+                    </h4>
+                    <ul className="text-sm text-blue-800 space-y-1.5">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Use a aba <strong>Caracterização Química</strong> para ver detalhes de cada residuo</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Consulte a aba <strong>Referencias Científicas</strong> para acessar a literatura</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Use a aba <strong>Comparação Interativa</strong> para comparar até 5 residuos</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               {/* Conversion Factors */}
@@ -859,49 +910,39 @@ export default function ScientificDatabasePage() {
           {/* Chemical Data Tab */}
           {viewMode === 'chemical' && (
             <>
-              {/* Backend Connection Error Message */}
-              {!isBackendAvailable && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl shadow-md mb-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                        Conexão com Backend Necessária
-                      </h3>
-                      <p className="text-yellow-700 mb-3">
-                        Os dados de caracterização química requerem conexão com o backend. Por favor, inicie o servidor backend para visualizar os dados reais.
+              {/* Backend Connection Warning - using mock data */}
+              {!isBackendAvailable && realResiduos.length > 0 && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-1">
+                        Exibindo Dados de Referência
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        Conectando ao backend... Enquanto isso, dados de referência científica estão sendo exibidos.
+                        Para acessar dados completos da plataforma, verifique seu email ou contate o administrador.
                       </p>
-                      <div className="bg-yellow-100 rounded-lg p-3 font-mono text-sm text-yellow-800">
-                        <p className="font-semibold mb-1">Para iniciar o backend:</p>
-                        <code className="block">cd backend</code>
-                        <code className="block">uvicorn main:app --reload</code>
-                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Chemical Data Cards */}
-              {isBackendAvailable && (
+              {realResiduos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {realResiduos.map((residue) => {
                   const cnStatus = getCNStatus(residue.chemical_cn_ratio);
                   return (
                     <div
                       key={residue.id}
-                      className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow"
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-300 transition-all duration-200"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{residue.nome}</h4>
-                          <span className="text-xs text-gray-500">
-                            {residue.sector_nome}
-                          </span>
-                        </div>
+                      <div className="mb-5">
+                        <h4 className="text-lg font-bold text-gray-900 mb-2 leading-tight">{residue.nome}</h4>
+                        <span className="inline-block px-3 py-1 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 text-xs font-semibold rounded-lg border border-gray-200">
+                          {residue.sector_nome}
+                        </span>
                       </div>
 
                       <div className="space-y-3">
@@ -914,18 +955,18 @@ export default function ScientificDatabasePage() {
                         />
 
                         {/* Composition */}
-                        <div className="grid grid-cols-3 gap-2 text-xs">
-                          <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900">{residue.ts_medio?.toFixed(1) || 'N/A'}%</div>
-                            <div className="text-gray-500">ST</div>
+                        <div className="grid grid-cols-3 gap-3 text-xs">
+                          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                            <div className="font-bold text-blue-900 text-base">{residue.ts_medio?.toFixed(1) || 'N/A'}%</div>
+                            <div className="text-blue-700 font-semibold mt-1">ST</div>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900">{residue.vs_medio?.toFixed(1) || 'N/A'}%</div>
-                            <div className="text-gray-500">SV</div>
+                          <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                            <div className="font-bold text-green-900 text-base">{residue.vs_medio?.toFixed(1) || 'N/A'}%</div>
+                            <div className="text-green-700 font-semibold mt-1">SV</div>
                           </div>
-                          <div className="text-center p-2 bg-gray-50 rounded">
-                            <div className="font-semibold text-gray-900" style={{ color: cnStatus.color }}>{residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1</div>
-                            <div className="text-gray-500">C:N</div>
+                          <div className="text-center p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
+                            <div className="font-bold text-base" style={{ color: cnStatus.color }}>{residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1</div>
+                            <div className="text-amber-700 font-semibold mt-1">C:N</div>
                           </div>
                         </div>
 
@@ -953,20 +994,24 @@ export default function ScientificDatabasePage() {
                             onClick={() => {
                               // Switch to References tab
                               setViewMode('references')
-                              // Filter by residue name
-                              setSearchQuery(residue.nome)
+                              // Filter by residue name using the residue filter
+                              setSelectedResidue(residue.nome)
+                              // Clear other filters for clean results
+                              setSearchQuery('')
+                              setSelectedSectors([])
+                              setPeerReviewedOnly(false)
                               // Scroll to top smoothly
                               window.scrollTo({ top: 0, behavior: 'smooth' })
                             }}
-                            className="w-full flex items-start gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left border border-blue-200"
+                            className="w-full flex items-start gap-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg transition-all text-left border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md"
                           >
-                            <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
+                            <BookOpen className="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-700" />
                             <div className="flex flex-col items-start overflow-hidden flex-1">
-                              <span className="text-xs font-semibold text-blue-900">
+                              <span className="text-sm font-bold text-blue-900">
                                 Ver Referências ({residue.reference_count})
                               </span>
                               {residue.main_reference && (
-                                <span className="text-[10px] text-blue-600 truncate w-full" title={residue.main_reference}>
+                                <span className="text-xs text-blue-700 truncate w-full mt-1" title={residue.main_reference}>
                                   {residue.main_reference}
                                 </span>
                               )}
@@ -1033,6 +1078,23 @@ export default function ScientificDatabasePage() {
                     </div>
                   </div>
 
+                  {/* Residue Filter */}
+                  <div className="mb-4">
+                    <label className="text-xs text-gray-600 block mb-1.5">Filtrar por Residuo</label>
+                    <select
+                      value={selectedResidue}
+                      onChange={(e) => setSelectedResidue(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                    >
+                      <option value="">Todos os residuos</option>
+                      {realResidueNames.map(residue => (
+                        <option key={residue} value={residue}>
+                          {residue}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Sector Filter */}
                   <div className="mb-4">
                     <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
@@ -1082,10 +1144,11 @@ export default function ScientificDatabasePage() {
                   </div>
 
                   {/* Clear Filters */}
-                  {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                  {(searchQuery || selectedResidue || selectedSectors.length > 0 || peerReviewedOnly) && (
                     <button
                       onClick={() => {
                         setSearchQuery('')
+                        setSelectedResidue('')
                         setSelectedSectors([])
                         setPeerReviewedOnly(false)
                       }}
@@ -1122,10 +1185,11 @@ export default function ScientificDatabasePage() {
                     <p className="text-gray-600 mb-4">
                       Tente ajustar seus filtros de busca
                     </p>
-                    {(searchQuery || selectedSectors.length > 0 || peerReviewedOnly) && (
+                    {(searchQuery || selectedResidue || selectedSectors.length > 0 || peerReviewedOnly) && (
                       <button
                         onClick={() => {
                           setSearchQuery('')
+                          setSelectedResidue('')
                           setSelectedSectors([])
                           setPeerReviewedOnly(false)
                         }}
@@ -1139,54 +1203,67 @@ export default function ScientificDatabasePage() {
                   filteredReferences.map((ref) => (
                     <div
                       key={`ref-${ref.id}-${ref.title.slice(0, 20).replace(/\s/g, '-')}`}
-                      className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover:border-green-200 transition-all duration-200"
                     >
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-4">
+                      <div className="p-6">
+                        {/* Header with title and badges */}
+                        <div className="flex items-start gap-4 mb-4">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-1 leading-snug">{ref.title}</h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {ref.authors} ({ref.year})
-                            </p>
+                            <h4 className="text-lg font-bold text-gray-900 mb-2 leading-tight hover:text-green-700 transition-colors">
+                              {ref.title}
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                              <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                              <span className="font-medium">{ref.authors}</span>
+                              <span className="text-gray-400">•</span>
+                              <span className="font-semibold text-green-700">{ref.year}</span>
+                            </div>
                             {ref.journal && (
-                              <p className="text-xs text-gray-500 italic mb-3">
+                              <p className="text-sm text-gray-500 italic">
                                 {ref.journal}
                               </p>
                             )}
                           </div>
                           {ref.peer_reviewed && (
-                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
+                            <span className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200 whitespace-nowrap shadow-sm">
                               ✓ Peer-Reviewed
                             </span>
                           )}
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                        {/* Tags and badges */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="px-3 py-1 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 rounded-lg text-xs font-semibold border border-gray-200">
                             {getSectorLabel(ref.sector)}
                           </span>
                           {ref.residues_studied.slice(0, 3).map((residue, idx) => (
-                            <span key={`${ref.id}-residue-${idx}`} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                            <span
+                              key={`${ref.id}-residue-${idx}`}
+                              className="px-3 py-1 bg-gradient-to-r from-green-50 to-green-100 text-green-800 rounded-lg text-xs font-medium border border-green-200"
+                            >
                               {residue}
                             </span>
                           ))}
                           {ref.residues_studied.length > 3 && (
-                            <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded text-xs">
+                            <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium border border-gray-200">
                               +{ref.residues_studied.length - 3} mais
                             </span>
                           )}
                           {ref.parameters_measured.slice(0, 2).map((param, idx) => (
-                            <span key={`${ref.id}-param-${idx}`} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                            <span
+                              key={`${ref.id}-param-${idx}`}
+                              className="px-3 py-1 bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 rounded-lg text-xs font-medium border border-amber-200"
+                            >
                               {PARAMETER_LABELS[param] || param}
                             </span>
                           ))}
                         </div>
 
-                        {/* Expandable Content */}
-                        <div className="flex items-center gap-3">
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-3 pt-2">
                           <button
                             onClick={() => toggleRefExpansion(ref.id)}
-                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 font-medium"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-green-700 font-medium bg-gray-50 hover:bg-green-50 rounded-lg transition-all border border-gray-200 hover:border-green-300"
                           >
                             {expandedRefs.has(ref.id) ? (
                               <>
@@ -1206,40 +1283,60 @@ export default function ScientificDatabasePage() {
                               href={`https://doi.org/${ref.doi}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
                             >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                              DOI
+                              <ExternalLink className="h-4 w-4" />
+                              Acessar DOI
                             </a>
                           )}
                         </div>
 
                         {expandedRefs.has(ref.id) && (
-                          <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                          <div className="mt-6 pt-6 border-t-2 border-gray-100 space-y-4 bg-gray-50/50 -mx-6 px-6 py-6 rounded-b-xl">
                             {ref.abstract && (
-                              <div>
-                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">📄 Resumo</h5>
-                                <p className="text-sm text-gray-600 leading-relaxed">{ref.abstract}</p>
+                              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                                <h5 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                  <span className="text-lg">📄</span>
+                                  Resumo
+                                </h5>
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                                  {ref.abstract}
+                                </p>
                               </div>
                             )}
 
                             {ref.key_findings && ref.key_findings.length > 0 && (
-                              <div>
-                                <h5 className="text-xs font-semibold text-gray-700 mb-1.5">🔍 Principais Achados</h5>
-                                <ul className="list-disc ml-5 text-sm text-gray-600 space-y-1">
+                              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                                <h5 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                  <span className="text-lg">🔍</span>
+                                  Principais Achados
+                                </h5>
+                                <ul className="list-disc ml-6 text-sm text-gray-700 space-y-2">
                                   {ref.key_findings.map((finding, idx) => (
-                                    <li key={idx}>{finding}</li>
+                                    <li key={idx} className="leading-relaxed">{finding}</li>
                                   ))}
                                 </ul>
                               </div>
                             )}
 
-                            <div className="flex flex-wrap gap-4 pt-2 text-xs text-gray-500">
+                            <div className="flex flex-wrap gap-4 text-xs text-gray-600 bg-white rounded-lg p-4 border border-gray-200">
                               {ref.reference_type && (
-                                <span>Tipo: <span className="font-medium text-gray-700">{ref.reference_type}</span></span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-500">Tipo:</span>
+                                  <span className="font-medium text-gray-800 px-2 py-0.5 bg-gray-100 rounded">{ref.reference_type}</span>
+                                </div>
                               )}
                               {(ref as any).cited_by && (
-                                <span>Citações: <span className="font-medium text-gray-700">{(ref as any).cited_by}</span></span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-500">Citações:</span>
+                                  <span className="font-bold text-green-700 px-2 py-0.5 bg-green-50 rounded">{(ref as any).cited_by}</span>
+                                </div>
+                              )}
+                              {ref.doi && (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-500">DOI:</span>
+                                  <code className="font-mono text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{ref.doi}</code>
+                                </div>
                               )}
                             </div>
                           </div>

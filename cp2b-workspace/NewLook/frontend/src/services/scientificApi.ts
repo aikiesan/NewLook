@@ -27,6 +27,7 @@ import {
 } from '@/data/scientificData'
 
 import { logger } from '@/lib/logger'
+import { authenticatedFetch } from '@/lib/apiClient'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -44,7 +45,7 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
       ? `${API_BASE_URL}/api/v1/residuos/?sector_codigo=${sectorCodigo}&limit=100`
       : `${API_BASE_URL}/api/v1/residuos/?limit=100`
 
-    const response = await fetch(url)
+    const response = await authenticatedFetch(url)
     if (!response.ok) throw new Error('Failed to fetch residuos')
 
     return await response.json()
@@ -53,7 +54,7 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
     logger.warn('Falling back to mock data...')
 
     // Fallback to mock data when backend is unavailable
-    const mockResiduos = MOCK_CHEMICAL_DATA.map(chem => ({
+    const mockResiduos = REAL_CHEMICAL_DATA.map(chem => ({
       id: chem.residue_id,
       nome: chem.residue_name,
       nome_en: chem.residue_name,
@@ -92,7 +93,7 @@ export async function getRealResiduos(sectorCodigo?: string): Promise<any> {
  */
 export async function getRealSectorSummary(): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/summary/by-sector`)
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/residuos/summary/by-sector`)
     if (!response.ok) throw new Error('Failed to fetch sector summary')
 
     return await response.json()
@@ -100,7 +101,7 @@ export async function getRealSectorSummary(): Promise<any> {
     logger.error('Error fetching sector summary:', error)
     logger.warn('Falling back to mock sector summary...')
 
-    // Fallback to mock summary generated from MOCK_CHEMICAL_DATA
+    // Fallback to mock summary generated from REAL_CHEMICAL_DATA
     const sectorCounts = {
       'AG_AGRICULTURA': 0,
       'PC_PECUARIA': 0,
@@ -108,7 +109,7 @@ export async function getRealSectorSummary(): Promise<any> {
       'UR_URBANO': 0
     }
 
-    MOCK_CHEMICAL_DATA.forEach(chem => {
+    REAL_CHEMICAL_DATA.forEach(chem => {
       const sectorCode = chem.sector === 'agricultural' ? 'AG_AGRICULTURA' :
                          chem.sector === 'livestock' ? 'PC_PECUARIA' :
                          chem.sector === 'industrial' ? 'IN_INDUSTRIAL' : 'UR_URBANO'
@@ -149,7 +150,7 @@ export async function getRealSectorSummary(): Promise<any> {
  */
 export async function getRealResiduoWithReferences(residuoId: number): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/${residuoId}`)
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/residuos/${residuoId}`)
     if (!response.ok) throw new Error('Failed to fetch residuo')
 
     return await response.json()
@@ -164,7 +165,7 @@ export async function getRealResiduoWithReferences(residuoId: number): Promise<a
  */
 export async function getRealConversionFactors(): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/residuos/conversion-factors/`)
+    const response = await authenticatedFetch(`${API_BASE_URL}/api/v1/residuos/conversion-factors/`)
     if (!response.ok) {
       logger.error(`[ERROR] Error fetching conversion factors: ${response.status} ${response.statusText}`)
       return { factors: [], error: `HTTP ${response.status}` }
@@ -183,7 +184,7 @@ export async function getRealConversionFactors(): Promise<any> {
 export async function getAllReferencesForResidue(residuoId: number): Promise<ScientificReference[]> {
   try {
     const url = `${API_BASE_URL}/api/v1/residuos/${residuoId}/references`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (!response.ok) {
       if (response.status === 404) {
         return [];
@@ -204,7 +205,7 @@ export async function getAllReferencesForResidue(residuoId: number): Promise<Sci
 export async function getReferencesForParameter(residuoId: number, parameterType: string): Promise<ScientificReference[]> {
   try {
     const url = `${API_BASE_URL}/api/v1/residuos/${residuoId}/references?parameter_type=${parameterType}`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (!response.ok) {
       if (response.status === 404) {
         return [];
@@ -229,7 +230,7 @@ export async function getAllReferences(limit: number = 1000, offset: number = 0)
 }> {
   try {
     const url = `${API_BASE_URL}/api/v1/residuos/references/all?limit=${limit}&offset=${offset}`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch all references');
     }

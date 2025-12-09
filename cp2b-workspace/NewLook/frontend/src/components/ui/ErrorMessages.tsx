@@ -1,11 +1,12 @@
 /**
  * User-friendly Error Messages Component
  * Sprint 4: Task 4.2 - Error Handling & Edge Cases
- * 
+ *
  * Provides clear, actionable error messages with retry options
  */
 
 import { AlertCircle, RefreshCw, WifiOff, MapPin, Clock } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export interface ErrorMessageProps {
   type: 'validation' | 'network' | 'timeout' | 'rate_limit' | 'server' | 'generic'
@@ -20,8 +21,20 @@ export default function ErrorMessage({
   message,
   suggestion,
   onRetry,
-  retryAfter
+  retryAfter: initialRetryAfter
 }: ErrorMessageProps) {
+  const [retryAfter, setRetryAfter] = useState(initialRetryAfter || 0)
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (retryAfter > 0) {
+      const timer = setTimeout(() => {
+        setRetryAfter(prev => prev - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [retryAfter])
+
   // Select icon based on error type
   const getIcon = () => {
     switch (type) {
@@ -87,7 +100,7 @@ export default function ErrorMessage({
       )}
 
       {/* Retry After Counter */}
-      {retryAfter && retryAfter > 0 && (
+      {retryAfter > 0 && (
         <div className={`text-sm ${colors.subtext} mb-4 flex items-center gap-2`}>
           <Clock className="h-4 w-4" />
           <span>Aguarde {retryAfter} segundos...</span>
@@ -95,7 +108,7 @@ export default function ErrorMessage({
       )}
 
       {/* Retry Button */}
-      {onRetry && (!retryAfter || retryAfter === 0) && (
+      {onRetry && retryAfter === 0 && (
         <button
           onClick={onRetry}
           className={`flex items-center gap-2 px-4 py-2 ${colors.button} text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2`}
@@ -137,9 +150,27 @@ interface ToastProps {
   message: string
   type?: 'error' | 'warning' | 'info' | 'success'
   onDismiss?: () => void
+  autoDismiss?: boolean
+  autoDismissDelay?: number
 }
 
-export function Toast({ message, type = 'error', onDismiss }: ToastProps) {
+export function Toast({ message, type = 'error', onDismiss, autoDismiss = true, autoDismissDelay = 5000 }: ToastProps) {
+  const [isVisible, setIsVisible] = useState(true)
+
+  // Auto-dismiss effect
+  useEffect(() => {
+    if (autoDismiss && autoDismissDelay > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+        if (onDismiss) {
+          // Give time for fade-out animation before calling onDismiss
+          setTimeout(() => onDismiss(), 300)
+        }
+      }, autoDismissDelay)
+      return () => clearTimeout(timer)
+    }
+  }, [autoDismiss, autoDismissDelay, onDismiss])
+
   const colorMap = {
     error: 'bg-red-500',
     warning: 'bg-yellow-500',
@@ -147,9 +178,13 @@ export function Toast({ message, type = 'error', onDismiss }: ToastProps) {
     success: 'bg-green-500'
   }
 
+  if (!isVisible) {
+    return null
+  }
+
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 ${colorMap[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-md animate-slide-up`}
+      className={`fixed bottom-4 right-4 z-50 ${colorMap[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-md animate-slide-up transition-opacity duration-300 ${!isVisible ? 'opacity-0' : 'opacity-100'}`}
       role="alert"
       aria-live="polite"
     >
@@ -157,7 +192,10 @@ export function Toast({ message, type = 'error', onDismiss }: ToastProps) {
       <p className="text-sm flex-1">{message}</p>
       {onDismiss && (
         <button
-          onClick={onDismiss}
+          onClick={() => {
+            setIsVisible(false)
+            setTimeout(() => onDismiss(), 300)
+          }}
           className="text-white hover:text-gray-200 focus:outline-none"
           aria-label="Fechar"
         >

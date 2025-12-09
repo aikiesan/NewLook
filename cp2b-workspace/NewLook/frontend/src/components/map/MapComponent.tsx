@@ -12,9 +12,8 @@ import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import type { BiomassType } from './FloatingControlPanel';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import ErrorDisplay from '../ui/ErrorBoundary';
 import MapLegend from './MapLegend';
+import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
@@ -28,10 +27,6 @@ const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), {
 });
 
 const FloatingControlPanel = dynamic(() => import('./FloatingControlPanel'), {
-  ssr: false,
-});
-
-const FloatingStatsPanel = dynamic(() => import('./FloatingStatsPanel'), {
   ssr: false,
 });
 
@@ -68,6 +63,8 @@ export default function MapComponent({
 }: MapComponentProps = {}) {
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
+  const [isRendering, setIsRendering] = useState(false);
+  const [layersRendered, setLayersRendered] = useState(0);
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -87,6 +84,22 @@ export default function MapComponent({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Track when data is loaded and rendering starts
+  useEffect(() => {
+    if (data && !loading && isMounted) {
+      setIsRendering(true);
+      setLayersRendered(0);
+
+      // Give Leaflet time to render the shapes
+      const renderingTimer = setTimeout(() => {
+        setIsRendering(false);
+        setLayersRendered(1); // Mark as complete
+      }, 1500); // Wait 1.5s for shapes to render
+
+      return () => clearTimeout(renderingTimer);
+    }
+  }, [data, loading, isMounted]);
 
   // Handle layer toggle
   const handleLayerToggle = (layerId: string, visible: boolean) => {
@@ -160,31 +173,49 @@ export default function MapComponent({
 
   // Don't render map on server
   if (!isMounted) {
-    return (
-      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <LoadingSpinner message="Carregando mapa..." />
-      </div>
-    );
+    return <MapLoadingSkeleton />;
   }
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="w-full h-full bg-gray-100">
-        <LoadingSpinner message="Carregando dados dos municípios..." />
-      </div>
-    );
+  // Loading state - keep skeleton visible during data fetch AND initial rendering
+  if (loading || (data && isRendering)) {
+    return <MapLoadingSkeleton />;
   }
 
   // Error state
   if (error) {
     return (
-      <div className="w-full h-full">
-        <ErrorDisplay
-          error={error}
-          message="Erro ao carregar dados do mapa"
-          onRetry={() => window.location.reload()}
-        />
+      <div className="w-full h-full bg-gray-100 dark:bg-slate-900 flex items-center justify-center p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+              Erro ao Carregar Mapa
+            </h2>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-4 mb-6 text-left">
+              <p className="font-mono text-sm text-red-800 dark:text-red-200 break-words">
+                {error.message}
+              </p>
+            </div>
+            <div className="space-y-3 text-left text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="font-semibold">Possíveis causas:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Backend API não está respondendo</li>
+                <li>Erro de conexão com o banco de dados Supabase</li>
+                <li>Problema de rede ou CORS</li>
+                <li>React Query não configurado corretamente</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Recarregar Página
+            </button>
+            <p className="mt-4 text-xs text-gray-500">
+              Verifique o console (F12) para mais detalhes
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -192,8 +223,22 @@ export default function MapComponent({
   // No data state
   if (!data || data.features.length === 0) {
     return (
-      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-600">Nenhum dado disponível</p>
+      <div className="w-full h-full bg-gray-100 dark:bg-slate-900 flex items-center justify-center p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl text-center">
+          <div className="text-6xl mb-4">📭</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Nenhum Dado Disponível
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            O mapa não possui dados de municípios para exibir.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
       </div>
     );
   }
@@ -265,21 +310,24 @@ export default function MapComponent({
         />
       )}
 
-      {/* Floating Stats Panel (Bottom-Left) */}
-      {isMounted && <FloatingStatsPanel />}
-
       {/* Legend (Bottom-Right) */}
       {visibleLayerIds.includes('municipalities') && <MapLegend />}
 
       {/* MapBiomas Legend (Bottom-Right, above MapLegend) */}
       {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
 
-      {/* Municipality Count Badge (Top-Right) */}
-      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-md">
-        <p className="text-xs text-gray-700">
-          <span className="font-bold text-green-700">{displayData.features.length}</span>
-          <span className="text-gray-500"> / {data.features.length} municípios</span>
-        </p>
+      {/* Municipality Count Badge (Top-Right) - Enhanced Design */}
+      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-4 py-2.5 flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-xs text-gray-500 font-medium">Municípios</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-green-700">{displayData.features.length}</span>
+            <span className="text-xs text-gray-400">/ {data.features.length}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

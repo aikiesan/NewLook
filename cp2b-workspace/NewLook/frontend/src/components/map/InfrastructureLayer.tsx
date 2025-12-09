@@ -1,21 +1,16 @@
 /**
- * CP2B Maps V3 - Infrastructure Layer Component
- * Renders infrastructure GeoJSON layers (railways, pipelines, substations, biogas plants)
+ * CP2B Maps V3 - Infrastructure Layer Component (Optimized)
+ * Renders infrastructure GeoJSON layers with React Query caching
  */
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { GeoJSON, Marker, Popup } from 'react-leaflet';
 import type { GeoJsonObject, Feature } from 'geojson';
 import L from 'leaflet';
 import { logger } from '@/lib/logger';
-
-// API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'production'
-    ? 'https://newlook-production.up.railway.app'
-    : 'http://localhost:8000');
+import { useInfrastructureLayer } from '@/hooks/useGeospatialData';
 
 interface InfrastructureLayerProps {
   layerType: 'railways' | 'pipelines' | 'substations' | 'biogas-plants' | 'transmission-lines' | 'etes' | 'admin-regions' | 'intermediate-regions' | 'immediate-regions';
@@ -139,43 +134,23 @@ const createETEIcon = () => {
 };
 
 export default function InfrastructureLayer({ layerType }: InfrastructureLayerProps) {
-  const [data, setData] = useState<GeoJsonObject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  // Use React Query hook for automatic caching and background refetching
+  const { data, loading, error, isFetching } = useInfrastructureLayer(layerType, true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch(
-          `${API_BASE_URL}/api/v1/infrastructure/${layerType}/geojson`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${layerType} data: ${response.statusText}`);
-        }
-
-        const geojson = await response.json();
-        setData(geojson);
-        logger.info(`Successfully loaded ${layerType} layer`);
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
-        setError(error);
-        logger.error(`Error loading ${layerType} layer:`, error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [layerType]);
+  // Show subtle loading indicator when refetching in background
+  if (isFetching && !data) {
+    logger.info(`Loading ${layerType} layer...`);
+  }
 
   // Don't render anything while loading or if there's an error
   if (loading || error || !data) {
+    if (error) {
+      logger.error(`Error loading ${layerType} layer:`, error);
+    }
     return null;
   }
+
+  logger.info(`Rendering ${layerType} layer (cached: ${!isFetching})`);
 
   // Style function for line features (railways, pipelines)
   const style = (feature?: Feature) => {

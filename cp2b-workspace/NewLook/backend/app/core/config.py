@@ -110,18 +110,20 @@ class Settings(BaseSettings):
 
         if v == "your-secret-key-change-in-production":
             if app_env == "production":
-                raise ValueError(
+                logger.error(
                     "🚨 SECURITY ERROR: SECRET_KEY must be changed in production!\n"
                     "Generate a secure key with: openssl rand -hex 32\n"
                     "Set in environment: export SECRET_KEY=<generated-key>"
                 )
+                raise ValueError("SECRET_KEY must be changed in production")
             logger.warning("⚠️  Using default SECRET_KEY in development")
 
         if len(v) < 32:
-            raise ValueError(
+            logger.error(
                 f"SECRET_KEY too short ({len(v)} chars). Must be at least 32 characters.\n"
                 f"Generate with: openssl rand -hex 32"
             )
+            raise ValueError(f"SECRET_KEY too short: {len(v)} characters (minimum 32)")
 
         return v
 
@@ -147,14 +149,18 @@ class Settings(BaseSettings):
         app_env = os.getenv("APP_ENV", "development")
 
         if not v and app_env == "production":
-            raise ValueError(
+            logger.error(
                 "🚨 POSTGRES_PASSWORD is required in production!\n"
                 "Set in environment: export POSTGRES_PASSWORD=<secure-password>"
             )
+            raise ValueError("POSTGRES_PASSWORD is required in production")
 
-        if v and len(v) < 12 and app_env == "production":
-            raise ValueError(
-                "POSTGRES_PASSWORD must be at least 12 characters in production"
+        # URL-encoded passwords are valid (e.g., %23 for #)
+        # Don't validate length for URL-encoded passwords
+        if v and len(v) < 12 and app_env == "production" and '%' not in v:
+            logger.warning(
+                f"⚠️  POSTGRES_PASSWORD is short ({len(v)} chars). "
+                f"Consider using at least 12 characters for better security."
             )
 
         return v
@@ -206,13 +212,30 @@ try:
     settings.validate_all()
     logger.info("✅ Configuration loaded successfully")
 except ValidationError as e:
-    logger.error(f"\n{'='*60}\n🚨 CONFIGURATION ERROR\n{'='*60}")
+    print("\n" + "="*60)
+    print("🚨 CONFIGURATION ERROR")
+    print("="*60)
     for error in e.errors():
-        field = error['loc'][0]
+        field = '.'.join(str(loc) for loc in error['loc'])
         message = error['msg']
-        logger.error(f"❌ {field}: {message}")
-    logger.error(f"{'='*60}\n")
+        error_type = error.get('type', 'unknown')
+        print(f"❌ Field: {field}")
+        print(f"   Error: {message}")
+        print(f"   Type: {error_type}")
+        if 'input' in error:
+            print(f"   Value: {str(error['input'])[:100]}")
+        print()
+    print("="*60)
+    print("\nEnvironment Variables Check:")
+    print(f"  APP_ENV: {os.getenv('APP_ENV', 'NOT SET')}")
+    print(f"  SECRET_KEY: {'SET' if os.getenv('SECRET_KEY') else 'NOT SET'} (length: {len(os.getenv('SECRET_KEY', ''))})")
+    print(f"  DATABASE_URL: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
+    print(f"  POSTGRES_PASSWORD: {'SET' if os.getenv('POSTGRES_PASSWORD') else 'NOT SET'}")
+    print("="*60 + "\n")
     raise
 except Exception as e:
-    logger.error(f"Failed to load settings: {e}")
+    print(f"\n🚨 Failed to load settings: {e}")
+    print(f"   Error type: {type(e).__name__}")
+    import traceback
+    traceback.print_exc()
     raise

@@ -3,6 +3,8 @@ CP2B Maps V3 Backend API
 FastAPI application for geospatial biogas potential analysis
 Sprint 4: Performance optimizations, error handling, and production deployment
 """
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware

@@ -132,19 +132,12 @@ function ProximityAnalysisContent() {
     setAnalysisResult(null) // Clear previous results
 
     try {
-      console.log('🔍 Starting proximity analysis...', {
-        lat: selectedPoint.lat,
-        lng: selectedPoint.lng,
-        radius: radius
-      });
-      
       const result = await analyzeProximity({
         latitude: selectedPoint.lat,
         longitude: selectedPoint.lng,
         radius_km: radius
       })
-      
-      console.log('✅ Analysis result received:', result);
+
       setAnalysisResult(result as unknown as AnalysisResult)
     } catch (err: any) {
       console.error('❌ Analysis error:', err);
