@@ -140,6 +140,13 @@ async function apiCall<T>(
 
   const headers = await getAuthHeaders();
 
+  // Create abort controller for timeout (better browser compatibility)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn(`[TechRoutes API] Request timeout for ${endpoint}`);
+    controller.abort();
+  }, 15000); // Reduced to 15 seconds for better UX
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -147,9 +154,10 @@ async function apiCall<T>(
         ...headers,
         ...options.headers,
       },
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
     console.log(`[TechRoutes API] Response status: ${response.status}`);
 
     if (!response.ok) {
@@ -160,16 +168,26 @@ async function apiCall<T>(
     }
 
     const data = await response.json();
-    console.log(`[TechRoutes API] Success:`, data.length, 'items received');
+    console.log(`[TechRoutes API] Success:`, data.length || 'N/A', 'items received');
     return data;
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error(`[TechRoutes API] Call failed for ${endpoint}:`, error);
+
     if (error instanceof Error) {
       console.error(`[TechRoutes API] Error details:`, {
         name: error.name,
         message: error.message,
         stack: error.stack,
       });
+
+      // Better error messages for common failures
+      if (error.name === 'AbortError') {
+        throw new Error('A requisição demorou muito. Verifique sua conexão com a internet.');
+      }
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão com a internet.');
+      }
     }
     throw error;
   }

@@ -5,6 +5,7 @@
  * Manages global authentication state and provides auth methods
  */
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import type {
   AuthContextType,
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
   // Load user session on mount
   useEffect(() => {
@@ -91,6 +93,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       logger.debug('[AuthContext] Auth state change:', event)
 
+      // Clear React Query cache only on SIGNED_OUT to prevent stale data from previous user
+      // Don't clear on SIGNED_IN because login() already cleared it, and clearing again
+      // causes unnecessary refetching and browser freeze
+      if (event === 'SIGNED_OUT') {
+        logger.debug('[AuthContext] Clearing query cache due to sign out')
+        queryClient.clear()
+      }
+
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
       } else {
@@ -107,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
       logger.debug('[Auth] Cleanup complete')
     }
-  }, [])
+  }, [queryClient])
 
   // Fetch user profile from database
   const fetchUserProfile = async (userId: string, accessToken: string) => {
@@ -211,6 +221,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
+      // Don't clear cache on login - let staleTime handle data freshness
+      // Clearing cache causes unnecessary refetching and browser freeze
+      // Only logout clears cache to prevent data leaking between users
+
       // Sign in with Supabase (let Supabase handle its own timeouts)
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
@@ -219,14 +233,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
-      // to avoid race conditions and double fetching
-      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch')
+      // Wait for auth state to sync before allowing navigation
+      // This prevents race condition where dashboard loads before auth is ready
+      logger.debug('[Auth] Login successful - waiting for auth state sync')
 
-      // Set loading to false immediately after successful auth
-      // onAuthStateChange will fire but we want to allow navigation immediately
+      // Small delay to let onAuthStateChange callback complete
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       setLoading(false)
-      logger.debug('[Auth] Login complete, ready for navigation')
+      logger.debug('[Auth] Login complete, auth state synced, ready for navigation')
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)
@@ -242,6 +257,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true)
+
+      // Clear query cache on logout to prevent stale data
+      logger.debug('[Auth] Clearing query cache on logout')
+      queryClient.clear()
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       setUser(null)

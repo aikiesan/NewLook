@@ -495,9 +495,9 @@ class ProximityService:
                         }
                     by_sector[sector]["residuos"].append(residuo)
 
-                # Get summary statistics
+                # Get summary statistics (ensure float conversion)
                 total_residuos = len(residuos_list)
-                avg_bmp = sum(r.get("bmp_medio", 0) or 0 for r in residuos_list) / total_residuos if total_residuos > 0 else 0
+                avg_bmp = sum(float(r.get("bmp_medio") or 0) for r in residuos_list) / total_residuos if total_residuos > 0 else 0
 
                 cursor.close()
 
@@ -587,11 +587,11 @@ class ProximityService:
 
                             if production_factor and matched_residuos:
                                 estimated_residue_tons = area_ha * production_factor
-                                # Use average BMP from matched residuos
-                                avg_bmp = sum(r.get("bmp_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
+                                # Use average BMP from matched residuos (ensure float conversion)
+                                avg_bmp = sum(float(r.get("bmp_medio") or 0) for r in matched_residuos) / len(matched_residuos)
                                 # BMP is typically in m³/ton VS, adjust for TS and VS
-                                avg_ts = sum(r.get("ts_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
-                                avg_vs = sum(r.get("vs_medio", 0) or 0 for r in matched_residuos) / len(matched_residuos)
+                                avg_ts = sum(float(r.get("ts_medio") or 0) for r in matched_residuos) / len(matched_residuos)
+                                avg_vs = sum(float(r.get("vs_medio") or 0) for r in matched_residuos) / len(matched_residuos)
                                 if avg_ts > 0 and avg_vs > 0:
                                     vs_tons = estimated_residue_tons * (avg_ts / 100) * (avg_vs / 100)
                                     estimated_biogas_m3 = vs_tons * avg_bmp

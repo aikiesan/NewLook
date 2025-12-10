@@ -121,12 +121,12 @@ export default function MunicipalityLayer({
       );
       return container;
     }, {
-      maxWidth: 400,
-      minWidth: 400,
+      maxWidth: 600,
+      minWidth: 600,
       maxHeight: 480,
       className: 'municipality-popup',
       autoPan: true,
-      autoPanPadding: [50, 50],
+      autoPanPadding: [20, 20],
       keepInView: true,
     });
 
