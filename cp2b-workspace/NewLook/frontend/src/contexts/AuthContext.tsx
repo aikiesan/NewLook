@@ -26,12 +26,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true
     let timeoutId: NodeJS.Timeout | null = null
 
+    // Check if authentication is disabled for testing
+    const authDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true'
+
+    if (authDisabled) {
+      logger.warn('Authentication disabled - using mock authenticated user for testing')
+      // Set a mock user for testing when auth is disabled
+      setUser({
+        id: 'mock-user-id',
+        email: 'test@cp2b.com',
+        full_name: 'Test User',
+        role: 'autenticado',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      setLoading(false)
+      return
+    }
+
     // Check if Supabase is properly configured
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseKey) {
-      logger.warn('Supabase not configured - auth disabled')
+      logger.warn('Supabase not configured - using mock authenticated user for testing')
+      // Set a mock user for testing when Supabase is not configured
+      setUser({
+        id: 'mock-user-id',
+        email: 'test@cp2b.com',
+        full_name: 'Test User',
+        role: 'autenticado',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
       setLoading(false)
       return
     }
