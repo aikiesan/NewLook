@@ -162,32 +162,37 @@ export default function MapComponent({
       // Specific residue filter (new)
       if (selectedResidues.length > 0) {
         const hasSelectedResidue = selectedResidues.some(residue => {
-          switch (residue) {
-            case 'sugarcane':
-              return props.sugarcane_biogas_m3_year > 0;
-            case 'soybean':
-              return props.soybean_biogas_m3_year > 0;
-            case 'corn':
-              return props.corn_biogas_m3_year > 0;
-            case 'coffee':
-              return props.coffee_biogas_m3_year > 0;
-            case 'citrus':
-              return props.citrus_biogas_m3_year > 0;
-            case 'cattle':
-              return props.cattle_biogas_m3_year > 0;
-            case 'swine':
-              return props.swine_biogas_m3_year > 0;
-            case 'poultry':
-              return props.poultry_biogas_m3_year > 0;
-            case 'aquaculture':
-              return props.aquaculture_biogas_m3_year > 0;
-            case 'rsu':
-              return props.rsu_biogas_m3_year > 0;
-            case 'rpo':
-              return props.rpo_biogas_m3_year > 0;
-            default:
-              return false;
-          }
+          const value = (() => {
+            switch (residue) {
+              case 'sugarcane':
+                return props.sugarcane_biogas_m3_year;
+              case 'soybean':
+                return props.soybean_biogas_m3_year;
+              case 'corn':
+                return props.corn_biogas_m3_year;
+              case 'coffee':
+                return props.coffee_biogas_m3_year;
+              case 'citrus':
+                return props.citrus_biogas_m3_year;
+              case 'cattle':
+                return props.cattle_biogas_m3_year;
+              case 'swine':
+                return props.swine_biogas_m3_year;
+              case 'poultry':
+                return props.poultry_biogas_m3_year;
+              case 'aquaculture':
+                return props.aquaculture_biogas_m3_year;
+              case 'rsu':
+                return props.rsu_biogas_m3_year;
+              case 'rpo':
+                return props.rpo_biogas_m3_year;
+              default:
+                return 0;
+            }
+          })();
+          // Handle null, undefined, and string values
+          const numValue = Number(value) || 0;
+          return numValue > 0;
         });
         if (!hasSelectedResidue) return false;
       }
