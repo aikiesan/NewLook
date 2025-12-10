@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
-import type { BiomassType } from './FloatingControlPanel';
+import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
@@ -65,6 +65,9 @@ export default function MapComponent({
   const [isMounted, setIsMounted] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [layersRendered, setLayersRendered] = useState(0);
+
+  // Residue filter state
+  const [selectedResidues, setSelectedResidues] = useState<ResidueType[]>([]);
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -125,6 +128,22 @@ export default function MapComponent({
   const filteredData = useMemo(() => {
     if (!data) return data;
 
+    // Debug logging
+    if (selectedResidues.length > 0) {
+      console.log('🔍 Filtering with residues:', selectedResidues);
+      console.log('📊 Total municipalities before filter:', data.features.length);
+
+      // Sample first municipality to see what properties exist
+      if (data.features.length > 0) {
+        const sample = data.features[0].properties;
+        console.log('📋 Sample municipality:', sample.name);
+        selectedResidues.forEach(residue => {
+          const propName = `${residue}_biogas_m3_year`;
+          console.log(`   ${residue}:`, (sample as any)[propName]);
+        });
+      }
+    }
+
     const filtered: MunicipalityFeature[] = data.features.filter((feature) => {
       const props = feature.properties;
 
@@ -156,6 +175,44 @@ export default function MapComponent({
         if (!hasRequiredType) return false;
       }
 
+      // Specific residue filter (new)
+      if (selectedResidues.length > 0) {
+        const hasSelectedResidue = selectedResidues.some(residue => {
+          const value = (() => {
+            switch (residue) {
+              case 'sugarcane':
+                return props.sugarcane_biogas_m3_year;
+              case 'soybean':
+                return props.soybean_biogas_m3_year;
+              case 'corn':
+                return props.corn_biogas_m3_year;
+              case 'coffee':
+                return props.coffee_biogas_m3_year;
+              case 'citrus':
+                return props.citrus_biogas_m3_year;
+              case 'cattle':
+                return props.cattle_biogas_m3_year;
+              case 'swine':
+                return props.swine_biogas_m3_year;
+              case 'poultry':
+                return props.poultry_biogas_m3_year;
+              case 'aquaculture':
+                return props.aquaculture_biogas_m3_year;
+              case 'rsu':
+                return props.rsu_biogas_m3_year;
+              case 'rpo':
+                return props.rpo_biogas_m3_year;
+              default:
+                return 0;
+            }
+          })();
+          // Handle null, undefined, and string values
+          const numValue = Number(value) || 0;
+          return numValue > 0;
+        });
+        if (!hasSelectedResidue) return false;
+      }
+
       // Region filter
       if (activeFilters?.regions && activeFilters.regions.length > 0) {
         const inRegion = activeFilters.regions.includes(props.intermediate_region);
@@ -165,11 +222,19 @@ export default function MapComponent({
       return true;
     });
 
+    // Debug logging
+    if (selectedResidues.length > 0) {
+      console.log('✅ Filtered municipalities:', filtered.length);
+      if (filtered.length > 0) {
+        console.log('   Sample municipality:', filtered[0].properties.name);
+      }
+    }
+
     return {
       ...data,
       features: filtered,
     } as MunicipalityCollection;
-  }, [data, activeFilters, searchQuery]);
+  }, [data, activeFilters, searchQuery, selectedResidues]);
 
   // Don't render map on server
   if (!isMounted) {
@@ -307,6 +372,8 @@ export default function MapComponent({
           onSearchChange={onSearchChange || (() => {})}
           layers={layers}
           onLayerToggle={handleLayerToggle}
+          selectedResidues={selectedResidues}
+          onResiduesChange={setSelectedResidues}
         />
       )}
 
