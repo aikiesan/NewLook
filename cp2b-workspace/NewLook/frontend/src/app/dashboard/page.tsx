@@ -43,20 +43,22 @@ export default function DashboardPage() {
     proximityRadius: 50
   })
 
+  // TEMPORARY: Disabled redirect for testing
   // Redirect if not authenticated
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login')
-    }
-  }, [loading, isAuthenticated, router])
+  // useEffect(() => {
+  //   if (!loading && !isAuthenticated) {
+  //     router.push('/login')
+  //   }
+  // }, [loading, isAuthenticated, router])
 
   // Update filters when search changes
   useEffect(() => {
     setActiveFilters(prev => ({ ...prev, searchQuery }))
   }, [searchQuery])
 
+  // TEMPORARY: Disabled loading check for testing
   // Show loading state while checking authentication
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
         <div className="text-center">
