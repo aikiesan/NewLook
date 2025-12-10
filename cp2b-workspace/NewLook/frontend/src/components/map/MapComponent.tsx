@@ -352,6 +352,7 @@ export default function MapComponent({
             data={displayData}
             opacity={opacity}
             biomassType={biomassType}
+            selectedResidues={selectedResidues}
           />
         )}
 

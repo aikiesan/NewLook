@@ -9,7 +9,7 @@ import React from 'react';
 import { GeoJSON } from 'react-leaflet';
 import type { GeoJsonObject, Feature } from 'geojson';
 import type { MunicipalityCollection } from '@/types/geospatial';
-import type { BiomassType } from './FloatingControlPanel';
+import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import MunicipalityPopup from '../dashboard/MunicipalityPopup';
 import L from 'leaflet';
 import { createRoot } from 'react-dom/client';
@@ -18,6 +18,7 @@ interface MunicipalityLayerProps {
   data: MunicipalityCollection;
   opacity?: number;
   biomassType?: BiomassType;
+  selectedResidues?: ResidueType[];
 }
 
 // YlGnBu color scale (ColorBrewer - colorblind safe)
@@ -34,11 +35,21 @@ const getColorForValue = (value: number): string => {
 export default function MunicipalityLayer({
   data,
   opacity = 0.7,
-  biomassType = 'total'
+  biomassType = 'total',
+  selectedResidues = []
 }: MunicipalityLayerProps) {
 
-  // Get biogas value based on selected type
+  // Get biogas value based on selected type or specific residues
   const getBiogasValue = (props: any): number => {
+    // If specific residues are selected, sum their values
+    if (selectedResidues.length > 0) {
+      return selectedResidues.reduce((total, residue) => {
+        const value = props[`${residue}_biogas_m3_year`] || 0;
+        return total + value;
+      }, 0);
+    }
+
+    // Otherwise, use the broad biomass type
     switch (biomassType) {
       case 'agricultural':
         return props.agricultural_biogas_m3_year || 0;
@@ -76,8 +87,29 @@ export default function MunicipalityLayer({
     return value.toFixed(0);
   };
 
-  // Get label for biomass type
+  // Get label for biomass type or selected residues
   const getBiomassLabel = (): string => {
+    if (selectedResidues.length > 0) {
+      const residueLabels: Record<ResidueType, string> = {
+        sugarcane: 'Cana',
+        soybean: 'Soja',
+        corn: 'Milho',
+        coffee: 'Café',
+        citrus: 'Citrus',
+        cattle: 'Bovinos',
+        swine: 'Suínos',
+        poultry: 'Aves',
+        aquaculture: 'Aquicultura',
+        rsu: 'RSU',
+        rpo: 'RPO'
+      };
+
+      if (selectedResidues.length === 1) {
+        return residueLabels[selectedResidues[0]];
+      }
+      return `${selectedResidues.length} Resíduos`;
+    }
+
     switch (biomassType) {
       case 'agricultural': return 'Agrícola';
       case 'livestock': return 'Pecuária';
@@ -159,7 +191,7 @@ export default function MunicipalityLayer({
 
   return (
     <GeoJSON
-      key={`${biomassType}-${opacity}`} // Force re-render when props change
+      key={`${biomassType}-${opacity}-${selectedResidues.join(',')}`} // Force re-render when props change
       data={data as GeoJsonObject}
       style={style}
       onEachFeature={onEachFeature}
