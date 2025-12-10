@@ -62,7 +62,9 @@
       "Bash(git remote get-url:*)",
       "Bash(git stash:*)",
       "Bash(npm install:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(git log:*)",
+      "Bash(git for-each-ref:*)"
     ],
     "deny": [],
     "ask": []

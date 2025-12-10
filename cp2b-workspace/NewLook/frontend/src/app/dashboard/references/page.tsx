@@ -1,27 +1,25 @@
 'use client'
 
 /**
- * CP2B Maps V3 - References and Data Sources Page
- * Showcases bibliographic references and data sources used in the platform
+ * CP2B Maps V3 - References Page
+ * Bibliography and data sources for the project
  */
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, BookOpen, Database, Globe, TrendingUp, Lightbulb } from 'lucide-react'
+import { ArrowLeft, BookOpen, Database, Globe, FileText } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import ReferenceList from '@/components/scientific/ReferenceList'
-
-type TabType = 'residue' | 'geospatial' | 'economic'
 
 export default function ReferencesPage() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // State
-  const [activeTab, setActiveTab] = useState<TabType>('residue')
   const [selectedResidueCode, setSelectedResidueCode] = useState<string>('URB_LODO_PRIMARIO')
+  const [activeTab, setActiveTab] = useState<'residue' | 'geospatial' | 'economic'>('residue')
 
-  // Sample residue codes for reference lookup
+  // Sample residue codes from the prioritized list
   const sampleResidues = [
     { code: 'URB_LODO_PRIMARIO', name: 'Lodo Primário' },
     { code: 'URB_LODO_SECUNDARIO', name: 'Lodo Secundário' },
@@ -76,7 +74,7 @@ export default function ReferencesPage() {
                 Referências e Fontes de Dados
               </h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Explore as referências bibliográficas e fontes de dados utilizadas na plataforma CP2B Maps
+                Bibliografia científica e fontes de dados geoespaciais utilizadas no projeto CP2B Maps
               </p>
             </div>
           </div>
@@ -84,50 +82,53 @@ export default function ReferencesPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="flex flex-wrap gap-3 mb-6">
-          <button
-            onClick={() => setActiveTab('residue')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'residue'
-                ? 'bg-green-600 text-white shadow-md'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-            }`}
-          >
-            <BookOpen className="h-5 w-5" />
-            Resíduos e BMP
-          </button>
-          <button
-            onClick={() => setActiveTab('geospatial')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'geospatial'
-                ? 'bg-green-600 text-white shadow-md'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-            }`}
-          >
-            <Globe className="h-5 w-5" />
-            Dados Geoespaciais
-          </button>
-          <button
-            onClick={() => setActiveTab('economic')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'economic'
-                ? 'bg-green-600 text-white shadow-md'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-            }`}
-          >
-            <TrendingUp className="h-5 w-5" />
-            Dados Econômicos
-          </button>
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('residue')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'residue'
+                  ? 'border-green-600 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              Resíduos e BMP
+            </button>
+            <button
+              onClick={() => setActiveTab('geospatial')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'geospatial'
+                  ? 'border-green-600 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Globe className="h-4 w-4" />
+              Dados Geoespaciais
+            </button>
+            <button
+              onClick={() => setActiveTab('economic')}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'economic'
+                  ? 'border-green-600 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              Dados Econômicos
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Residue References Tab */}
         {activeTab === 'residue' && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar - Residue Selector */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 sticky top-6">
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Database className="h-5 w-5 text-green-600" />
@@ -155,7 +156,7 @@ export default function ReferencesPage() {
               </div>
             </div>
 
-            {/* Main Content - References */}
+            {/* References List */}
             <div className="lg:col-span-3">
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -172,6 +173,7 @@ export default function ReferencesPage() {
           </div>
         )}
 
+        {/* Geospatial Data Tab */}
         {activeTab === 'geospatial' && (
           <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -182,143 +184,120 @@ export default function ReferencesPage() {
             <div className="space-y-6">
               {/* IBGE */}
               <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  IBGE - Instituto Brasileiro de Geografia e Estatística
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Malhas territoriais municipais, dados populacionais, áreas territoriais e divisões administrativas do Estado de São Paulo.
+                <h3 className="font-bold text-gray-900 mb-2">IBGE - Instituto Brasileiro de Geografia e Estatística</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Dados de municípios, população, área territorial e malhas municipais de São Paulo (2024)
                 </p>
                 <a
-                  href="https://www.ibge.gov.br/geociencias/downloads-geociencias.html"
+                  href="https://www.ibge.gov.br"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-800"
                 >
-                  Acessar fonte →
+                  www.ibge.gov.br →
                 </a>
               </div>
 
               {/* MapBiomas */}
               <div className="border-l-4 border-green-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  MapBiomas
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Dados de uso e cobertura do solo, incluindo áreas agrícolas, pecuárias e urbanas utilizados para estimar a distribuição espacial de resíduos.
+                <h3 className="font-bold text-gray-900 mb-2">MapBiomas - Projeto de Mapeamento Anual do Uso e Cobertura da Terra</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Dados de uso do solo e cobertura vegetal (Coleção 9, 2024). Identificação de áreas agrícolas, pastagens e vegetação.
                 </p>
                 <a
-                  href="https://mapbiomas.org/"
+                  href="https://mapbiomas.org"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sm text-green-600 hover:text-green-800"
                 >
-                  Acessar fonte →
+                  mapbiomas.org →
                 </a>
               </div>
 
               {/* ANP */}
               <div className="border-l-4 border-orange-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  ANP - Agência Nacional do Petróleo, Gás Natural e Biocombustíveis
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Localização de plantas de biogás e biometano existentes no Estado de São Paulo.
+                <h3 className="font-bold text-gray-900 mb-2">ANP - Agência Nacional do Petróleo, Gás Natural e Biocombustíveis</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Localização de plantas de biogás autorizadas no Brasil (2024)
                 </p>
                 <a
-                  href="https://www.gov.br/anp/pt-br"
+                  href="https://www.gov.br/anp"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sm text-orange-600 hover:text-orange-800"
                 >
-                  Acessar fonte →
+                  www.gov.br/anp →
                 </a>
               </div>
 
               {/* EPE */}
               <div className="border-l-4 border-purple-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  EPE - Empresa de Pesquisa Energética
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Dados de infraestrutura energética, incluindo linhas de transmissão e subestações.
+                <h3 className="font-bold text-gray-900 mb-2">EPE - Empresa de Pesquisa Energética</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Dados de infraestrutura energética: gasodutos, linhas de transmissão, subestações e rodovias (2023-2024)
                 </p>
                 <a
-                  href="https://www.epe.gov.br/"
+                  href="https://www.epe.gov.br"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sm text-purple-600 hover:text-purple-800"
                 >
-                  Acessar fonte →
+                  www.epe.gov.br →
                 </a>
               </div>
 
               {/* SNIS */}
               <div className="border-l-4 border-teal-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  SNIS - Sistema Nacional de Informações sobre Saneamento
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Dados sobre estações de tratamento de esgoto (ETEs), resíduos sólidos urbanos (RSU) e saneamento básico.
+                <h3 className="font-bold text-gray-900 mb-2">SNIS - Sistema Nacional de Informações sobre Saneamento</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Dados de ETEs (Estações de Tratamento de Esgoto) no estado de São Paulo (2023)
                 </p>
                 <a
-                  href="http://www.snis.gov.br/"
+                  href="http://www.snis.gov.br"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-sm text-teal-600 hover:text-teal-800"
                 >
-                  Acessar fonte →
+                  www.snis.gov.br →
                 </a>
               </div>
             </div>
           </div>
         )}
 
+        {/* Economic Data Tab */}
         {activeTab === 'economic' && (
           <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <TrendingUp className="h-7 w-7 text-green-600" />
+              <FileText className="h-7 w-7 text-green-600" />
               Fontes de Dados Econômicos
             </h2>
 
             <div className="space-y-6">
-              {/* I-O Matrix */}
+              {/* Matriz Insumo-Produto */}
               <div className="border-l-4 border-indigo-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Matriz Insumo-Produto Regional (São Paulo)
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Matriz insumo-produto estadual utilizada para simular choques econômicos e calcular efeitos diretos, indiretos e induzidos da produção de biogás e biometano.
+                <h3 className="font-bold text-gray-900 mb-2">IBGE - Matriz de Insumo-Produto</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Matriz Insumo-Produto 2020 utilizada para simulações de choque econômico e análise de efeitos multiplicadores
                 </p>
-                <p className="text-sm text-gray-500 mb-2">
-                  Fonte: Fundação SEADE e estudos regionais de insumo-produto
-                </p>
+                <a
+                  href="https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 hover:text-indigo-800"
+                >
+                  Contas Nacionais - IBGE →
+                </a>
               </div>
 
-              {/* Economic Studies */}
-              <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Estudos Econômicos de Biogás
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Literatura científica e técnica sobre análise econômica de sistemas de biogás, incluindo custos de investimento, operação e manutenção (CAPEX/OPEX).
+              {/* Preços e Custos */}
+              <div className="border-l-4 border-amber-500 pl-4 py-2">
+                <h3 className="font-bold text-gray-900 mb-2">Literatura Especializada</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Custos de investimento e operação de plantas de biogás baseados em estudos de viabilidade econômica internacionais
                 </p>
-                <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
-                  <li>Análises de viabilidade econômica de plantas de biogás</li>
-                  <li>Estudos de retorno de investimento (ROI) e payback</li>
-                  <li>Comparações de rotas tecnológicas (biodigestores, upgrading, etc.)</li>
-                </ul>
-              </div>
-
-              {/* Regional Data */}
-              <div className="border-l-4 border-green-500 pl-4 py-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Dados Econômicos Regionais
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Dados econômicos municipais e regionais do Estado de São Paulo, incluindo PIB, emprego setorial e estrutura produtiva.
-                </p>
-                <p className="text-sm text-gray-500 mb-2">
-                  Fontes: IBGE, SEADE, Ministério da Economia
+                <p className="text-xs text-gray-500 mt-2">
+                  Consulte a aba "Resíduos e BMP" para referências específicas sobre viabilidade econômica
                 </p>
               </div>
             </div>
@@ -328,18 +307,22 @@ export default function ReferencesPage() {
         {/* Info Box */}
         <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5" />
+            <BookOpen className="h-5 w-5" />
             Sobre as Referências
           </h3>
           <ul className="text-sm text-blue-800 space-y-2">
             <li>
-              <strong>Resíduos e BMP:</strong> Referências científicas específicas por tipo de resíduo, incluindo estudos sobre potencial de produção de biogás (BMP - Biochemical Methane Potential).
+              <strong>Resíduos e BMP:</strong> Referências científicas sobre Potencial Bioquímico de Metano (BMP),
+              Total de Sólidos (TS), Sólidos Voláteis (VS) e outros parâmetros técnicos.
             </li>
             <li>
-              <strong>Dados Geoespaciais:</strong> Fontes oficiais de dados territoriais, ambientais e de infraestrutura utilizadas para o mapeamento e análise espacial.
+              <strong>Dados Geoespaciais:</strong> Fontes oficiais de dados geográficos, uso do solo e infraestrutura.
             </li>
             <li>
-              <strong>Dados Econômicos:</strong> Fontes de dados econômicos e literatura utilizada no modelo insumo-produto e análises de viabilidade.
+              <strong>Dados Econômicos:</strong> Fontes para modelagem econômica e análise de viabilidade.
+            </li>
+            <li>
+              <strong>Atualização:</strong> Todas as referências são revisadas periodicamente para garantir a qualidade dos dados.
             </li>
           </ul>
         </div>

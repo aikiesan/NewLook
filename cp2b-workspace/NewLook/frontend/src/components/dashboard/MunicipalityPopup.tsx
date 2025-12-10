@@ -31,18 +31,18 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
 
   return (
     <div className="w-[380px] max-w-[380px]">
-      {/* Header */}
-      <div className="pb-2 border-b border-gray-200 mb-2.5">
-        <h3 className="text-base font-bold text-gray-900 leading-tight mb-1">
-          {properties.name}
-        </h3>
-        <p className="text-[11px] text-gray-500">
-          IBGE: {properties.ibge_code}
-        </p>
-
-        {/* Category Badge */}
+      {/* Header Section - Horizontal */}
+      <div className="flex items-start justify-between pb-2 border-b border-gray-200 mb-2">
+        <div className="flex-1">
+          <h3 className="text-base font-bold text-gray-900 leading-tight mb-0.5">
+            {properties.name}
+          </h3>
+          <p className="text-[10px] text-gray-500">
+            IBGE: {properties.ibge_code}
+          </p>
+        </div>
         <span
-          className={`inline-block px-2 py-0.5 mt-1.5 text-[10px] font-semibold rounded ${getCategoryColor(
+          className={`px-2 py-0.5 text-[10px] font-semibold rounded whitespace-nowrap ${getCategoryColor(
             properties.potential_category
           )}`}
         >
@@ -50,103 +50,171 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
         </span>
       </div>
 
-      {/* Total Biogas Potential */}
-      <div className="mb-2.5 p-2 bg-green-50 rounded">
-        <div className="flex items-center gap-1.5 mb-1">
-          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          <span className="text-xs font-medium text-green-900">
-            Potencial Total
-          </span>
+      {/* Main Content - Horizontal Grid Layout */}
+      <div className="grid grid-cols-2 gap-3 mb-2">
+        {/* Left Column - Total Biogas & Demographics */}
+        <div className="space-y-2">
+          {/* Total Biogas Potential */}
+          <div className="p-2 bg-green-50 rounded">
+            <div className="flex items-center gap-1.5 mb-1">
+              <svg className="w-3.5 h-3.5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-[10px] font-medium text-green-900">
+                Potencial Total
+              </span>
+            </div>
+            <p className="text-sm font-bold text-green-900">
+              {formatBiogas(totalBiogas)}
+            </p>
+          </div>
+
+          {/* Demographics - Compact */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-600">População:</span>
+              <span className="font-medium text-gray-900">
+                {formatPopulation(properties.population)}
+              </span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-600">Área:</span>
+              <span className="font-medium text-gray-900">
+                {formatArea(properties.area_km2)}
+              </span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-600">Região:</span>
+              <span className="font-medium text-gray-900 truncate max-w-[120px]" title={properties.immediate_region}>
+                {properties.immediate_region}
+              </span>
+            </div>
+          </div>
         </div>
-        <p className="text-sm font-bold text-green-900">
-          {formatBiogas(totalBiogas)}
-        </p>
+
+        {/* Right Column - Sector Breakdown */}
+        <div className="space-y-1.5">
+          <h4 className="text-[10px] font-semibold text-gray-700 mb-1">
+            Distribuição por Setor
+          </h4>
+
+          {/* Agricultural - Compact */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-gray-600">🌾 Agrícola</span>
+              <span className="font-semibold text-gray-900">
+                {formatPercentage(agriPercentage)}
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-600 transition-all"
+                style={{ width: `${agriPercentage}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Livestock - Compact */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-gray-600">🐄 Pecuária</span>
+              <span className="font-semibold text-gray-900">
+                {formatPercentage(livestockPercentage)}
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-yellow-600 transition-all"
+                style={{ width: `${livestockPercentage}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Urban - Compact */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-gray-600">🏙️ Urbano</span>
+              <span className="font-semibold text-gray-900">
+                {formatPercentage(urbanPercentage)}
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 transition-all"
+                style={{ width: `${urbanPercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Sector Breakdown */}
-      <div className="space-y-2 mb-2.5">
-        <h4 className="text-xs font-semibold text-gray-700 mb-1.5">
-          Distribuição por Setor:
+      {/* Detailed Residues Section - Horizontal Pills */}
+      <div className="pt-2 border-t border-gray-200">
+        <h4 className="text-[10px] font-semibold text-gray-700 mb-1.5">
+          Principais Resíduos
         </h4>
+        <div className="flex flex-wrap gap-1.5">
+          {/* Agricultural Residues */}
+          {properties.sugarcane_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
+              <span className="font-medium">Cana:</span> {formatBiogasShort(properties.sugarcane_biogas_m3_year)}
+            </div>
+          )}
+          {properties.soybean_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
+              <span className="font-medium">Soja:</span> {formatBiogasShort(properties.soybean_biogas_m3_year)}
+            </div>
+          )}
+          {properties.corn_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
+              <span className="font-medium">Milho:</span> {formatBiogasShort(properties.corn_biogas_m3_year)}
+            </div>
+          )}
+          {properties.coffee_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
+              <span className="font-medium">Café:</span> {formatBiogasShort(properties.coffee_biogas_m3_year)}
+            </div>
+          )}
+          {properties.citrus_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
+              <span className="font-medium">Citrus:</span> {formatBiogasShort(properties.citrus_biogas_m3_year)}
+            </div>
+          )}
 
-        {/* Agricultural */}
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-gray-600">🌾 Agrícola</span>
-            <span className="font-semibold text-gray-900">
-              {formatPercentage(agriPercentage)}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-600 transition-all"
-              style={{ width: `${agriPercentage}%` }}
-            />
-          </div>
-        </div>
+          {/* Livestock Residues */}
+          {properties.cattle_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
+              <span className="font-medium">Bovinos:</span> {formatBiogasShort(properties.cattle_biogas_m3_year)}
+            </div>
+          )}
+          {properties.swine_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
+              <span className="font-medium">Suínos:</span> {formatBiogasShort(properties.swine_biogas_m3_year)}
+            </div>
+          )}
+          {properties.poultry_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
+              <span className="font-medium">Aves:</span> {formatBiogasShort(properties.poultry_biogas_m3_year)}
+            </div>
+          )}
+          {properties.aquaculture_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
+              <span className="font-medium">Aquicultura:</span> {formatBiogasShort(properties.aquaculture_biogas_m3_year)}
+            </div>
+          )}
 
-        {/* Livestock */}
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-gray-600">🐄 Pecuária</span>
-            <span className="font-semibold text-gray-900">
-              {formatPercentage(livestockPercentage)}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-yellow-600 transition-all"
-              style={{ width: `${livestockPercentage}%` }}
-            />
-          </div>
+          {/* Urban Residues */}
+          {properties.rsu_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[9px]">
+              <span className="font-medium">RSU:</span> {formatBiogasShort(properties.rsu_biogas_m3_year)}
+            </div>
+          )}
+          {properties.rpo_biogas_m3_year > 0 && (
+            <div className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[9px]">
+              <span className="font-medium">RPO:</span> {formatBiogasShort(properties.rpo_biogas_m3_year)}
+            </div>
+          )}
         </div>
-
-        {/* Urban */}
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-gray-600">🏙️ Urbano</span>
-            <span className="font-semibold text-gray-900">
-              {formatPercentage(urbanPercentage)}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600 transition-all"
-              style={{ width: `${urbanPercentage}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Demographics */}
-      <div className="pt-2 border-t border-gray-200 space-y-1.5 mb-2">
-        <div className="flex justify-between text-[11px]">
-          <span className="text-gray-600">População:</span>
-          <span className="font-medium text-gray-900">
-            {formatPopulation(properties.population)}
-          </span>
-        </div>
-        <div className="flex justify-between text-[11px]">
-          <span className="text-gray-600">Área:</span>
-          <span className="font-medium text-gray-900">
-            {formatArea(properties.area_km2)}
-          </span>
-        </div>
-        <div className="flex justify-between text-[11px]">
-          <span className="text-gray-600">Região:</span>
-          <span className="font-medium text-gray-900 truncate max-w-[200px]" title={properties.immediate_region}>
-            {properties.immediate_region}
-          </span>
-        </div>
-      </div>
-
-      {/* Info Footer */}
-      <div className="text-center pt-2 border-t border-gray-200">
-        <p className="text-[10px] text-gray-500 leading-snug">
-          Todas as informações principais são exibidas neste popup
-        </p>
       </div>
     </div>
   );

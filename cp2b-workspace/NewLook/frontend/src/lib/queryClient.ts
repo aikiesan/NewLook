@@ -33,8 +33,8 @@ export const queryClient = new QueryClient({
       // Refetch on reconnect
       refetchOnReconnect: true,
 
-      // Refetch on mount only if data is stale
-      refetchOnMount: true,
+      // Refetch on mount only if data is stale (prevents infinite refetching on auth changes)
+      refetchOnMount: false,
 
       // Enable structural sharing for better performance
       structuralSharing: true,
