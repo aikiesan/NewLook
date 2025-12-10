@@ -12,6 +12,7 @@ import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import type { BiomassType, ResidueType } from './FloatingControlPanel';
+import type { VisualizationMode } from './RightLayerPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
@@ -26,7 +27,15 @@ const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), {
   ssr: false,
 });
 
-const FloatingControlPanel = dynamic(() => import('./FloatingControlPanel'), {
+const LeftFilterPanel = dynamic(() => import('./LeftFilterPanel'), {
+  ssr: false,
+});
+
+const RightLayerPanel = dynamic(() => import('./RightLayerPanel'), {
+  ssr: false,
+});
+
+const HeatmapLayer = dynamic(() => import('./HeatmapLayer'), {
   ssr: false,
 });
 
@@ -35,6 +44,10 @@ const MapBiomasLayer = dynamic(() => import('./MapBiomasLayer'), {
 });
 
 const MapBiomasLegend = dynamic(() => import('./MapBiomasLegend'), {
+  ssr: false,
+});
+
+const HeatmapLegend = dynamic(() => import('./HeatmapLegend'), {
   ssr: false,
 });
 
@@ -68,6 +81,9 @@ export default function MapComponent({
 
   // Residue filter state
   const [selectedResidues, setSelectedResidues] = useState<ResidueType[]>([]);
+
+  // Visualization mode state
+  const [visualizationMode, setVisualizationMode] = useState<VisualizationMode>('choropleth');
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -346,13 +362,24 @@ export default function MapComponent({
           maxZoom={19}
         />
 
-        {/* Municipality Layer */}
+        {/* Municipality Layer - Choropleth or Heatmap */}
         {visibleLayerIds.includes('municipalities') && displayData && (
-          <MunicipalityLayer
-            data={displayData}
-            opacity={opacity}
-            biomassType={biomassType}
-          />
+          <>
+            {visualizationMode === 'choropleth' ? (
+              <MunicipalityLayer
+                data={displayData}
+                opacity={opacity}
+                biomassType={biomassType}
+                selectedResidues={selectedResidues}
+              />
+            ) : (
+              <HeatmapLayer
+                data={displayData}
+                selectedResidues={selectedResidues}
+                opacity={opacity}
+              />
+            )}
+          </>
         )}
 
         {/* MapBiomas Environmental Layer */}
@@ -381,41 +408,39 @@ export default function MapComponent({
         )}
       </MapContainer>
 
-      {/* Floating Control Panel (Top-Left) */}
+      {/* Left Filter Panel */}
       {isMounted && (
-        <FloatingControlPanel
-          biomassType={biomassType}
-          onBiomassTypeChange={onBiomassTypeChange || (() => {})}
-          opacity={opacity}
-          onOpacityChange={onOpacityChange || (() => {})}
+        <LeftFilterPanel
           searchQuery={searchQuery}
           onSearchChange={onSearchChange || (() => {})}
-          layers={layers}
-          onLayerToggle={handleLayerToggle}
           selectedResidues={selectedResidues}
           onResiduesChange={setSelectedResidues}
         />
       )}
 
-      {/* Legend (Bottom-Right) */}
-      {visibleLayerIds.includes('municipalities') && <MapLegend />}
+      {/* Right Layer Panel */}
+      {isMounted && (
+        <RightLayerPanel
+          biomassType={biomassType}
+          onBiomassTypeChange={onBiomassTypeChange || (() => {})}
+          opacity={opacity}
+          onOpacityChange={onOpacityChange || (() => {})}
+          layers={layers}
+          onLayerToggle={handleLayerToggle}
+          municipalityCount={displayData.features.length}
+          totalMunicipalities={data.features.length}
+          visualizationMode={visualizationMode}
+          onVisualizationModeChange={setVisualizationMode}
+        />
+      )}
+
+      {/* Legend (Bottom-Right) - Choropleth or Heatmap */}
+      {visibleLayerIds.includes('municipalities') && (
+        visualizationMode === 'choropleth' ? <MapLegend /> : <HeatmapLegend />
+      )}
 
       {/* MapBiomas Legend (Bottom-Right, above MapLegend) */}
       {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
-
-      {/* Municipality Count Badge (Top-Right) - Enhanced Design */}
-      <div className="absolute top-20 right-4 z-[400] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-4 py-2.5 flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-gray-500 font-medium">Municípios</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-green-700">{displayData.features.length}</span>
-            <span className="text-xs text-gray-400">/ {data.features.length}</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

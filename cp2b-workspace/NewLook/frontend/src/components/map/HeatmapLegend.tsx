@@ -1,6 +1,6 @@
 /**
- * CP2B Maps V3 - Map Legend Component (DBFZ-inspired)
- * Displays YlGnBu color scale legend with data ranges
+ * CP2B Maps V3 - Heatmap Legend Component
+ * Displays heatmap color scale legend with data ranges
  */
 
 'use client';
@@ -8,27 +8,27 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-// Legend items matching the YlGnBu color scale in MunicipalityLayer
+// Legend items matching the heatmap color scale in HeatmapLayer
 const legendItems = [
-  { color: '#253494', label: '> 500M', description: 'Muito Alto' },
-  { color: '#2c7fb8', label: '100M - 500M', description: 'Alto' },
-  { color: '#41b6c4', label: '50M - 100M', description: 'Médio-Alto' },
-  { color: '#7fcdbb', label: '10M - 50M', description: 'Médio' },
-  { color: '#c7e9b4', label: '1M - 10M', description: 'Baixo' },
-  { color: '#ffffcc', label: '< 1M', description: 'Muito Baixo' },
-  { color: '#f7f7f7', label: 'Sem dados', description: '' },
+  { color: '#800026', label: '> 500M', description: 'Muito Alto' },
+  { color: '#bd0026', label: '100M - 500M', description: 'Alto' },
+  { color: '#f03b20', label: '50M - 100M', description: 'Médio-Alto' },
+  { color: '#fd8d3c', label: '10M - 50M', description: 'Médio' },
+  { color: '#fecc5c', label: '1M - 10M', description: 'Baixo' },
+  { color: '#ffffb2', label: '< 1M', description: 'Muito Baixo' },
+  { color: '#cccccc', label: 'Sem dados', description: '' },
 ];
 
-export default function MapLegend() {
+export default function HeatmapLegend() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-[400]">
       <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 overflow-hidden w-40 md:w-48">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+        <div className="flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-orange-50 to-white border-b border-orange-100">
           <span className="text-[10px] font-semibold text-gray-700 uppercase tracking-wide">
-            Biogás (m³/ano)
+            🔥 Concentração
           </span>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -53,9 +53,9 @@ export default function MapLegend() {
                 className="flex items-center gap-2.5 hover:bg-gray-50 px-1.5 py-1 rounded-md transition-colors"
                 role="listitem"
               >
-                {/* Color box */}
+                {/* Color circle */}
                 <div
-                  className="w-5 h-3.5 rounded border border-gray-200 shadow-sm flex-shrink-0"
+                  className="w-4 h-4 rounded-full border border-gray-300 shadow-sm flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                   aria-hidden="true"
                 />
