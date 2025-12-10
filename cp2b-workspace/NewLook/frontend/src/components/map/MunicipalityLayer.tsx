@@ -126,7 +126,7 @@ export default function MunicipalityLayer({
       maxHeight: 500,
       className: 'municipality-popup',
       autoPan: true,
-      autoPanPadding: [50, 50],
+      autoPanPadding: [20, 20],
       keepInView: true,
     });
 

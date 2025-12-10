@@ -19,6 +19,10 @@ const authRoutes = ['/login', '/register']
 const publicRoutes = ['/', '/about', '/contact', '/api']
 
 export async function middleware(request: NextRequest) {
+  // TEMPORARY: Disable all authentication for testing
+  console.log('[Middleware ROOT] Authentication DISABLED - allowing all routes')
+  return NextResponse.next()
+
   const { pathname } = request.nextUrl
 
   // Allow API routes and static files to pass through

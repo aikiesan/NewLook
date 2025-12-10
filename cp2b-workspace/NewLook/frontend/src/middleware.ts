@@ -7,6 +7,8 @@
  * - Login/Register pages
  *
  * Cookie-based auth check (Edge Runtime compatible)
+ *
+ * NOTE: When NEXT_PUBLIC_DISABLE_AUTH=true, all routes are public
  */
 
 import { NextResponse } from 'next/server'
@@ -14,6 +16,24 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // TEMPORARY: Disable all authentication for testing
+  // TODO: Re-enable after testing is complete
+  console.log('[Middleware] Authentication DISABLED - allowing all routes')
+  return NextResponse.next()
+
+  // Check if authentication is disabled (for testing)
+  // IMPORTANT: This must be set in Vercel environment variables
+  const authDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true'
+
+  console.log('[Middleware] NEXT_PUBLIC_DISABLE_AUTH:', process.env.NEXT_PUBLIC_DISABLE_AUTH)
+  console.log('[Middleware] authDisabled:', authDisabled)
+
+  // If auth is disabled, allow all routes
+  if (authDisabled) {
+    console.log('[Middleware] Auth disabled - allowing access to:', pathname)
+    return NextResponse.next()
+  }
 
   // Public routes that don't require authentication
   const publicRoutes = [

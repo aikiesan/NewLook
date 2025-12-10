@@ -29,6 +29,7 @@ interface RouteCanvasProps {
   onNodeSelect: (nodeId: string | null) => void;
   selectedNodeId: string | null;
   onSetAddToCanvasCallback?: (callback: (tech: TechnologyCardWithReferences) => void) => void;
+  onSetLoadTemplateCallback?: (callback: (nodes: Node[], edges: Edge[]) => void) => void;
 }
 
 interface ToastState {
@@ -46,7 +47,7 @@ interface HistoryState {
  * Main React Flow canvas for building technology routes
  * Handles drag-and-drop, connections, and validation
  */
-export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCanvasCallback }: RouteCanvasProps) {
+export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCanvasCallback, onSetLoadTemplateCallback }: RouteCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -351,6 +352,38 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
       onSetAddToCanvasCallback(handleAddToCanvas);
     }
   }, [handleAddToCanvas, onSetAddToCanvasCallback]);
+
+  // Handle loading template - adds multiple nodes and edges at once
+  const handleLoadTemplate = useCallback(
+    (templateNodes: Node[], templateEdges: Edge[]) => {
+      if (!reactFlowInstance) return;
+
+      // Clear existing nodes and edges
+      setNodes([]);
+      setEdges([]);
+
+      // Add template nodes
+      setNodes(templateNodes);
+      setEdges(templateEdges);
+
+      showToast(`✅ Modelo carregado com ${templateNodes.length} tecnologias`, 'success');
+
+      // Fit view to show all nodes after a short delay
+      setTimeout(() => {
+        if (reactFlowInstance) {
+          reactFlowInstance.fitView({ padding: 0.2, duration: 600 });
+        }
+      }, 100);
+    },
+    [reactFlowInstance, setNodes, setEdges, showToast]
+  );
+
+  // Register the load template callback with parent component
+  useEffect(() => {
+    if (onSetLoadTemplateCallback) {
+      onSetLoadTemplateCallback(handleLoadTemplate);
+    }
+  }, [handleLoadTemplate, onSetLoadTemplateCallback]);
 
   // Categorize connection type based on categories
   const categorizeConnection = (sourceCategory: string, targetCategory: string): 'standard' | 'experimental' => {

@@ -69,24 +69,15 @@ const publicNavItems: NavItem[] = [
 const authenticatedNavItems: NavItem[] = [
   {
     href: '/dashboard',
-    label: 'Explorar',
+    label: 'Hub',
+    icon: <Home className="h-4 w-4" />,
+    description: 'Central de Recursos'
+  },
+  {
+    href: '/map',
+    label: 'Mapa',
     icon: <Map className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard/advanced-analysis',
-    label: 'Análises',
-    icon: <BarChart3 className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard/simulation',
-    label: 'Simulação',
-    icon: <TrendingUp className="h-4 w-4" />,
-    description: 'Análise Econômica I-O'
-  },
-  {
-    href: '/dashboard/scientific-database',
-    label: 'Científica',
-    icon: <BookOpen className="h-4 w-4" />,
+    description: 'Mapa Interativo SP'
   },
   {
     href: '/dashboard/proximity',
@@ -94,10 +85,25 @@ const authenticatedNavItems: NavItem[] = [
     icon: <Target className="h-4 w-4" />,
   },
   {
+    href: '/dashboard/simulation',
+    label: 'Simulação I-O',
+    icon: <TrendingUp className="h-4 w-4" />,
+    description: 'Modelo Insumo-Produto'
+  },
+  {
     href: '/dashboard/technology-routes',
-    label: 'Rotas Tecnológicas',
+    label: 'Rotas Tech',
     icon: <Workflow className="h-4 w-4" />,
-    description: 'Organize rotas visuais de biogás'
+  },
+  {
+    href: '/dashboard/scientific-database',
+    label: 'Base Científica',
+    icon: <BookOpen className="h-4 w-4" />,
+  },
+  {
+    href: '/dashboard/advanced-analysis',
+    label: 'Avançado',
+    icon: <BarChart3 className="h-4 w-4" />,
   },
   {
     href: 'https://nipe.unicamp.br/cp2b/',

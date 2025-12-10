@@ -1,12 +1,16 @@
 'use client';
 
-import { Save, HelpCircle } from 'lucide-react';
+import { Save, HelpCircle, BookTemplate } from 'lucide-react';
+
+interface RouteToolbarProps {
+  onOpenTemplates?: () => void;
+}
 
 /**
  * Toolbar for the Technology Routes page
  * Simplified version for MVP - full save/share functionality to be added later
  */
-export default function RouteToolbar() {
+export default function RouteToolbar({ onOpenTemplates }: RouteToolbarProps) {
   const handleSave = () => {
     // TODO: Implement save functionality
     alert('Funcionalidade de salvar será implementada em breve!');
@@ -18,7 +22,8 @@ export default function RouteToolbar() {
       '1. Arraste tecnologias da barra lateral para o canvas\n' +
       '2. Conecte as tecnologias arrastando de um nó para outro\n' +
       '3. Clique em um nó para ver referências científicas\n' +
-      '4. Use a busca e filtros para encontrar tecnologias\n\n' +
+      '4. Use os MODELOS para carregar rotas prontas (ex: Cana-de-Açúcar)\n' +
+      '5. Use a busca e filtros para encontrar tecnologias\n\n' +
       'Esta é uma ferramenta educacional - não realiza cálculos.'
     );
   };
@@ -36,6 +41,18 @@ export default function RouteToolbar() {
 
         {/* Right - Actions */}
         <div className="flex items-center gap-2">
+          {/* Templates Button - NEW */}
+          {onOpenTemplates && (
+            <button
+              onClick={onOpenTemplates}
+              className="flex items-center gap-2 px-4 py-2 bg-cp2b-green text-white rounded-lg hover:bg-cp2b-dark-green transition-colors shadow-sm"
+              title="Carregar modelos prontos"
+            >
+              <BookTemplate size={18} />
+              <span>Modelos</span>
+            </button>
+          )}
+
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
