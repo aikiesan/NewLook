@@ -30,7 +30,7 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
   const urbanPercentage = calculatePercentage(properties.urban_biogas_m3_year, totalBiogas);
 
   return (
-    <div className="w-[316px] max-w-[316px]">
+    <div className="w-[380px] max-w-[380px]">
       {/* Header */}
       <div className="pb-2 border-b border-gray-200 mb-2.5">
         <h3 className="text-base font-bold text-gray-900 leading-tight mb-1">
