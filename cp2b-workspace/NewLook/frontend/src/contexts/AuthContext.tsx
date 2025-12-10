@@ -93,9 +93,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       logger.debug('[AuthContext] Auth state change:', event)
 
-      // Clear React Query cache on auth state changes to prevent stale data
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        logger.debug('[AuthContext] Clearing query cache due to auth state change:', event)
+      // Clear React Query cache only on SIGNED_OUT to prevent stale data from previous user
+      // Don't clear on SIGNED_IN because login() already cleared it, and clearing again
+      // causes unnecessary refetching and browser freeze
+      if (event === 'SIGNED_OUT') {
+        logger.debug('[AuthContext] Clearing query cache due to sign out')
         queryClient.clear()
       }
 
@@ -219,9 +221,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
-      // Clear query cache before login to prevent stale data issues
-      logger.debug('[Auth] Clearing query cache before login')
-      queryClient.clear()
+      // Don't clear cache on login - let staleTime handle data freshness
+      // Clearing cache causes unnecessary refetching and browser freeze
+      // Only logout clears cache to prevent data leaking between users
 
       // Sign in with Supabase (let Supabase handle its own timeouts)
       const { data, error } = await supabase.auth.signInWithPassword({
