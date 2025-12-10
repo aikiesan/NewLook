@@ -39,14 +39,23 @@ export default function MunicipalityLayer({
   selectedResidues = []
 }: MunicipalityLayerProps) {
 
+  // Debug logging
+  React.useEffect(() => {
+    if (selectedResidues.length > 0) {
+      console.log('🎨 MunicipalityLayer: selectedResidues changed:', selectedResidues);
+      console.log('🎨 Will color map based on these residues');
+    }
+  }, [selectedResidues]);
+
   // Get biogas value based on selected type or specific residues
   const getBiogasValue = (props: any): number => {
     // If specific residues are selected, sum their values
     if (selectedResidues.length > 0) {
-      return selectedResidues.reduce((total, residue) => {
+      const residueTotal = selectedResidues.reduce((total, residue) => {
         const value = props[`${residue}_biogas_m3_year`] || 0;
         return total + value;
       }, 0);
+      return residueTotal;
     }
 
     // Otherwise, use the broad biomass type
