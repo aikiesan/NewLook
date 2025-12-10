@@ -13,6 +13,7 @@ const RouteCanvas = dynamic(() => import('./components/RouteCanvas'), { ssr: fal
 const TechnologyPalette = dynamic(() => import('./components/TechnologyPalette'), { ssr: false });
 const ReferencePanel = dynamic(() => import('./components/ReferencePanel'), { ssr: false });
 const RouteToolbar = dynamic(() => import('./components/RouteToolbar'), { ssr: false });
+const TemplateLoader = dynamic(() => import('./components/TemplateLoader'), { ssr: false });
 // TEMPORARILY DISABLED to debug build error:
 // const WelcomeWizard = dynamic(() => import('./components/WelcomeWizard'), { ssr: false });
 
@@ -27,7 +28,9 @@ export default function TechnologyRoutesPage() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false); // TEMPORARILY DISABLED
+  const [showTemplates, setShowTemplates] = useState(false); // NEW: Template loader
   const [addToCanvasCallback, setAddToCanvasCallback] = useState<((tech: any) => void) | null>(null);
+  const [loadTemplateCallback, setLoadTemplateCallback] = useState<((nodes: any[], edges: any[]) => void) | null>(null);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -42,6 +45,16 @@ export default function TechnologyRoutesPage() {
   const handleSetAddToCanvasCallback = useCallback((callback: (tech: any) => void) => {
     setAddToCanvasCallback(() => callback);
   }, []);
+
+  const handleSetLoadTemplateCallback = useCallback((callback: (nodes: any[], edges: any[]) => void) => {
+    setLoadTemplateCallback(() => callback);
+  }, []);
+
+  const handleLoadTemplate = useCallback((nodes: any[], edges: any[]) => {
+    if (loadTemplateCallback) {
+      loadTemplateCallback(nodes, edges);
+    }
+  }, [loadTemplateCallback]);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-cp2b-lime-light/10">
@@ -101,8 +114,16 @@ export default function TechnologyRoutesPage() {
         <WelcomeWizard onClose={handleStartBuilding} />
       )} */}
 
+      {/* Template Loader Overlay - NEW */}
+      {showTemplates && (
+        <TemplateLoader
+          onLoadTemplate={handleLoadTemplate}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
+
       {/* Toolbar */}
-      <RouteToolbar />
+      <RouteToolbar onOpenTemplates={() => setShowTemplates(true)} />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
@@ -120,6 +141,7 @@ export default function TechnologyRoutesPage() {
               onNodeSelect={handleNodeSelect}
               selectedNodeId={selectedNodeId}
               onSetAddToCanvasCallback={handleSetAddToCanvasCallback}
+              onSetLoadTemplateCallback={handleSetLoadTemplateCallback}
             />
           </ReactFlowProvider>
         </main>
