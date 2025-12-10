@@ -70,8 +70,8 @@ export default function DashboardPage() {
       badge: 'Novo'
     },
     {
-      title: 'Simulação Econômica',
-      description: 'Calcule a viabilidade econômica de projetos de biogás com diferentes rotas tecnológicas',
+      title: 'Modelo Insumo-Produto',
+      description: 'Simulação de choque econômico com análise de efeitos diretos, indiretos e induzidos na economia regional',
       icon: Calculator,
       href: '/dashboard/simulation',
       color: 'purple'
@@ -92,10 +92,11 @@ export default function DashboardPage() {
     },
     {
       title: 'Comparação de Municípios',
-      description: 'Compare múltiplos municípios lado a lado para identificar as melhores oportunidades',
+      description: 'Compare múltiplos municípios lado a lado com métricas de potencial e infraestrutura (Em Desenvolvimento)',
       icon: FileText,
       href: '/dashboard/compare',
-      color: 'teal'
+      color: 'teal',
+      badge: 'Em Breve'
     },
     {
       title: 'Análise Avançada',
@@ -106,7 +107,7 @@ export default function DashboardPage() {
     },
     {
       title: 'Referências',
-      description: 'Bibliografia e fontes de dados utilizadas no projeto',
+      description: 'Bibliografia científica, fontes de dados geoespaciais e documentação técnica do projeto',
       icon: BookOpen,
       href: '/dashboard/references',
       color: 'gray'
@@ -115,7 +116,7 @@ export default function DashboardPage() {
 
   const quickStats = [
     { label: 'Municípios', value: '645', icon: Map },
-    { label: 'Tipos de Resíduos', value: '11', icon: Database },
+    { label: 'Tipos de Resíduos', value: '50+', icon: Database },
     { label: 'Rotas Tecnológicas', value: '6', icon: TrendingUp }
   ]
 
@@ -156,25 +157,68 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 mb-8 border border-green-200 dark:border-green-800">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-green-600" />
-              Como Usar a Plataforma
+              Guia de Uso da Plataforma
             </h2>
-            <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
-              <div>
-                <h3 className="font-semibold mb-2">1. Explore o Mapa Interativo</h3>
-                <p>Visualize o potencial de biogás por município. Use filtros por tipo de resíduo (cana, bovinos, RSU, etc.) para identificar oportunidades específicas.</p>
+            <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-700 dark:text-gray-300">
+              <div className="space-y-2">
+                <h3 className="font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs">1</span>
+                  Comece pelo Mapa Interativo
+                </h3>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li>Visualize os <strong>645 municípios</strong> de São Paulo com dados de potencial de biogás</li>
+                  <li>Use os <strong>filtros por tipo de resíduo</strong> (cana-de-açúcar, bovinos, suínos, RSU, etc.)</li>
+                  <li>Clique em um município para ver detalhes completos em popup horizontal</li>
+                  <li>Ative camadas adicionais: MapBiomas, plantas de biogás, gasodutos, linhas de transmissão</li>
+                </ul>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">2. Análise de Proximidade</h3>
-                <p>Selecione um ponto no mapa e analise a infraestrutura próxima (gasodutos, linhas de transmissão, ETEs) para avaliar viabilidade logística.</p>
+
+              <div className="space-y-2">
+                <h3 className="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs">2</span>
+                  Análise de Proximidade
+                </h3>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li>Clique no mapa para <strong>selecionar um ponto de interesse</strong></li>
+                  <li>Defina um <strong>raio de busca</strong> (ex: 50km, 100km)</li>
+                  <li>Veja municípios próximos com potencial agregado</li>
+                  <li>Analise <strong>infraestrutura próxima</strong>: gasodutos, subestações, ETEs, rodovias</li>
+                  <li>Correlacione com dados de uso do solo MapBiomas</li>
+                </ul>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">3. Simulação Econômica</h3>
-                <p>Configure parâmetros do seu projeto e calcule TIR, VPL e payback para diferentes rotas tecnológicas de produção de biogás/biometano.</p>
+
+              <div className="space-y-2">
+                <h3 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs">3</span>
+                  Modelo Insumo-Produto
+                </h3>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li>Simule <strong>choques econômicos</strong> de investimentos em biogás</li>
+                  <li>Analise efeitos <strong>diretos, indiretos e induzidos</strong> na economia</li>
+                  <li>Compare cenários para <strong>regiões intermediárias</strong> de SP</li>
+                  <li>Visualize impactos em setores da economia regional</li>
+                </ul>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">4. Compare Municípios</h3>
-                <p>Selecione múltiplos municípios para comparar potencial de biogás, população, área e infraestrutura disponível lado a lado.</p>
+
+              <div className="space-y-2">
+                <h3 className="font-bold text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs">4</span>
+                  Rotas Tecnológicas e Base Científica
+                </h3>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li><strong>Rotas Tecnológicas:</strong> Compare diferentes processos de produção de biogás/biometano</li>
+                  <li><strong>Base Científica:</strong> Acesse dados técnicos sobre resíduos, BMP, TS, VS, C/N</li>
+                  <li>Consulte <strong>parâmetros validados</strong> da literatura científica internacional</li>
+                  <li>Use para refinar cálculos e análises personalizadas</li>
+                </ul>
               </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <span className="text-green-600 dark:text-green-400">💡</span>
+                <strong>Dica:</strong> Comece explorando o mapa para identificar regiões de interesse, depois use as ferramentas de análise para aprofundar sua avaliação.
+              </p>
             </div>
           </div>
 
