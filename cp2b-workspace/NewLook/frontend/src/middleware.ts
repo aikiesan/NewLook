@@ -15,6 +15,14 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Check if authentication is disabled (for testing)
+  const authDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true'
+
+  // If auth is disabled, allow all routes
+  if (authDisabled) {
+    return NextResponse.next()
+  }
+
   // Public routes that don't require authentication
   const publicRoutes = [
     '/',
