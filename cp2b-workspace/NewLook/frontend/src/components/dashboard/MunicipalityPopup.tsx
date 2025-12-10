@@ -30,7 +30,7 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
   const urbanPercentage = calculatePercentage(properties.urban_biogas_m3_year, totalBiogas);
 
   return (
-    <div className="w-[420px] max-w-[420px]">
+    <div className="w-[380px] max-w-[380px]">
       {/* Header Section - Horizontal */}
       <div className="flex items-start justify-between pb-2 border-b border-gray-200 mb-2">
         <div className="flex-1">
