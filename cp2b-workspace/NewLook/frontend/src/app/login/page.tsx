@@ -4,7 +4,7 @@
  * Login Page for CP2B Maps V3
  * WCAG 2.1 AA Compliant
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -14,29 +14,54 @@ import { getErrorMessage } from '@/types/errors'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, loading } = useAuth()
+  const { login, loading, user } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [shouldNavigate, setShouldNavigate] = useState(false)
+
+  // Navigate to dashboard once user is loaded after login
+  useEffect(() => {
+    if (shouldNavigate && user && !loading) {
+      console.log('[Login] User loaded, navigating to dashboard')
+      router.push('/dashboard')
+      setShouldNavigate(false)
+    }
+  }, [shouldNavigate, user, loading, router])
+
+  // Safety timeout: if user doesn't load within 8 seconds, navigate anyway
+  useEffect(() => {
+    if (shouldNavigate && !user) {
+      const timeoutId = setTimeout(() => {
+        console.warn('[Login] User profile timeout after 8s, forcing navigation')
+        router.push('/dashboard')
+        setShouldNavigate(false)
+      }, 8000)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [shouldNavigate, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsSubmitting(true)
 
     // Client-side validation
     if (!email || !password) {
       setError('Por favor, preencha todos os campos')
+      setIsSubmitting(false)
       return
     }
 
     try {
       await login({ email, password })
-
-      // Use Next.js router for client-side navigation
-      // This prevents full page reload and maintains auth state
-      router.push('/dashboard')
+      // Signal that we should navigate once user is loaded
+      setShouldNavigate(true)
     } catch (err: unknown) {
       setError(getErrorMessage(err) || 'Falha no login. Verifique suas credenciais.')
+      setIsSubmitting(false)
     }
   }
 
@@ -114,7 +139,7 @@ export default function LoginPage() {
                 aria-required="true"
                 aria-invalid={!!error}
                 aria-describedby={error ? 'login-error' : undefined}
-                disabled={loading}
+                disabled={isSubmitting || loading}
               />
             </div>
 
@@ -138,7 +163,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 aria-required="true"
                 aria-invalid={!!error}
-                disabled={loading}
+                disabled={isSubmitting || loading}
               />
             </div>
 
@@ -172,11 +197,11 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting || loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-cp2b-primary hover:bg-cp2b-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-              aria-label={loading ? 'Entrando...' : 'Entrar na conta'}
+              aria-label={isSubmitting ? 'Entrando...' : 'Entrar na conta'}
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <div
                     className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"
