@@ -17,6 +17,11 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // TEMPORARY: Disable all authentication for testing
+  // TODO: Re-enable after testing is complete
+  console.log('[Middleware] Authentication DISABLED - allowing all routes')
+  return NextResponse.next()
+
   // Check if authentication is disabled (for testing)
   // IMPORTANT: This must be set in Vercel environment variables
   const authDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true'
