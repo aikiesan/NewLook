@@ -119,7 +119,7 @@ async def get_municipalities_geojson(
                     # Basic info
                     "ibge_code": ibge_code,
                     "name": mun_name or "Unknown",
-                    
+
                     # Biogas data from Supabase (if available)
                     "id": biogas_data.get("id"),
                     "municipality_name": biogas_data.get("municipality_name"),
@@ -133,6 +133,20 @@ async def get_municipalities_geojson(
                     "administrative_region": biogas_data.get("administrative_region"),
                     "immediate_region": biogas_data.get("immediate_region"),
                     "intermediate_region": biogas_data.get("intermediate_region"),
+                    "potential_category": biogas_data.get("potential_category"),
+
+                    # Detailed residue fields for filtering
+                    "sugarcane_biogas_m3_year": biogas_data.get("sugarcane_biogas_m3_year", 0),
+                    "soybean_biogas_m3_year": biogas_data.get("soybean_biogas_m3_year", 0),
+                    "corn_biogas_m3_year": biogas_data.get("corn_biogas_m3_year", 0),
+                    "coffee_biogas_m3_year": biogas_data.get("coffee_biogas_m3_year", 0),
+                    "citrus_biogas_m3_year": biogas_data.get("citrus_biogas_m3_year", 0),
+                    "cattle_biogas_m3_year": biogas_data.get("cattle_biogas_m3_year", 0),
+                    "swine_biogas_m3_year": biogas_data.get("swine_biogas_m3_year", 0),
+                    "poultry_biogas_m3_year": biogas_data.get("poultry_biogas_m3_year", 0),
+                    "aquaculture_biogas_m3_year": biogas_data.get("aquaculture_biogas_m3_year", 0),
+                    "rsu_biogas_m3_year": biogas_data.get("rsu_biogas_m3_year", 0),
+                    "rpo_biogas_m3_year": biogas_data.get("rpo_biogas_m3_year", 0),
                 }
             }
             

@@ -338,15 +338,15 @@
 
 /* Municipality popup - specific styles to prevent overflow */
 .municipality-popup .leaflet-popup-content-wrapper {
-  width: 340px !important;
-  max-width: 340px !important;
-  min-width: 340px !important;
+  width: 560px !important;
+  max-width: 560px !important;
+  min-width: 560px !important;
 }
 
 .municipality-popup .leaflet-popup-content {
-  width: 340px !important;
-  max-width: 340px !important;
-  min-width: 340px !important;
+  width: 560px !important;
+  max-width: 560px !important;
+  min-width: 560px !important;
   margin: 0 !important;
   padding: 12px !important;
   box-sizing: border-box !important;
