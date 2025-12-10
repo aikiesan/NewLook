@@ -5,6 +5,7 @@
  * Manages global authentication state and provides auth methods
  */
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
 import type {
   AuthContextType,
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
   // Load user session on mount
   useEffect(() => {
@@ -91,6 +93,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       logger.debug('[AuthContext] Auth state change:', event)
 
+      // Clear React Query cache on auth state changes to prevent stale data
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        logger.debug('[AuthContext] Clearing query cache due to auth state change:', event)
+        queryClient.clear()
+      }
+
       if (session?.user) {
         await fetchUserProfile(session.user.id, session.access_token)
       } else {
@@ -107,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
       logger.debug('[Auth] Cleanup complete')
     }
-  }, [])
+  }, [queryClient])
 
   // Fetch user profile from database
   const fetchUserProfile = async (userId: string, accessToken: string) => {
@@ -211,6 +219,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
+      // Clear query cache before login to prevent stale data issues
+      logger.debug('[Auth] Clearing query cache before login')
+      queryClient.clear()
+
       // Sign in with Supabase (let Supabase handle its own timeouts)
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
@@ -242,6 +254,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true)
+
+      // Clear query cache on logout to prevent stale data
+      logger.debug('[Auth] Clearing query cache on logout')
+      queryClient.clear()
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       setUser(null)
