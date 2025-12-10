@@ -10,6 +10,11 @@ import { ChevronDown, ChevronUp, Search, Layers, Minus, Plus } from 'lucide-reac
 
 export type BiomassType = 'total' | 'agricultural' | 'livestock' | 'urban';
 
+export type ResidueType =
+  | 'sugarcane' | 'soybean' | 'corn' | 'coffee' | 'citrus'
+  | 'cattle' | 'swine' | 'poultry' | 'aquaculture'
+  | 'rsu' | 'rpo';
+
 interface FloatingControlPanelProps {
   biomassType: BiomassType;
   onBiomassTypeChange: (type: BiomassType) => void;
@@ -24,6 +29,8 @@ interface FloatingControlPanelProps {
     icon: string;
   }>;
   onLayerToggle: (layerId: string, visible: boolean) => void;
+  selectedResidues?: ResidueType[];
+  onResiduesChange?: (residues: ResidueType[]) => void;
 }
 
 export default function FloatingControlPanel({
@@ -34,10 +41,13 @@ export default function FloatingControlPanel({
   searchQuery,
   onSearchChange,
   layers,
-  onLayerToggle
+  onLayerToggle,
+  selectedResidues = [],
+  onResiduesChange
 }: FloatingControlPanelProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [showLayers, setShowLayers] = useState(true);
+  const [showResidues, setShowResidues] = useState(false);
 
   const biomassOptions = [
     { value: 'total', label: 'Potencial Total', icon: '⚡' },
@@ -45,6 +55,30 @@ export default function FloatingControlPanel({
     { value: 'livestock', label: 'Pecuária', icon: '🐄' },
     { value: 'urban', label: 'Urbano', icon: '🏙️' }
   ];
+
+  const residueOptions = [
+    { value: 'sugarcane', label: 'Cana-de-açúcar', category: 'agricultural', icon: '🌾' },
+    { value: 'soybean', label: 'Soja', category: 'agricultural', icon: '🌿' },
+    { value: 'corn', label: 'Milho', category: 'agricultural', icon: '🌽' },
+    { value: 'coffee', label: 'Café', category: 'agricultural', icon: '☕' },
+    { value: 'citrus', label: 'Citrus', category: 'agricultural', icon: '🍊' },
+    { value: 'cattle', label: 'Bovinos', category: 'livestock', icon: '🐄' },
+    { value: 'swine', label: 'Suínos', category: 'livestock', icon: '🐷' },
+    { value: 'poultry', label: 'Aves', category: 'livestock', icon: '🐔' },
+    { value: 'aquaculture', label: 'Aquicultura', category: 'livestock', icon: '🐟' },
+    { value: 'rsu', label: 'RSU', category: 'urban', icon: '🗑️' },
+    { value: 'rpo', label: 'RPO', category: 'urban', icon: '♻️' },
+  ] as const;
+
+  const handleResidueToggle = (residue: ResidueType) => {
+    if (!onResiduesChange) return;
+
+    const newResidues = selectedResidues.includes(residue)
+      ? selectedResidues.filter(r => r !== residue)
+      : [...selectedResidues, residue];
+
+    onResiduesChange(newResidues);
+  };
 
   if (isMinimized) {
     return (
@@ -145,6 +179,101 @@ export default function FloatingControlPanel({
               <span>100%</span>
             </div>
           </div>
+
+          {/* Residue Filter */}
+          {onResiduesChange && (
+            <div>
+              <button
+                onClick={() => setShowResidues(!showResidues)}
+                className="flex items-center justify-between w-full text-[10px] font-semibold text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+              >
+                <span className="flex items-center gap-1">
+                  🔍 Filtrar por Resíduo
+                </span>
+                {showResidues ? (
+                  <ChevronUp className="w-3 h-3" />
+                ) : (
+                  <ChevronDown className="w-3 h-3" />
+                )}
+              </button>
+
+              {showResidues && (
+                <div className="mt-1.5 space-y-1 max-h-[200px] overflow-y-auto">
+                  {selectedResidues.length > 0 && (
+                    <button
+                      onClick={() => onResiduesChange([])}
+                      className="w-full text-[9px] text-red-600 hover:text-red-800 text-left px-1 py-0.5"
+                    >
+                      Limpar filtros ({selectedResidues.length})
+                    </button>
+                  )}
+
+                  {/* Agricultural */}
+                  <div className="pt-1">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Agrícola</div>
+                    {residueOptions.filter(r => r.category === 'agricultural').map((residue) => (
+                      <label
+                        key={residue.value}
+                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedResidues.includes(residue.value as ResidueType)}
+                          onChange={() => handleResidueToggle(residue.value as ResidueType)}
+                          className="w-2.5 h-2.5 text-green-600 rounded"
+                        />
+                        <span className="text-[10px] text-gray-700">
+                          {residue.icon} {residue.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Livestock */}
+                  <div className="pt-1">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Pecuária</div>
+                    {residueOptions.filter(r => r.category === 'livestock').map((residue) => (
+                      <label
+                        key={residue.value}
+                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedResidues.includes(residue.value as ResidueType)}
+                          onChange={() => handleResidueToggle(residue.value as ResidueType)}
+                          className="w-2.5 h-2.5 text-yellow-600 rounded"
+                        />
+                        <span className="text-[10px] text-gray-700">
+                          {residue.icon} {residue.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Urban */}
+                  <div className="pt-1">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Urbano</div>
+                    {residueOptions.filter(r => r.category === 'urban').map((residue) => (
+                      <label
+                        key={residue.value}
+                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedResidues.includes(residue.value as ResidueType)}
+                          onChange={() => handleResidueToggle(residue.value as ResidueType)}
+                          className="w-2.5 h-2.5 text-blue-600 rounded"
+                        />
+                        <span className="text-[10px] text-gray-700">
+                          {residue.icon} {residue.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Layers Toggle */}
           <div>

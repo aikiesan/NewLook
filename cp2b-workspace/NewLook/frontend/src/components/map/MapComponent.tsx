@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
-import type { BiomassType } from './FloatingControlPanel';
+import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
@@ -65,6 +65,9 @@ export default function MapComponent({
   const [isMounted, setIsMounted] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [layersRendered, setLayersRendered] = useState(0);
+
+  // Residue filter state
+  const [selectedResidues, setSelectedResidues] = useState<ResidueType[]>([]);
 
   // Layer state
   const [layers, setLayers] = useState([
@@ -156,6 +159,39 @@ export default function MapComponent({
         if (!hasRequiredType) return false;
       }
 
+      // Specific residue filter (new)
+      if (selectedResidues.length > 0) {
+        const hasSelectedResidue = selectedResidues.some(residue => {
+          switch (residue) {
+            case 'sugarcane':
+              return props.sugarcane_biogas_m3_year > 0;
+            case 'soybean':
+              return props.soybean_biogas_m3_year > 0;
+            case 'corn':
+              return props.corn_biogas_m3_year > 0;
+            case 'coffee':
+              return props.coffee_biogas_m3_year > 0;
+            case 'citrus':
+              return props.citrus_biogas_m3_year > 0;
+            case 'cattle':
+              return props.cattle_biogas_m3_year > 0;
+            case 'swine':
+              return props.swine_biogas_m3_year > 0;
+            case 'poultry':
+              return props.poultry_biogas_m3_year > 0;
+            case 'aquaculture':
+              return props.aquaculture_biogas_m3_year > 0;
+            case 'rsu':
+              return props.rsu_biogas_m3_year > 0;
+            case 'rpo':
+              return props.rpo_biogas_m3_year > 0;
+            default:
+              return false;
+          }
+        });
+        if (!hasSelectedResidue) return false;
+      }
+
       // Region filter
       if (activeFilters?.regions && activeFilters.regions.length > 0) {
         const inRegion = activeFilters.regions.includes(props.intermediate_region);
@@ -169,7 +205,7 @@ export default function MapComponent({
       ...data,
       features: filtered,
     } as MunicipalityCollection;
-  }, [data, activeFilters, searchQuery]);
+  }, [data, activeFilters, searchQuery, selectedResidues]);
 
   // Don't render map on server
   if (!isMounted) {
@@ -307,6 +343,8 @@ export default function MapComponent({
           onSearchChange={onSearchChange || (() => {})}
           layers={layers}
           onLayerToggle={handleLayerToggle}
+          selectedResidues={selectedResidues}
+          onResiduesChange={setSelectedResidues}
         />
       )}
 
