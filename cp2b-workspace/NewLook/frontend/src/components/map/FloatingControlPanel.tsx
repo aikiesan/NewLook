@@ -95,8 +95,8 @@ export default function FloatingControlPanel({
   }
 
   return (
-    <div className="absolute top-20 left-4 z-[400] w-64">
-      <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
+    <div className="absolute top-20 left-4 z-[400] w-64 max-h-[calc(100vh-120px)]">
+      <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden flex flex-col max-h-full">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1E5128] to-[#2C6B3A] px-3 py-2 flex items-center justify-between">
           <h3 className="text-white text-sm font-semibold">
@@ -111,17 +111,17 @@ export default function FloatingControlPanel({
           </button>
         </div>
 
-        <div className="p-3 space-y-3">
+        <div className="p-3 space-y-2.5 overflow-y-auto flex-1">
           {/* Biomass Type Selector */}
           <div>
-            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">
               Tipo de Biomassa
             </label>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {biomassOptions.map((option) => (
                 <label
                   key={option.value}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors ${
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
                     biomassType === option.value
                       ? 'bg-green-100 text-green-800'
                       : 'hover:bg-gray-50 text-gray-700'
@@ -133,9 +133,9 @@ export default function FloatingControlPanel({
                     value={option.value}
                     checked={biomassType === option.value}
                     onChange={() => onBiomassTypeChange(option.value as BiomassType)}
-                    className="w-3 h-3 text-green-600"
+                    className="w-3 h-3 text-green-600 flex-shrink-0"
                   />
-                  <span className="text-xs">
+                  <span className="text-[10px]">
                     {option.icon} {option.label}
                   </span>
                 </label>
@@ -145,24 +145,24 @@ export default function FloatingControlPanel({
 
           {/* Search */}
           <div>
-            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">
               Buscar Município
             </label>
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Nome ou código IBGE..."
-                className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                className="w-full pl-6 pr-2 py-1 text-[10px] border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
               />
             </div>
           </div>
 
           {/* Opacity Slider */}
           <div>
-            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+            <label className="block text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">
               Opacidade: {Math.round(opacity * 100)}%
             </label>
             <input
@@ -198,7 +198,7 @@ export default function FloatingControlPanel({
               </button>
 
               {showResidues && (
-                <div className="mt-1.5 space-y-1 max-h-[200px] overflow-y-auto">
+                <div className="mt-1.5 space-y-0.5 max-h-[150px] overflow-y-auto">
                   {selectedResidues.length > 0 && (
                     <button
                       onClick={() => onResiduesChange([])}
@@ -209,20 +209,20 @@ export default function FloatingControlPanel({
                   )}
 
                   {/* Agricultural */}
-                  <div className="pt-1">
-                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Agrícola</div>
+                  <div className="pt-0.5">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5 px-1">Agrícola</div>
                     {residueOptions.filter(r => r.category === 'agricultural').map((residue) => (
                       <label
                         key={residue.value}
-                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedResidues.includes(residue.value as ResidueType)}
                           onChange={() => handleResidueToggle(residue.value as ResidueType)}
-                          className="w-2.5 h-2.5 text-green-600 rounded"
+                          className="w-2.5 h-2.5 text-green-600 rounded flex-shrink-0"
                         />
-                        <span className="text-[10px] text-gray-700">
+                        <span className="text-[9px] text-gray-700 leading-tight">
                           {residue.icon} {residue.label}
                         </span>
                       </label>
@@ -230,20 +230,20 @@ export default function FloatingControlPanel({
                   </div>
 
                   {/* Livestock */}
-                  <div className="pt-1">
-                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Pecuária</div>
+                  <div className="pt-0.5">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5 px-1">Pecuária</div>
                     {residueOptions.filter(r => r.category === 'livestock').map((residue) => (
                       <label
                         key={residue.value}
-                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedResidues.includes(residue.value as ResidueType)}
                           onChange={() => handleResidueToggle(residue.value as ResidueType)}
-                          className="w-2.5 h-2.5 text-yellow-600 rounded"
+                          className="w-2.5 h-2.5 text-yellow-600 rounded flex-shrink-0"
                         />
-                        <span className="text-[10px] text-gray-700">
+                        <span className="text-[9px] text-gray-700 leading-tight">
                           {residue.icon} {residue.label}
                         </span>
                       </label>
@@ -251,20 +251,20 @@ export default function FloatingControlPanel({
                   </div>
 
                   {/* Urban */}
-                  <div className="pt-1">
-                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5">Urbano</div>
+                  <div className="pt-0.5">
+                    <div className="text-[9px] text-gray-500 uppercase font-semibold mb-0.5 px-1">Urbano</div>
                     {residueOptions.filter(r => r.category === 'urban').map((residue) => (
                       <label
                         key={residue.value}
-                        className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedResidues.includes(residue.value as ResidueType)}
                           onChange={() => handleResidueToggle(residue.value as ResidueType)}
-                          className="w-2.5 h-2.5 text-blue-600 rounded"
+                          className="w-2.5 h-2.5 text-blue-600 rounded flex-shrink-0"
                         />
-                        <span className="text-[10px] text-gray-700">
+                        <span className="text-[9px] text-gray-700 leading-tight">
                           {residue.icon} {residue.label}
                         </span>
                       </label>
