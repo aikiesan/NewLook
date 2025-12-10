@@ -41,11 +41,17 @@ export default function MunicipalityLayer({
 
   // Debug logging
   React.useEffect(() => {
-    if (selectedResidues.length > 0) {
-      console.log('🎨 MunicipalityLayer: selectedResidues changed:', selectedResidues);
-      console.log('🎨 Will color map based on these residues');
-    }
-  }, [selectedResidues]);
+    console.log('🎨 MunicipalityLayer re-rendered');
+    console.log('🎨 biomassType:', biomassType);
+    console.log('🎨 selectedResidues:', selectedResidues);
+    console.log('🎨 data features count:', data.features.length);
+  }, [biomassType, selectedResidues, data]);
+
+  // Force new data reference when residues change to trigger GeoJSON re-render
+  const geoJsonData = React.useMemo(() => {
+    console.log('🔄 Creating new GeoJSON data reference');
+    return { ...data };
+  }, [data, selectedResidues, biomassType]);
 
   // Get biogas value based on selected type or specific residues
   const getBiogasValue = (props: any): number => {
@@ -72,12 +78,24 @@ export default function MunicipalityLayer({
     }
   };
 
+  // Track styled municipalities for debugging
+  let styledCount = 0;
+
   // Style function for polygons (choropleth)
   const style = (feature?: Feature) => {
     if (!feature || !feature.properties) return {};
 
     const biogas = getBiogasValue(feature.properties);
     const color = getColorForValue(biogas);
+
+    // Log first few municipalities to debug
+    if (styledCount < 3 && selectedResidues.length > 0) {
+      console.log(`🎨 Styling ${feature.properties.name}:`);
+      console.log(`   Selected residues:`, selectedResidues);
+      console.log(`   Biogas value: ${biogas.toLocaleString()}`);
+      console.log(`   Color: ${color}`);
+      styledCount++;
+    }
 
     return {
       fillColor: color,
@@ -201,7 +219,7 @@ export default function MunicipalityLayer({
   return (
     <GeoJSON
       key={`${biomassType}-${opacity}-${selectedResidues.join(',')}`} // Force re-render when props change
-      data={data as GeoJsonObject}
+      data={geoJsonData as GeoJsonObject}
       style={style}
       onEachFeature={onEachFeature}
     />
