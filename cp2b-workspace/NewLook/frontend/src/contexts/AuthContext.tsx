@@ -231,14 +231,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      // Note: Don't call fetchUserProfile here - let onAuthStateChange handle it
-      // to avoid race conditions and double fetching
-      logger.debug('[Auth] Login successful - onAuthStateChange will handle profile fetch')
+      // Wait for auth state to sync before allowing navigation
+      // This prevents race condition where dashboard loads before auth is ready
+      logger.debug('[Auth] Login successful - waiting for auth state sync')
 
-      // Set loading to false immediately after successful auth
-      // onAuthStateChange will fire but we want to allow navigation immediately
+      // Small delay to let onAuthStateChange callback complete
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       setLoading(false)
-      logger.debug('[Auth] Login complete, ready for navigation')
+      logger.debug('[Auth] Login complete, auth state synced, ready for navigation')
     } catch (error: unknown) {
       const appError = toAppError(error)
       logger.error('[Auth] Login failed:', appError)
