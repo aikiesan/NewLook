@@ -133,14 +133,20 @@ export default function MapComponent({
       console.log('🔍 Filtering with residues:', selectedResidues);
       console.log('📊 Total municipalities before filter:', data.features.length);
 
-      // Sample first municipality to see what properties exist
+      // Sample first 3 municipalities to see what properties exist
       if (data.features.length > 0) {
-        const sample = data.features[0].properties;
-        console.log('📋 Sample municipality:', sample.name);
-        selectedResidues.forEach(residue => {
-          const propName = `${residue}_biogas_m3_year`;
-          console.log(`   ${residue}:`, (sample as any)[propName]);
-        });
+        const samplesToCheck = Math.min(3, data.features.length);
+        console.log(`📋 Checking ${samplesToCheck} sample municipalities:`);
+
+        for (let i = 0; i < samplesToCheck; i++) {
+          const sample = data.features[i].properties;
+          console.log(`\n  Municipality ${i + 1}: ${sample.name}`);
+          selectedResidues.forEach(residue => {
+            const propName = `${residue}_biogas_m3_year`;
+            const value = (sample as any)[propName];
+            console.log(`    ${residue}: ${value} (type: ${typeof value})`);
+          });
+        }
       }
     }
 
@@ -226,7 +232,21 @@ export default function MapComponent({
     if (selectedResidues.length > 0) {
       console.log('✅ Filtered municipalities:', filtered.length);
       if (filtered.length > 0) {
-        console.log('   Sample municipality:', filtered[0].properties.name);
+        console.log('   First 3 filtered municipalities:');
+        const sampleCount = Math.min(3, filtered.length);
+        for (let i = 0; i < sampleCount; i++) {
+          const props = filtered[i].properties;
+          console.log(`   ${i + 1}. ${props.name}`);
+          selectedResidues.forEach(residue => {
+            const propName = `${residue}_biogas_m3_year`;
+            const value = (props as any)[propName];
+            if (value > 0) {
+              console.log(`      ✓ ${residue}: ${value}`);
+            }
+          });
+        }
+      } else {
+        console.warn('⚠️ No municipalities matched the selected residues!');
       }
     }
 
