@@ -113,14 +113,41 @@ class GeospatialClient {
 
   /**
    * Get client-side mock data when backend is unavailable
+   * Returns empty data structures to prevent build failures
    */
   private getClientSideMockData<T>(endpoint: string): T {
-    const { mockMunicipalitiesGeoJSON, mockSummaryStatistics } = require('@/lib/mockData');
+    logger.warn('Mock data requested but not available. Using empty fallback.');
 
     if (endpoint.includes('/geojson') || endpoint.includes('/polygons')) {
-      return mockMunicipalitiesGeoJSON as T;
+      return {
+        type: 'FeatureCollection',
+        features: [],
+        metadata: {
+          total_municipalities: 0,
+          source: 'Empty fallback',
+          note: 'No data available - please configure backend API',
+        },
+      } as T;
     } else if (endpoint.includes('/summary')) {
-      return mockSummaryStatistics as T;
+      return {
+        total_municipalities: 0,
+        total_biogas_m3_year: 0,
+        average_biogas_m3_year: 0,
+        total_population: 0,
+        top_municipality: { name: '', biogas_m3_year: 0 },
+        top_5_municipalities: [],
+        categories: {},
+        sector_breakdown: {
+          agricultural: 0,
+          livestock: 0,
+          urban: 0,
+        },
+        sector_percentages: {
+          agricultural: 0,
+          livestock: 0,
+          urban: 0,
+        },
+      } as T;
     }
 
     // Default fallback
@@ -165,9 +192,17 @@ class GeospatialClient {
         return await this.getFromIBGEWithBiogasData();
       } catch (ibgeError) {
         logger.warn(`IBGE fallback failed: ${ibgeError}`);
-        // Final fallback to mock data
-        const { mockMunicipalitiesGeoJSON } = require('@/lib/mockData');
-        return mockMunicipalitiesGeoJSON as MunicipalityCollection;
+        // Final fallback to empty data structure
+        logger.error('All data sources failed. Returning empty municipality collection.');
+        return {
+          type: 'FeatureCollection',
+          features: [],
+          metadata: {
+            total_municipalities: 0,
+            source: 'Fallback',
+            note: 'All data sources unavailable - please check backend API and Supabase connection',
+          },
+        };
       }
     }
   }
