@@ -1,0 +1,115 @@
+{
+  "landing": {
+    "skip_to_content": "Pular para o conteúdo principal",
+    "hero": {
+      "badge": "Projeto FAPESP 2025/08745-2 | NIPE-UNICAMP",
+      "title": "Mapeamento do Potencial de",
+      "title_highlight": "Biogás em São Paulo",
+      "subtitle": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo",
+      "cta_explore": "Explorar Mapa Interativo",
+      "cta_demo": "Ver Demonstração",
+      "showcase_badge": "Veja a plataforma em ação",
+      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma CP2B Maps V3."
+    },
+    "screenshots": {
+      "interactive_map": {
+        "alt": "Mapa interativo de São Paulo com camadas de infraestrutura e potencial de biogás",
+        "caption": "Mapa Interativo",
+        "description": "Visualização geoespacial com camadas de infraestrutura, plantas de biogás e municípios de São Paulo"
+      },
+      "data_analysis": {
+        "alt": "Dashboard de análise de dados com gráficos e estatísticas municipais",
+        "caption": "Análise de Dados",
+        "description": "Explore dados detalhados de biomassa, produção agrícola e potencial energético por município"
+      },
+      "proximity_analysis": {
+        "alt": "Análise de proximidade com raios de coleta e infraestrutura",
+        "caption": "Análise de Proximidade",
+        "description": "Simulação logística com raios de coleta e análise de proximidade a infraestrutura existente"
+      },
+      "scientific_basis": {
+        "alt": "Base científica com referências e metodologia SAF",
+        "caption": "Base Científica",
+        "description": "Acesse a metodologia SAF e referências científicas que fundamentam as análises da plataforma"
+      }
+    },
+    "stats": {
+      "municipalities": {
+        "label": "Municípios",
+        "description": "Estado de SP"
+      },
+      "modules": {
+        "label": "Módulos",
+        "description": "Análise MCDA"
+      },
+      "references": {
+        "label": "Referências",
+        "description": "Papers RAG AI"
+      },
+      "wcag": {
+        "label": "WCAG 2.1",
+        "description": "Acessibilidade"
+      }
+    },
+    "features": {
+      "heading": "O que você pode fazer com o CP2B Maps",
+      "subheading": "Ferramentas avançadas para mapeamento, análise e visualização de potencial de biogás baseadas em metodologia científica validada.",
+      "geospatial": {
+        "title": "Mapeamento Geoespacial",
+        "description": "Visualização interativa de dados de biomassa com precisão municipal e subcamadas temáticas",
+        "features": [
+          "Mapas coropléticos com escala de potencial de biogás",
+          "Integração MapBiomas com resolução 10m×10m",
+          "Análise de raio de coleta (10-50km) otimizada",
+          "Exportação GeoJSON e Shapefile para SIG"
+        ],
+        "cta": "Explorar Mapas"
+      },
+      "mcda": {
+        "title": "Análise MCDA",
+        "description": "Análise multicritério para priorização de municípios e identificação de locais ótimos para plantas",
+        "features": [
+          "8 critérios integrados: SAF, logística, infraestrutura",
+          "Pesos configuráveis por stakeholder",
+          "Ranking automatizado dos 645 municípios SP",
+          "Índice de Adequação Territorial (IAT) validado"
+        ],
+        "cta": "Ver Análises"
+      },
+      "collaborative": {
+        "title": "Plataforma Colaborativa",
+        "description": "Ambiente integrado para pesquisadores, gestores públicos e empresas do setor de biogás",
+        "features": [
+          "3 níveis de acesso: Visitante, Pesquisador, Admin",
+          "Assistente AI 'Bagacinho' com RAG de 58 papers",
+          "Base de dados atualizada SIDRA/IBGE 2018-2024",
+          "Documentação completa da Metodologia SAF"
+        ],
+        "cta": "Criar Conta"
+      }
+    },
+    "cta_section": {
+      "heading": "Pronto para explorar todos os recursos?",
+      "description": "Crie uma conta gratuita para acessar análises completas, exportar dados e colaborar com a comunidade CP2B.",
+      "button_register": "Criar Conta Gratuita",
+      "button_learn_more": "Saiba Mais"
+    },
+    "newsletter": {
+      "title": "Receba novidades sobre biogás",
+      "description": "Inscreva-se para receber atualizações sobre novos recursos, análises e insights sobre o setor de biogás em São Paulo."
+    },
+    "footer": {
+      "fapesp_project": "Processo FAPESP 2025/08745-2",
+      "about": "Sobre",
+      "copyright": "© 2025 NIPE-UNICAMP"
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "video_modal": {
+      "title": "Demonstração da Plataforma CP2B Maps",
+      "aria_label": "Assistir demonstração em vídeo da plataforma"
+    }
+  }
+}

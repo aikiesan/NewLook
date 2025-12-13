@@ -1,26 +1,51 @@
 /**
- * CP2B Maps V3 - Edge-Runtime Safe Middleware
+ * CP2B Maps V3 - Edge-Runtime Safe Middleware with i18n
  *
- * Protects authenticated routes while allowing public access to:
- * - Landing page (/)
- * - Public map (/map)
- * - Login/Register pages
+ * Combines:
+ * 1. Internationalization (i18n) with locale detection and routing
+ * 2. Authentication protection for private routes
  *
- * Cookie-based auth check (Edge Runtime compatible)
+ * Public routes: /, /map, /login, /register, /about
+ * Protected routes: /dashboard/*
  *
  * NOTE: When NEXT_PUBLIC_DISABLE_AUTH=true, all routes are public
  */
 
+import createIntlMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+// i18n configuration
+const locales = ['en', 'pt-BR'];
+const defaultLocale = 'pt-BR';
+
+// Create the i18n middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always'
+});
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Skip middleware for static files
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('/favicon.ico') ||
+    pathname.includes('/images/') ||
+    pathname.includes('/screenshots/')
+  ) {
+    return NextResponse.next()
+  }
+
   // TEMPORARY: Disable all authentication for testing
   // TODO: Re-enable after testing is complete
   console.log('[Middleware] Authentication DISABLED - allowing all routes')
-  return NextResponse.next()
+
+  // Apply i18n middleware
+  return intlMiddleware(request)
 
   // Check if authentication is disabled (for testing)
   // IMPORTANT: This must be set in Vercel environment variables
@@ -29,47 +54,57 @@ export function middleware(request: NextRequest) {
   console.log('[Middleware] NEXT_PUBLIC_DISABLE_AUTH:', process.env.NEXT_PUBLIC_DISABLE_AUTH)
   console.log('[Middleware] authDisabled:', authDisabled)
 
-  // If auth is disabled, allow all routes
+  // If auth is disabled, allow all routes with i18n
   if (authDisabled) {
     console.log('[Middleware] Auth disabled - allowing access to:', pathname)
-    return NextResponse.next()
+    return intlMiddleware(request)
   }
+
+  // Extract locale from pathname
+  const pathnameLocale = locales.find(
+    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+
+  // Remove locale prefix for route checking
+  const pathnameWithoutLocale = pathnameLocale
+    ? pathname.slice(`/${pathnameLocale}`.length)
+    : pathname;
 
   // Public routes that don't require authentication
   const publicRoutes = [
     '/',
     '/login',
     '/register',
-    '/map',  // Public map page - NEW: allows unauthenticated access
-    '/api',
-    '/_next',
-    '/favicon.ico',
+    '/map',
+    '/about',
   ]
 
   // Check if current path is a public route
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.some(route =>
+    pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(route + '/')
+  )
 
   if (isPublicRoute) {
-    return NextResponse.next()
+    return intlMiddleware(request)
   }
 
   // Protected routes (dashboard and sub-routes)
-  if (pathname.startsWith('/dashboard')) {
+  if (pathnameWithoutLocale.startsWith('/dashboard')) {
     // Check for Supabase auth cookies (Edge-safe)
-    // RequestCookies API: use getAll() to iterate over cookies
     const hasAuthToken =
       request.cookies.has('sb-auth-token') ||
       request.cookies.getAll().some(cookie => cookie.name.startsWith('sb-'))
 
     // Redirect to login if no auth cookie found
     if (!hasAuthToken) {
-      const loginUrl = new URL('/login', request.url)
+      const locale = pathnameLocale || defaultLocale;
+      const loginUrl = new URL(`/${locale}/login`, request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
   }
 
-  return NextResponse.next()
+  return intlMiddleware(request)
 }
 
 export const config = {
