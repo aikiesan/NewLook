@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Edge-Runtime Safe Middleware with i18n
+ * CP2B Maps V3 - Edge-Runtime Safe Proxy with i18n
  *
  * Combines:
  * 1. Internationalization (i18n) with locale detection and routing
@@ -26,10 +26,10 @@ const intlMiddleware = createIntlMiddleware({
   localePrefix: 'always'
 });
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files
+  // Skip proxy for static files
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -42,21 +42,21 @@ export function middleware(request: NextRequest) {
 
   // TEMPORARY: Disable all authentication for testing
   // TODO: Re-enable after testing is complete
-  console.log('[Middleware] Authentication DISABLED - allowing all routes')
+  console.log('[Proxy] Authentication DISABLED - allowing all routes')
 
-  // Apply i18n middleware
+  // Apply i18n proxy
   return intlMiddleware(request)
 
   // Check if authentication is disabled (for testing)
   // IMPORTANT: This must be set in Vercel environment variables
   const authDisabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true'
 
-  console.log('[Middleware] NEXT_PUBLIC_DISABLE_AUTH:', process.env.NEXT_PUBLIC_DISABLE_AUTH)
-  console.log('[Middleware] authDisabled:', authDisabled)
+  console.log('[Proxy] NEXT_PUBLIC_DISABLE_AUTH:', process.env.NEXT_PUBLIC_DISABLE_AUTH)
+  console.log('[Proxy] authDisabled:', authDisabled)
 
   // If auth is disabled, allow all routes with i18n
   if (authDisabled) {
-    console.log('[Middleware] Auth disabled - allowing access to:', pathname)
+    console.log('[Proxy] Auth disabled - allowing access to:', pathname)
     return intlMiddleware(request)
   }
 
