@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import { ArrowLeft, BookOpen, Database, Globe, FileText } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import ReferenceList from '@/components/scientific/ReferenceList'

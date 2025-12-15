@@ -7,8 +7,7 @@
  * Protected by authentication - shows feature explanations and navigation
  */
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter, Link } from '@/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import {

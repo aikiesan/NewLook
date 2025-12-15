@@ -7,8 +7,7 @@
  */
 
 import React, { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/navigation'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import {

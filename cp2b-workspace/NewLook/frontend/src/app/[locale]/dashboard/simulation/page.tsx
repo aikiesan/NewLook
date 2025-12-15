@@ -6,7 +6,7 @@
  * Leontief Input-Output Analysis with spatial spillover effects
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import dynamic from 'next/dynamic'
 import {
   TrendingUp,

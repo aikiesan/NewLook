@@ -9,7 +9,7 @@
  * Client-side fetching uses useEffect to load fresh data on each visit.
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import {
   ArrowLeft,
   RefreshCw,

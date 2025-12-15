@@ -32,6 +32,58 @@
     },
     "badge": {
       "beta": "Beta"
+    },
+    "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
+  },
+  "auth": {
+    "errors": {
+      "fill_all_fields": "Por favor, preencha todos os campos",
+      "login_failed": "Falha no login. Verifique suas credenciais.",
+      "password_min_length": "A senha deve ter no mínimo 6 caracteres",
+      "passwords_no_match": "As senhas não coincidem",
+      "registration_failed": "Falha no registro. Tente novamente."
+    },
+    "login": {
+      "back_to_home": "Voltar para página inicial - CP2B Maps V3",
+      "title": "Acessar sua conta",
+      "or": "Ou",
+      "create_account": "crie uma nova conta",
+      "email_label": "Endereço de e-mail",
+      "email_placeholder": "seu@email.com",
+      "password_label": "Senha",
+      "remember_me": "Lembrar-me",
+      "forgot_password": "Esqueceu a senha?",
+      "submitting": "Entrando...",
+      "submit": "Entrar",
+      "new_to_platform": "Novo na plataforma?",
+      "create_new_account": "Criar nova conta"
+    },
+    "register": {
+      "back_to_home": "Voltar para página inicial",
+      "title": "Criar nova conta",
+      "or": "Ou",
+      "login_existing": "faça login com sua conta existente",
+      "full_name_label": "Nome completo",
+      "full_name_placeholder": "João Silva",
+      "email_label": "Endereço de e-mail",
+      "email_placeholder": "seu@email.com",
+      "password_label": "Senha",
+      "password_strength": "Força da senha",
+      "password_weak": "Fraca",
+      "password_medium": "Média",
+      "password_strong": "Forte",
+      "confirm_password_label": "Confirmar senha",
+      "agree_to": "Eu concordo com os",
+      "terms_of_service": "Termos de Serviço",
+      "and": "e",
+      "privacy_policy": "Política de Privacidade",
+      "submitting": "Criando conta...",
+      "submit": "Criar conta",
+      "already_have_account": "Já tem uma conta?",
+      "login": "Fazer login"
+    },
+    "common": {
+      "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
     }
   },
   "landing": {
@@ -175,5 +227,10 @@
   "Settings": {
     "title": "Configurações",
     "language": "Idioma"
+  },
+  "metadata": {
+    "title": "CP2B Maps V3 - Atlas de Potencial de Biogás",
+    "description": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério e ferramentas de simulação econômica.",
+    "keywords": "biogás, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP"
   }
 }

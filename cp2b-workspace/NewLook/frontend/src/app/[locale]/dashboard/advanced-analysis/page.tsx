@@ -6,7 +6,7 @@
  * Based on SAF (Surplus Availability Factor) methodology
  */
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import {
   ArrowLeft,
   TrendingUp,
