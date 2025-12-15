@@ -1,12 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-
-// Supported locales
-export const locales = ['en', 'pt-BR'] as const;
-export type Locale = (typeof locales)[number];
-
-// Default locale
-export const defaultLocale: Locale = 'pt-BR';
+import { locales, defaultLocale, type Locale } from './src/config/i18n';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Handle static generation case
@@ -20,7 +14,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     };
   }
 
-  // Normal request handling
+  // Normal request handling - await the requestLocale
   const locale = await requestLocale;
   
   // Validate that the incoming `locale` parameter is valid

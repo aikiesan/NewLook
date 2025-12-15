@@ -1,72 +1,28 @@
-import { NextResponse } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
 import type { NextRequest } from 'next/server';
+import { locales, defaultLocale, localePrefix } from './config/i18n';
 
-// List of supported locales
-const locales = ['en', 'pt-BR'];
-const defaultLocale = 'en';
-
-// Get the preferred locale from the request
-function getLocale(request: NextRequest) {
-  // Check if locale is in the pathname
-  const pathname = request.nextUrl.pathname;
-  const pathnameIsMissingLocale = locales.every(
-    locale => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
-  );
-
-  if (pathnameIsMissingLocale) {
-    // Get locale from Accept-Language header
-    const acceptLanguage = request.headers.get('Accept-Language');
-    if (acceptLanguage) {
-      const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
-      if (locales.includes(preferredLocale)) {
-        return preferredLocale;
-      }
-    }
-    return defaultLocale;
-  }
-  
-  return null;
-}
+// Create the next-intl middleware with proper configuration
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix,
+  // Disable automatic locale detection for better control
+  // Users will be redirected to the default locale if no locale is in the URL
+  localeDetection: false,
+});
 
 export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  
-  // Skip middleware for:
-  // - API routes
-  // - Static files
-  // - Next.js internals
-  // - _next paths
-  if (
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') ||
-    pathname.includes('.') ||
-    pathname.startsWith('/favicon.ico')
-  ) {
-    return NextResponse.next();
-  }
-
-  // Check if there's a locale in the pathname
-  const pathnameHasLocale = locales.some(
-    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  );
-
-  // Redirect if locale is missing
-  if (!pathnameHasLocale) {
-    const locale = getLocale(request);
-    
-    // Create new URL with locale
-    const newUrl = new URL(`/${locale}${pathname}`, request.url);
-    
-    // Redirect to the localized URL
-    return NextResponse.redirect(newUrl);
-  }
-
-  return NextResponse.next();
+  // Use next-intl's middleware for all routing
+  return intlMiddleware(request);
 }
 
 export const config = {
+  // Match all pathnames except for:
+  // - API routes (/api/*)
+  // - Static files (/_next/*, /images/*, etc.)
+  // - Files with extensions (*.png, *.jpg, etc.)
   matcher: [
-    // Skip all internal paths and API routes
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next|_vercel|.*\\..*).*)',
   ],
 };

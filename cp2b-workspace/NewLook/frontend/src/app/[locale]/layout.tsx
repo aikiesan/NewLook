@@ -10,11 +10,9 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { locales, type Locale } from '@/config/i18n'
 
 const inter = Inter({ subsets: ['latin'] });
-
-// Supported locales
-const locales = ['en', 'pt-BR'];
 
 export const metadata: Metadata = {
   title: 'NewLook Delta',
@@ -40,8 +38,8 @@ export default async function LocaleLayout({
     // AWAIT the params (Next.js 16 requirement)
     const { locale } = await params;
     
-    // Validate locale
-    if (!locales.includes(locale)) {
+    // Validate locale with proper type checking
+    if (!locales.includes(locale as Locale)) {
       notFound();
     }
     
