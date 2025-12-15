@@ -65,3 +65,4 @@ def seed_technologies():
 if __name__ == "__main__":
     success = seed_technologies()
     sys.exit(0 if success else 1)
+
