@@ -1,5 +1,6 @@
 const createNextIntlPlugin = require('next-intl/plugin');
 
+// Point to the correct i18n.ts location (root of frontend)
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
@@ -69,6 +70,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Output standalone for better Vercel performance
+  output: 'standalone',
 }
 
 // Export configuration with i18n plugin
