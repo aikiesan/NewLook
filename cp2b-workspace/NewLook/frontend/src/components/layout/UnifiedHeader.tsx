@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import { logger } from '@/lib/logger'
 
 interface NavItem {
@@ -262,6 +263,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
           {/* Theme & Language Toggles + User Menu (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Language Toggle */}
+            <LanguageSwitcher />
 
             {/* Theme Toggle */}
             <div className={isPublic ? 'text-gray-700' : ''}>
@@ -437,6 +439,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
             {/* Mobile Toggles */}
             <div className={`px-4 py-3 border-t ${isPublic ? 'border-gray-200' : 'border-white/20'}`}>
               <div className="flex items-center justify-between gap-4">
+                <LanguageSwitcher />
                 <ThemeToggle variant={isPublic ? 'light' : 'dark'} />
               </div>
             </div>

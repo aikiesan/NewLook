@@ -1,3 +1,7 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // IMPORTANT: Removed static export for Vercel deployment
@@ -67,5 +71,5 @@ const nextConfig = {
   },
 }
 
-// Export configuration
-module.exports = nextConfig;
+// Export configuration with i18n plugin
+module.exports = withNextIntl(nextConfig);
