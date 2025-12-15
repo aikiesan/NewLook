@@ -1,4 +1,39 @@
 {
+  "common": {
+    "nav": {
+      "home": "Início",
+      "map": "Mapa",
+      "dashboard": "Dashboard",
+      "about": "Sobre",
+      "hub": "Hub",
+      "proximity": "Proximidade",
+      "simulation": "Simulação I-O",
+      "technology_routes": "Rotas Tech",
+      "scientific_database": "Base Científica",
+      "advanced": "Avançado"
+    },
+    "nav_descriptions": {
+      "hub": "Central de Recursos",
+      "map": "Mapa Interativo SP",
+      "simulation": "Modelo Insumo-Produto"
+    },
+    "auth": {
+      "login": "Entrar",
+      "logout": "Sair",
+      "logout_account": "Sair da conta",
+      "settings": "Configurações",
+      "user": "Usuário",
+      "admin": "Administrador",
+      "authenticated": "Autenticado"
+    },
+    "menu": {
+      "open": "Abrir menu",
+      "close": "Fechar menu"
+    },
+    "badge": {
+      "beta": "Beta"
+    }
+  },
   "landing": {
     "skip_to_content": "Pular para o conteúdo principal",
     "hero": {

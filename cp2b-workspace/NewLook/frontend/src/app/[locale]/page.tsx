@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
-import { logger } from '@/lib/logger'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import VideoModal from '@/components/ui/VideoModal'
 import NewsletterSignup from '@/components/ui/NewsletterSignup'
-import ParallaxSection from '@/components/ui/ParallaxSection'
 import {
   ArrowRight,
   Play,
@@ -307,57 +306,36 @@ const AnimatedMapBackground = () => {
   )
 }
 
-// Screenshot data
-const screenshots = [
-  {
-    id: 1,
-    image: '/screenshots/interactive-map.png',
-    alt: 'Mapa interativo de São Paulo com camadas de infraestrutura e potencial de biogás',
-    caption: 'Mapa Interativo',
-    description: 'Visualização geoespacial com camadas de infraestrutura, plantas de biogás e municípios de São Paulo',
-  },
-  {
-    id: 2,
-    image: '/screenshots/data-analysis.png',
-    alt: 'Dashboard de análise de dados com gráficos e estatísticas municipais',
-    caption: 'Análise de Dados',
-    description: 'Explore dados detalhados de biomassa, produção agrícola e potencial energético por município',
-  },
-  {
-    id: 3,
-    image: '/screenshots/proximity-analysis.png',
-    alt: 'Análise de proximidade com raios de coleta e infraestrutura',
-    caption: 'Análise de Proximidade',
-    description: 'Simulação logística com raios de coleta e análise de proximidade a infraestrutura existente',
-  },
-  {
-    id: 4,
-    image: '/screenshots/scientific-basis.png',
-    alt: 'Base científica com referências e metodologia SAF',
-    caption: 'Base Científica',
-    description: 'Acesse a metodologia SAF e referências científicas que fundamentam as análises da plataforma',
-  },
+// Screenshot configuration (translations handled in component)
+const screenshotKeys = ['interactive_map', 'data_analysis', 'proximity_analysis', 'scientific_basis'] as const
+
+const screenshotImages = [
+  '/screenshots/interactive-map.png',
+  '/screenshots/data-analysis.png',
+  '/screenshots/proximity-analysis.png',
+  '/screenshots/scientific-basis.png',
 ]
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const { isAuthenticated } = useAuth()
+  const t = useTranslations('landing')
 
   // Auto-advance carousel
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % screenshots.length)
+      setCurrentSlide((prev) => (prev + 1) % screenshotKeys.length)
     }, 5000)
     return () => clearInterval(timer)
   }, [])
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + screenshots.length) % screenshots.length)
+    setCurrentSlide((prev) => (prev - 1 + screenshotKeys.length) % screenshotKeys.length)
   }
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % screenshots.length)
+    setCurrentSlide((prev) => (prev + 1) % screenshotKeys.length)
   }
 
   return (
@@ -368,7 +346,7 @@ export default function HomePage() {
         className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 bg-cp2b-green text-white px-4 py-2 rounded-md"
         tabIndex={0}
       >
-        Pular para o conteúdo principal
+        {t('skip_to_content')}
       </a>
 
       {/* Unified Navigation Header - Always public on landing page */}
@@ -394,7 +372,7 @@ export default function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cp2b-green opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cp2b-green"></span>
             </span>
-            Projeto FAPESP 2025/08745-2 | NIPE-UNICAMP
+            {t('hero.badge')}
           </div>
 
           {/* Main Headline */}
@@ -403,14 +381,13 @@ export default function HomePage() {
               id="hero-heading"
               className="text-4xl sm:text-5xl lg:text-7xl font-bold text-cp2b-gray-900 mb-12 leading-tight tracking-tight"
             >
-              Mapeamento do Potencial de{' '}
+              {t('hero.title')}{' '}
               <span className="bg-gradient-to-r from-cp2b-green via-emerald-500 to-cp2b-lime bg-clip-text text-transparent animate-gradient">
-                Biogás em São Paulo
+                {t('hero.title_highlight')}
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-cp2b-gray-600 max-w-3xl mx-auto leading-relaxed mb-2">
-              Plataforma geoespacial para análise do potencial de produção de biogás
-              a partir de resíduos orgânicos no estado de São Paulo
+              {t('hero.subtitle')}
             </p>
           </FadeIn>
 
@@ -422,7 +399,7 @@ export default function HomePage() {
                 className="group relative inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-white bg-gradient-to-r from-cp2b-green to-emerald-600 hover:from-cp2b-dark-green hover:to-emerald-700 rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime overflow-hidden"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Explorar Mapa Interativo
+                  {t('hero.cta_explore')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Link>
@@ -430,10 +407,10 @@ export default function HomePage() {
               <button
                 onClick={() => setIsVideoModalOpen(true)}
                 className="group inline-flex items-center gap-2 px-10 py-4 text-base font-semibold text-cp2b-green bg-white/90 backdrop-blur-sm border-2 border-cp2b-green/20 hover:border-cp2b-green hover:bg-white rounded-2xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-lime"
-                aria-label="Assistir demonstração em vídeo da plataforma"
+                aria-label={t('video_modal.aria_label')}
               >
                 <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform duration-300" />
-                Ver Demonstração
+                {t('hero.cta_demo')}
               </button>
             </div>
           </FadeIn>
@@ -444,11 +421,10 @@ export default function HomePage() {
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-cp2b-lime/30 text-cp2b-dark-green text-sm font-medium mb-4">
                   <Sparkles className="w-4 h-4" />
-                  Veja a plataforma em ação
+                  {t('hero.showcase_badge')}
                 </div>
                 <p className="text-cp2b-gray-600 max-w-2xl mx-auto">
-                  Explore exemplos reais de análises geoespaciais e relatórios
-                  gerados pela plataforma CP2B Maps V3.
+                  {t('hero.showcase_description')}
                 </p>
               </div>
 
@@ -457,9 +433,9 @@ export default function HomePage() {
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-cp2b-gray-900 group">
                   {/* Slides */}
                   <div className="relative aspect-video">
-                    {screenshots.map((screenshot, index) => (
+                    {screenshotKeys.map((key, index) => (
                       <div
-                        key={screenshot.id}
+                        key={key}
                         className={`absolute inset-0 transition-all duration-700 ${
                           index === currentSlide
                             ? 'opacity-100 scale-100'
@@ -468,17 +444,17 @@ export default function HomePage() {
                       >
                         {/* Screenshot image */}
                         <Image
-                          src={screenshot.image}
-                          alt={screenshot.alt}
+                          src={screenshotImages[index]}
+                          alt={t(`screenshots.${key}.alt`)}
                           fill
                           className="object-cover"
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                           <h4 className="text-lg font-bold text-white mb-1">
-                            {screenshot.caption}
+                            {t(`screenshots.${key}.caption`)}
                           </h4>
                           <p className="text-xs text-white/90 max-w-2xl">
-                            {screenshot.description}
+                            {t(`screenshots.${key}.description`)}
                           </p>
                         </div>
                       </div>
@@ -489,21 +465,21 @@ export default function HomePage() {
                   <button
                     onClick={prevSlide}
                     className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-cp2b-lime hover:scale-110"
-                    aria-label="Anterior"
+                    aria-label={t('navigation.previous')}
                   >
                     <ChevronLeft className="w-5 h-5 text-cp2b-gray-900" />
                   </button>
                   <button
                     onClick={nextSlide}
                     className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-cp2b-lime hover:scale-110"
-                    aria-label="Próximo"
+                    aria-label={t('navigation.next')}
                   >
                     <ChevronRight className="w-5 h-5 text-cp2b-gray-900" />
                   </button>
 
                   {/* Dots */}
                   <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
-                    {screenshots.map((_, index) => (
+                    {screenshotKeys.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentSlide(index)}
@@ -512,7 +488,7 @@ export default function HomePage() {
                             ? 'bg-white w-6'
                             : 'bg-white/50 hover:bg-white/75 w-2'
                         }`}
-                        aria-label={`Ir para slide ${index + 1}`}
+                        aria-label={`${index + 1}`}
                       />
                     ))}
                   </div>
@@ -527,31 +503,31 @@ export default function HomePage() {
               <StatCard
                 number="645"
                 animateValue={645}
-                label="Municípios"
-                description="Estado de SP"
+                label={t('stats.municipalities.label')}
+                description={t('stats.municipalities.description')}
                 icon={<MapPin className="w-7 h-7 text-cp2b-green" />}
               />
 
               <StatCard
                 number="8"
                 animateValue={8}
-                label="Módulos"
-                description="Análise MCDA"
+                label={t('stats.modules.label')}
+                description={t('stats.modules.description')}
                 icon={<Layers className="w-7 h-7 text-cp2b-orange" />}
               />
 
               <StatCard
                 number="58"
                 animateValue={58}
-                label="Referências"
-                description="Papers RAG AI"
+                label={t('stats.references.label')}
+                description={t('stats.references.description')}
                 icon={<BookOpen className="w-7 h-7 text-cp2b-lime" />}
               />
 
               <StatCard
                 number="AA"
-                label="WCAG 2.1"
-                description="Acessibilidade"
+                label={t('stats.wcag.label')}
+                description={t('stats.wcag.description')}
                 icon={<Check className="w-7 h-7 text-cp2b-green" />}
               />
             </div>
@@ -572,11 +548,10 @@ export default function HomePage() {
                 id="features-heading"
                 className="text-3xl sm:text-4xl font-bold text-cp2b-gray-900 mb-4"
               >
-                O que você pode fazer com o CP2B Maps
+                {t('features.heading')}
               </h2>
               <p className="text-lg text-cp2b-gray-600 max-w-2xl mx-auto">
-                Ferramentas avançadas para mapeamento, análise e visualização de
-                potencial de biogás baseadas em metodologia científica validada.
+                {t('features.subheading')}
               </p>
             </div>
           </FadeIn>
@@ -589,27 +564,15 @@ export default function HomePage() {
                 icon={<Map className="w-12 h-12" />}
                 iconColor="text-cp2b-green"
                 iconBg="bg-cp2b-lime-light"
-                title="Mapeamento Geoespacial"
-                description="Visualização interativa de dados de biomassa com precisão municipal e subcamadas temáticas"
+                title={t('features.geospatial.title')}
+                description={t('features.geospatial.description')}
                 features={[
-                  {
-                    text: 'Mapas coropléticos com escala de potencial de biogás',
-                    link: '/analysis#choropleth',
-                  },
-                  {
-                    text: 'Integração MapBiomas com resolução 10m×10m',
-                    link: '/about#mapbiomas',
-                  },
-                  {
-                    text: 'Análise de raio de coleta (10-50km) otimizada',
-                    link: '/methodology#logistica',
-                  },
-                  {
-                    text: 'Exportação GeoJSON e Shapefile para SIG',
-                    link: '/docs#export',
-                  },
+                  { text: t('features.geospatial.features.0'), link: '/analysis#choropleth' },
+                  { text: t('features.geospatial.features.1'), link: '/about#mapbiomas' },
+                  { text: t('features.geospatial.features.2'), link: '/methodology#logistica' },
+                  { text: t('features.geospatial.features.3'), link: '/docs#export' },
                 ]}
-                ctaText="Explorar Mapas"
+                ctaText={t('features.geospatial.cta')}
                 ctaLink="/map"
               />
             </FadeIn>
@@ -620,27 +583,15 @@ export default function HomePage() {
                 icon={<BarChart3 className="w-12 h-12" />}
                 iconColor="text-cp2b-orange"
                 iconBg="bg-orange-100"
-                title="Análise MCDA"
-                description="Análise multicritério para priorização de municípios e identificação de locais ótimos para plantas"
+                title={t('features.mcda.title')}
+                description={t('features.mcda.description')}
                 features={[
-                  {
-                    text: '8 critérios integrados: SAF, logística, infraestrutura',
-                    link: '/methodology#mcda',
-                  },
-                  {
-                    text: 'Pesos configuráveis por stakeholder',
-                    link: '/dashboard/mcda#weights',
-                  },
-                  {
-                    text: 'Ranking automatizado dos 645 municípios SP',
-                    link: '/analysis/ranking',
-                  },
-                  {
-                    text: 'Índice de Adequação Territorial (IAT) validado',
-                    link: '/methodology#iat',
-                  },
+                  { text: t('features.mcda.features.0'), link: '/methodology#mcda' },
+                  { text: t('features.mcda.features.1'), link: '/dashboard/mcda#weights' },
+                  { text: t('features.mcda.features.2'), link: '/analysis/ranking' },
+                  { text: t('features.mcda.features.3'), link: '/methodology#iat' },
                 ]}
-                ctaText="Ver Análises"
+                ctaText={t('features.mcda.cta')}
                 ctaLink="/analysis"
               />
             </FadeIn>
@@ -651,27 +602,15 @@ export default function HomePage() {
                 icon={<Users className="w-12 h-12" />}
                 iconColor="text-blue-600"
                 iconBg="bg-blue-100"
-                title="Plataforma Colaborativa"
-                description="Ambiente integrado para pesquisadores, gestores públicos e empresas do setor de biogás"
+                title={t('features.collaborative.title')}
+                description={t('features.collaborative.description')}
                 features={[
-                  {
-                    text: '3 níveis de acesso: Visitante, Pesquisador, Admin',
-                    link: '/about#access-levels',
-                  },
-                  {
-                    text: "Assistente AI 'Bagacinho' com RAG de 58 papers",
-                    link: '/chat',
-                  },
-                  {
-                    text: 'Base de dados atualizada SIDRA/IBGE 2018-2024',
-                    link: '/data#sources',
-                  },
-                  {
-                    text: 'Documentação completa da Metodologia SAF',
-                    link: '/methodology',
-                  },
+                  { text: t('features.collaborative.features.0'), link: '/about#access-levels' },
+                  { text: t('features.collaborative.features.1'), link: '/chat' },
+                  { text: t('features.collaborative.features.2'), link: '/data#sources' },
+                  { text: t('features.collaborative.features.3'), link: '/methodology' },
                 ]}
-                ctaText="Criar Conta"
+                ctaText={t('features.collaborative.cta')}
                 ctaLink="/register"
               />
             </FadeIn>
@@ -686,25 +625,24 @@ export default function HomePage() {
             <div className="max-w-3xl mx-auto bg-gradient-to-r from-cp2b-green to-cp2b-lime rounded-2xl p-8 text-center text-white shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.02] transform">
               <Lock className="w-12 h-12 mx-auto mb-4 opacity-90 animate-pulse" />
               <h3 className="text-2xl font-bold mb-3">
-                Pronto para explorar todos os recursos?
+                {t('cta_section.heading')}
               </h3>
               <p className="text-lg mb-6 text-white/90">
-                Crie uma conta gratuita para acessar análises completas, exportar
-                dados e colaborar com a comunidade CP2B.
+                {t('cta_section.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/register"
                   className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-cp2b-green bg-white hover:bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  Criar Conta Gratuita
+                  {t('cta_section.button_register')}
                   <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                 </Link>
                 <Link
                   href="/about"
                   className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-cp2b-dark-green/30 hover:bg-cp2b-dark-green/50 border-2 border-white rounded-xl transition-all duration-300 hover:scale-105"
                 >
-                  Saiba Mais
+                  {t('cta_section.button_learn_more')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </Link>
               </div>
@@ -718,8 +656,8 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <NewsletterSignup
-              title="Receba novidades sobre biogás"
-              description="Inscreva-se para receber atualizações sobre novos recursos, análises e insights sobre o setor de biogás em São Paulo."
+              title={t('newsletter.title')}
+              description={t('newsletter.description')}
             />
           </FadeIn>
         </div>
@@ -730,7 +668,7 @@ export default function HomePage() {
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
         videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
-        title="Demonstração da Plataforma CP2B Maps"
+        title={t('video_modal.title')}
       />
 
       {/* Footer */}
@@ -747,7 +685,7 @@ export default function HomePage() {
                 className="brightness-200"
               />
               <p className="text-xs text-gray-400 text-center md:text-left">
-                Processo FAPESP 2025/08745-2
+                {t('footer.fapesp_project')}
               </p>
             </div>
 
@@ -757,7 +695,7 @@ export default function HomePage() {
                 href="/about"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                Sobre
+                {t('footer.about')}
               </Link>
               <a
                 href="https://github.com/aikiesan/NewLook"
@@ -779,7 +717,7 @@ export default function HomePage() {
 
             {/* Copyright */}
             <div className="text-xs text-gray-500 text-center md:text-right">
-              © 2025 NIPE-UNICAMP
+              {t('footer.copyright')}
             </div>
           </div>
         </div>

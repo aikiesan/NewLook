@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Globe } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
+const LOCALE_STORAGE_KEY = 'cp2b-locale'
+
 const languages = [
   { code: 'pt-BR', name: 'Português', flag: '🇧🇷' },
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -31,8 +33,20 @@ export default function LanguageSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Persist locale preference on change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+    }
+  }, [locale])
+
   const handleLanguageChange = (newLocale: string) => {
     setIsOpen(false)
+
+    // Save preference to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
+    }
 
     // Remove current locale from pathname and add new one
     const pathnameWithoutLocale = pathname.replace(`/${locale}`, '') || '/'
