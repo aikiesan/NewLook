@@ -13,10 +13,11 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 const locales = ['en', 'pt-BR']
 
 export async function generateMetadata({
-  params: { locale }
+  params
 }: {
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }): Promise<Metadata> {
+  const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'landing' })
 
   return {
@@ -34,11 +35,14 @@ export async function generateMetadata({
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }) {
+  // Next.js 15+: params is a Promise
+  const { locale } = await params
+
   // Validate locale
   if (!locales.includes(locale)) {
     notFound()
