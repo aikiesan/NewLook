@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages, getTranslations } from 'next-intl/server'
+import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -18,7 +18,6 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'landing' })
 
   return {
     title: locale === 'pt-BR'
@@ -48,8 +47,8 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  // Get messages for the current locale
-  const messages = await getMessages()
+  // Get messages for the current locale (pass locale explicitly for reliability)
+  const messages = await getMessages({ locale })
 
   return (
     <html lang={locale} suppressHydrationWarning>
