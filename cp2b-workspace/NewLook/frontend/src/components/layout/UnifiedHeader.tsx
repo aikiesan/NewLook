@@ -3,13 +3,14 @@
 /**
  * CP2B Maps V3 - Unified Header Component
  * Single header component with public/authenticated variants
- * WCAG 2.1 AA compliant
+ * WCAG 2.1 AA compliant with i18n support
  */
 
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import {
   Map,
   Settings,
@@ -31,86 +32,34 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import { logger } from '@/lib/logger'
 
-interface NavItem {
+interface NavItemConfig {
   href: string
-  label: string
+  labelKey: string
   icon: React.ReactNode
-  description?: string
+  descriptionKey?: string
 }
 
 interface UnifiedHeaderProps {
   variant?: 'auto' | 'public' | 'authenticated'
 }
 
-// Navigation items for public users (landing page)
-const publicNavItems: NavItem[] = [
-  {
-    href: '/',
-    label: 'Início',
-    icon: <Home className="h-4 w-4" />,
-  },
-  {
-    href: '/map',
-    label: 'Mapa',
-    icon: <Map className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: <BarChart3 className="h-4 w-4" />,
-  },
-  {
-    href: 'https://nipe.unicamp.br/cp2b/',
-    label: 'Sobre',
-    icon: <Info className="h-4 w-4" />,
-  },
+// Navigation item configurations (label keys map to i18n)
+const publicNavConfig: NavItemConfig[] = [
+  { href: '/', labelKey: 'home', icon: <Home className="h-4 w-4" /> },
+  { href: '/map', labelKey: 'map', icon: <Map className="h-4 w-4" /> },
+  { href: '/dashboard', labelKey: 'dashboard', icon: <BarChart3 className="h-4 w-4" /> },
+  { href: 'https://nipe.unicamp.br/cp2b/', labelKey: 'about', icon: <Info className="h-4 w-4" /> },
 ]
 
-// Navigation items for authenticated users (dashboard navigation)
-const authenticatedNavItems: NavItem[] = [
-  {
-    href: '/dashboard',
-    label: 'Hub',
-    icon: <Home className="h-4 w-4" />,
-    description: 'Central de Recursos'
-  },
-  {
-    href: '/map',
-    label: 'Mapa',
-    icon: <Map className="h-4 w-4" />,
-    description: 'Mapa Interativo SP'
-  },
-  {
-    href: '/dashboard/proximity',
-    label: 'Proximidade',
-    icon: <Target className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard/simulation',
-    label: 'Simulação I-O',
-    icon: <TrendingUp className="h-4 w-4" />,
-    description: 'Modelo Insumo-Produto'
-  },
-  {
-    href: '/dashboard/technology-routes',
-    label: 'Rotas Tech',
-    icon: <Workflow className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard/scientific-database',
-    label: 'Base Científica',
-    icon: <BookOpen className="h-4 w-4" />,
-  },
-  {
-    href: '/dashboard/advanced-analysis',
-    label: 'Avançado',
-    icon: <BarChart3 className="h-4 w-4" />,
-  },
-  {
-    href: 'https://nipe.unicamp.br/cp2b/',
-    label: 'Sobre',
-    icon: <Info className="h-4 w-4" />,
-  },
+const authenticatedNavConfig: NavItemConfig[] = [
+  { href: '/dashboard', labelKey: 'hub', icon: <Home className="h-4 w-4" />, descriptionKey: 'hub' },
+  { href: '/map', labelKey: 'map', icon: <Map className="h-4 w-4" />, descriptionKey: 'map' },
+  { href: '/dashboard/proximity', labelKey: 'proximity', icon: <Target className="h-4 w-4" /> },
+  { href: '/dashboard/simulation', labelKey: 'simulation', icon: <TrendingUp className="h-4 w-4" />, descriptionKey: 'simulation' },
+  { href: '/dashboard/technology-routes', labelKey: 'technology_routes', icon: <Workflow className="h-4 w-4" /> },
+  { href: '/dashboard/scientific-database', labelKey: 'scientific_database', icon: <BookOpen className="h-4 w-4" /> },
+  { href: '/dashboard/advanced-analysis', labelKey: 'advanced', icon: <BarChart3 className="h-4 w-4" /> },
+  { href: 'https://nipe.unicamp.br/cp2b/', labelKey: 'about', icon: <Info className="h-4 w-4" /> },
 ]
 
 export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) {
@@ -119,13 +68,16 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
+  // i18n translations
+  const t = useTranslations('common')
+
   // Determine variant based on auth state if auto
   const effectiveVariant = variant === 'auto'
     ? (isAuthenticated ? 'authenticated' : 'public')
     : variant
 
   const isPublic = effectiveVariant === 'public'
-  const navItems = isPublic ? publicNavItems : authenticatedNavItems
+  const navConfig = isPublic ? publicNavConfig : authenticatedNavConfig
 
   const handleLogout = async () => {
     try {
@@ -213,15 +165,16 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   ? 'bg-cp2b-lime-light text-cp2b-dark-green'
                   : 'bg-white/20 text-white'
               }`}>
-                Beta
+                {t('badge.beta')}
               </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => {
+            {navConfig.map((item) => {
               const isExternal = item.href.startsWith('http')
+              const label = t(`nav.${item.labelKey}`)
               const linkClass = `
                 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
                 transition-all duration-200 focus:outline-none focus:ring-2
@@ -244,7 +197,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   className={linkClass}
                 >
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span>{label}</span>
                 </a>
               ) : (
                 <Link
@@ -254,7 +207,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   aria-current={isActive(item.href) ? 'page' : undefined}
                 >
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span>{label}</span>
                 </Link>
               )
             })}
@@ -305,13 +258,13 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   >
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.full_name || 'Usuário'}
+                        {user.full_name || t('auth.user')}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
                         {user.email}
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        {user.role === 'admin' ? 'Administrador' : 'Autenticado'}
+                        {user.role === 'admin' ? t('auth.admin') : t('auth.authenticated')}
                       </p>
                     </div>
                     <Link
@@ -321,7 +274,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <Settings className="h-4 w-4" aria-hidden="true" />
-                      Configurações
+                      {t('auth.settings')}
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -329,7 +282,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                       role="menuitem"
                     >
                       <LogOut className="h-4 w-4" aria-hidden="true" />
-                      Sair
+                      {t('auth.logout')}
                     </button>
                   </div>
                 )}
@@ -347,7 +300,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                     }
                   `}
                 >
-                  Entrar
+                  {t('auth.login')}
                 </Link>
               </div>
             )}
@@ -367,7 +320,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
               `}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-label={mobileMenuOpen ? t('menu.close') : t('menu.open')}
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" aria-hidden="true" />
@@ -385,8 +338,10 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
             id="mobile-menu"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => {
+              {navConfig.map((item) => {
                 const isExternal = item.href.startsWith('http')
+                const label = t(`nav.${item.labelKey}`)
+                const description = item.descriptionKey ? t(`nav_descriptions.${item.descriptionKey}`) : undefined
                 const linkClass = `
                   flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium
                   ${isActive(item.href)
@@ -406,10 +361,10 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   >
                     {item.icon}
                     <div>
-                      <span className="block">{item.label}</span>
-                      {item.description && (
+                      <span className="block">{label}</span>
+                      {description && (
                         <span className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
-                          {item.description}
+                          {description}
                         </span>
                       )}
                     </div>
@@ -424,10 +379,10 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   >
                     {item.icon}
                     <div>
-                      <span className="block">{item.label}</span>
-                      {item.description && (
+                      <span className="block">{label}</span>
+                      {description && (
                         <span className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
-                          {item.description}
+                          {description}
                         </span>
                       )}
                     </div>
@@ -453,7 +408,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   }`} />
                   <div>
                     <p className={`text-sm font-medium ${isPublic ? 'text-gray-900' : 'text-white'}`}>
-                      {user.full_name || 'Usuário'}
+                      {user.full_name || t('auth.user')}
                     </p>
                     <p className={`text-xs ${isPublic ? 'text-gray-500' : 'text-green-200'}`}>
                       {user.email}
@@ -465,7 +420,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm text-white bg-red-500/80 hover:bg-red-500 rounded-lg"
                 >
                   <LogOut className="h-4 w-4" aria-hidden="true" />
-                  Sair da conta
+                  {t('auth.logout_account')}
                 </button>
               </div>
             ) : (
@@ -481,7 +436,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
                   `}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Entrar
+                  {t('auth.login')}
                 </Link>
               </div>
             )}

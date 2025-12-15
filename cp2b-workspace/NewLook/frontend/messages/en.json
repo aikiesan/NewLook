@@ -1,4 +1,39 @@
 {
+  "common": {
+    "nav": {
+      "home": "Home",
+      "map": "Map",
+      "dashboard": "Dashboard",
+      "about": "About",
+      "hub": "Hub",
+      "proximity": "Proximity",
+      "simulation": "I-O Simulation",
+      "technology_routes": "Tech Routes",
+      "scientific_database": "Scientific Database",
+      "advanced": "Advanced"
+    },
+    "nav_descriptions": {
+      "hub": "Resource Center",
+      "map": "Interactive SP Map",
+      "simulation": "Input-Output Model"
+    },
+    "auth": {
+      "login": "Login",
+      "logout": "Logout",
+      "logout_account": "Sign out",
+      "settings": "Settings",
+      "user": "User",
+      "admin": "Administrator",
+      "authenticated": "Authenticated"
+    },
+    "menu": {
+      "open": "Open menu",
+      "close": "Close menu"
+    },
+    "badge": {
+      "beta": "Beta"
+    }
+  },
   "landing": {
     "skip_to_content": "Skip to main content",
     "hero": {
