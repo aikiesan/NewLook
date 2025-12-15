@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Edge-Runtime Safe Proxy with i18n
+ * CP2B Maps V3 - Edge-Runtime Safe Middleware with i18n
  *
  * Combines:
  * 1. Internationalization (i18n) with locale detection and routing
@@ -9,7 +9,6 @@
  * Protected routes: /dashboard/*
  *
  * NOTE: When NEXT_PUBLIC_DISABLE_AUTH=true, all routes are public
- * NOTE: Renamed from middleware.ts to proxy.ts for Next.js 16 compatibility
  */
 
 import createIntlMiddleware from 'next-intl/middleware';
@@ -27,10 +26,10 @@ const intlMiddleware = createIntlMiddleware({
   localePrefix: 'always'
 });
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip proxy for static files
+  // Skip middleware for static files
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
