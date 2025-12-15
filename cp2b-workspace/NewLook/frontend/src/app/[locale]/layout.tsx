@@ -1,7 +1,8 @@
-import type { Metadata } from 'next'
-import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import { notFound } from 'next/navigation'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ComparisonProvider } from '@/contexts/ComparisonContext'
@@ -10,82 +11,84 @@ import { QueryProvider } from '@/contexts/QueryProvider'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-const locales = ['en', 'pt-BR']
+const inter = Inter({ subsets: ['latin'] });
 
-export async function generateMetadata({
-  params
-}: {
-  params: Promise<{ locale: string }>
-}): Promise<Metadata> {
-  const { locale } = await params
+// Supported locales
+const locales = ['en', 'pt-BR'];
 
-  return {
-    title: locale === 'pt-BR'
-      ? 'CP2B Maps V3 - Plataforma de Análise de Potencial de Biogás'
-      : 'CP2B Maps V3 - Biogas Potential Analysis Platform',
-    description: locale === 'pt-BR'
-      ? 'Plataforma moderna para análise de potencial de biogás no Estado de São Paulo'
-      : 'Modern platform for biogas potential analysis in São Paulo State',
-    keywords: locale === 'pt-BR'
-      ? ['biogás', 'energia renovável', 'São Paulo', 'sustentabilidade', 'análise espacial']
-      : ['biogas', 'renewable energy', 'São Paulo', 'sustainability', 'spatial analysis'],
-  }
+export const metadata: Metadata = {
+  title: 'NewLook Delta',
+  description: 'Biogas and renewable energy spatial analysis platform',
+};
+
+// Generate static paths for all locales
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
-  children: React.ReactNode
-  params: Promise<{ locale: string }>
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
-  // Next.js 15+: params is a Promise
-  const { locale } = await params
-
-  // Validate locale
-  if (!locales.includes(locale)) {
-    notFound()
+  try {
+    // AWAIT the params (Next.js 16 requirement)
+    const { locale } = await params;
+    
+    // Validate locale
+    if (!locales.includes(locale)) {
+      notFound();
+    }
+    
+    // Load messages for the locale
+    const messages = await getMessages({ locale });
+    
+    return (
+      <html lang={locale} className={inter.className} suppressHydrationWarning>
+        <head>
+          {/* Prevent flash of unstyled content */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                try {
+                  const theme = localStorage.getItem('cp2b-theme') || 'system';
+                  const resolved = theme === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : theme;
+                  document.documentElement.classList.add(resolved);
+                } catch (e) {}
+              `,
+            }}
+          />
+        </head>
+        <body className="font-sans antialiased">
+          <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
+            <NextIntlClientProvider
+              locale={locale}
+              messages={messages}
+              timeZone="America/Sao_Paulo"
+            >
+              <QueryProvider>
+                <ThemeProvider>
+                  <AuthProvider>
+                    <ComparisonProvider>
+                      <ErrorBoundary>
+                        {children}
+                        <ComparisonBar />
+                      </ErrorBoundary>
+                    </ComparisonProvider>
+                  </AuthProvider>
+                </ThemeProvider>
+              </QueryProvider>
+            </NextIntlClientProvider>
+          </div>
+        </body>
+      </html>
+    );
+  } catch (error) {
+    console.error('Layout error:', error);
+    notFound();
   }
-
-  // Get messages for the current locale (pass locale explicitly for reliability)
-  const messages = await getMessages({ locale })
-
-  return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        {/* Prevent flash of unstyled content */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                const theme = localStorage.getItem('cp2b-theme') || 'system';
-                const resolved = theme === 'system'
-                  ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-                  : theme;
-                document.documentElement.classList.add(resolved);
-              } catch (e) {}
-            `,
-          }}
-        />
-      </head>
-      <body className="font-sans antialiased">
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <QueryProvider>
-              <ThemeProvider>
-                <AuthProvider>
-                  <ComparisonProvider>
-                    <ErrorBoundary>
-                      {children}
-                      <ComparisonBar />
-                    </ErrorBoundary>
-                  </ComparisonProvider>
-                </AuthProvider>
-              </ThemeProvider>
-            </QueryProvider>
-          </NextIntlClientProvider>
-        </div>
-      </body>
-    </html>
-  )
 }

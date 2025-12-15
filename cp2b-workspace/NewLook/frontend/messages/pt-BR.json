@@ -146,5 +146,34 @@
       "title": "Demonstração da Plataforma CP2B Maps",
       "aria_label": "Assistir demonstração em vídeo da plataforma"
     }
+  },
+  "Home": {
+    "title": "Bem-vindo",
+    "description": "Sua descrição aqui"
+  },
+  "About": {
+    "title": "Sobre Nós",
+    "description": "Saiba mais sobre nossa plataforma"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bem-vindo de volta"
+  },
+  "Login": {
+    "title": "Entrar",
+    "email": "E-mail",
+    "password": "Senha"
+  },
+  "Map": {
+    "title": "Mapa Interativo",
+    "legend": "Legenda do Mapa"
+  },
+  "Register": {
+    "title": "Criar Conta",
+    "name": "Nome Completo"
+  },
+  "Settings": {
+    "title": "Configurações",
+    "language": "Idioma"
   }
 }
