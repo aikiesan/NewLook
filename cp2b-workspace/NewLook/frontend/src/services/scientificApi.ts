@@ -739,29 +739,45 @@ const MOCK_REFERENCES: ScientificReference[] = [
 export async function getKineticsData(
   filters?: KineticsFilter
 ): Promise<KineticsResponse> {
-  // TODO: Replace with real API call
-  // const response = await fetch(`${API_BASE_URL}/api/v1/scientific/kinetics`)
+  try {
+    const queryParams = new URLSearchParams();
+    if (filters?.sector) {
+      queryParams.append('sector_codigo', filters.sector);
+    }
+    if (filters?.classification) {
+      queryParams.append('classification', filters.classification);
+    }
 
-  let filteredData = [...MOCK_KINETICS_DATA]
+    const url = `${API_BASE_URL}/api/v1/scientific/kinetics?${queryParams.toString()}`;
+    const response = await authenticatedFetch(url);
 
-  if (filters?.sector) {
-    filteredData = filteredData.filter(d => d.sector === filters.sector)
-  }
+    if (!response.ok) {
+      throw new Error('Failed to fetch kinetics data');
+    }
 
-  if (filters?.classification) {
-    filteredData = filteredData.filter(d => d.classification === filters.classification)
-  }
+    const json = await response.json();
+    let data = json.data || [];
 
-  if (filters?.residues && filters.residues.length > 0) {
-    filteredData = filteredData.filter(d =>
-      filters.residues!.includes(d.residue_name)
-    )
-  }
+    // Client-side filtering for properties not handled by backend (like specific residue names list)
+    if (filters?.residues && filters.residues.length > 0) {
+      data = data.filter((d: any) =>
+        filters.residues!.includes(d.residue_name)
+      );
+    }
 
-  return {
-    data: filteredData,
-    total: filteredData.length,
-    filters_applied: filters || {}
+    return {
+      data,
+      total: json.count || data.length,
+      filters_applied: filters || {}
+    };
+  } catch (error) {
+    logger.error('Error fetching kinetics data:', error);
+    // Fallback to empty or mock if critical, but preferably let it fail or return empty
+    return {
+      data: [],
+      total: 0,
+      filters_applied: filters || {}
+    };
   }
 }
 
