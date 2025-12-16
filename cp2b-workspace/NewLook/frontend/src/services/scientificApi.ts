@@ -831,6 +831,7 @@ export async function getReferences(
       title: ref.title || ref.citation || 'No title',
       year: ref.year || new Date().getFullYear(),
       doi: ref.doi,
+      url: ref.url,  // Add URL field from backend
       peer_reviewed: ref.is_primary || false,
       sector: ref.sector_codigo || 'unknown',
       residues_studied: ref.residuo_nome ? [ref.residuo_nome] : [],

@@ -46,35 +46,31 @@ const REFERENCES: ReferenceCategory[] = [
       },
       {
         residue: 'Bagaço',
-        authors: 'Silva et al.',
-        year: 2021,
-        doi: '10.1016/j.biortech.2020.124373',
-        journal: 'Bioresource Technology',
-        description: 'Biogas production from sugarcane bagasse'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '39 referências científicas validadas para bagaço de cana'
       },
       {
         residue: 'Vinhaça',
-        authors: 'Moraes et al.',
-        year: 2015,
-        doi: '10.1016/j.apenergy.2015.04.005',
-        journal: 'Applied Energy',
-        description: 'Anaerobic digestion of vinasse for biogas production'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '27 referências científicas validadas para vinhaça de cana'
       },
       {
         residue: 'Torta de Filtro',
-        authors: 'Santos et al.',
-        year: 2020,
-        doi: '10.1016/j.renene.2019.09.070',
-        journal: 'Renewable Energy',
-        description: 'Filter cake as substrate for biogas generation'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '20 referências científicas validadas para torta de filtro'
       },
       {
         residue: 'Palha',
-        authors: 'Oliveira et al.',
-        year: 2018,
-        doi: '10.1016/j.biombioe.2017.11.024',
-        journal: 'Biomass and Bioenergy',
-        description: 'Straw potential for biogas production'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '31 referências científicas validadas para palha de cana'
       },
       {
         residue: 'Metodologia Setor Sucroenergético',
@@ -92,27 +88,24 @@ const REFERENCES: ReferenceCategory[] = [
     references: [
       {
         residue: 'Dejeto Bovino',
-        authors: 'Angelidaki & Sanders',
-        year: 2004,
-        doi: '10.1007/s11157-004-2502-3',
-        journal: 'Reviews in Environmental Science and Biotechnology',
-        description: 'Assessment of the anaerobic biodegradability of cattle manure'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '4 referências científicas validadas para dejetos bovinos'
       },
       {
         residue: 'Dejeto Suíno',
-        authors: 'Kunz et al.',
-        year: 2009,
-        doi: '10.1590/S1415-43662009000400001',
-        journal: 'Revista Brasileira de Engenharia Agrícola e Ambiental',
-        description: 'Swine manure biogas potential in Brazil'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '22+ referências científicas validadas para dejetos suínos'
       },
       {
         residue: 'Cama de Frango',
-        authors: 'Costa et al.',
-        year: 2017,
-        doi: '10.1016/j.renene.2016.12.001',
-        journal: 'Renewable Energy',
-        description: 'Poultry litter biogas production optimization'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '3 referências científicas validadas para cama de aviário'
       }
     ]
   },
@@ -124,11 +117,10 @@ const REFERENCES: ReferenceCategory[] = [
     references: [
       {
         residue: 'Bagaço de Laranja',
-        authors: 'Forgács et al.',
-        year: 2012,
-        doi: '10.1007/s00449-011-0581-3',
-        journal: 'Bioprocess and Biosystems Engineering',
-        description: 'Biogas production from citrus wastes and chicken feather'
+        authors: 'Ver base de dados científica',
+        year: 2024,
+        url: '/pt-BR/dashboard/scientific-database',
+        description: '3-4 referências científicas validadas para cascas de citros'
       }
     ]
   },
