@@ -589,159 +589,74 @@ export default function ScientificDatabasePage() {
 
         {/* Tab Content */}
         <div className="space-y-6">
-          {/* Residuos Database Tab - Real data from Panorama_CP2B */}
+          {/* Residuos Database Tab - Simple list by sector */}
           {viewMode === 'residuosDb' && (
-            <>
-              {/* Sector Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {sectorSummary.map((sector: any) => (
-                  <div
-                    key={sector.codigo}
-                    className="bg-white rounded-xl shadow-md p-5 border border-gray-100 transition-all"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-2xl">{sector.emoji}</span>
-                      <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                        {sector.num_residuos} resíduos
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1">{sector.nome}</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
-                      <div>Referências: {sector.total_references || 0}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Database Information Overview */}
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                  <Info className="h-5 w-5 text-green-600" />
-                  Sobre a Base de Dados de Residuos
-                </h3>
-
-                <div className="space-y-6">
-                  {/* Overview */}
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      A Base de Dados de Residuos do CP2B Maps V3 contém informações detalhadas sobre{' '}
-                      <span className="font-semibold text-green-700">{realResiduos.length} tipos de residuos</span>{' '}
-                      orgânicos disponíveis no estado de São Paulo para produção de biogás através da digestão anaeróbica.
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Resíduos Caracterizados
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {realResiduos.length} resíduos em {sectorSummary.length} setores econômicos
                     </p>
                   </div>
-
-                  {/* Key Metrics Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                      <div className="text-3xl font-bold text-green-900 mb-1">
-                        {realResiduos.length}
-                      </div>
-                      <div className="text-sm text-green-700 font-medium">
-                        Resíduos Caracterizados
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                      <div className="text-3xl font-bold text-blue-900 mb-1">
-                        {sectorSummary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)}
-                      </div>
-                      <div className="text-sm text-blue-700 font-medium">
-                        Referências Científicas
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
-                      <div className="text-3xl font-bold text-amber-900 mb-1">
-                        {sectorSummary.length}
-                      </div>
-                      <div className="text-sm text-amber-700 font-medium">
-                        Setores Econômicos
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sector Distribution */}
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <FlaskConical className="h-4 w-4 text-green-600" />
-                      Distribuição por Setor Econômico
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {sectorSummary.map((sector: any) => {
-                        const sectorCount = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo).length
-                        return (
-                          <div key={sector.codigo} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <span className="text-4xl">{sector.emoji}</span>
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900">{sector.nome}</div>
-                              <div className="text-sm text-gray-600 mt-1">
-                                {sectorCount} resíduos • BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Navigation Helper */}
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                      <BookOpen className="h-4 w-4" />
-                      Como explorar os dados
-                    </h4>
-                    <ul className="text-sm text-blue-800 space-y-1.5">
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Use a aba <strong>Caracterização Química</strong> para ver detalhes de cada resíduo</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Consulte a aba <strong>Referências Científicas</strong> para acessar a literatura</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Use a aba <strong>Comparação Interativa</strong> para comparar até 5 resíduos</span>
-                      </li>
-                    </ul>
-                  </div>
                 </div>
               </div>
 
-              {/* Conversion Factors */}
-              {conversionFactors.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Fatores de Conversão da Literatura
-                  </h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50">
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Categoria</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Substrato</th>
-                          <th className="text-right py-3 px-4 font-semibold text-gray-700">Fator</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Fonte Literatura</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {conversionFactors.map((factor: any) => (
-                          <tr key={factor.id} className="hover:bg-gray-50">
-                            <td className="py-3 px-4 text-gray-600">{factor.category}</td>
-                            <td className="py-3 px-4 font-medium text-gray-900">{factor.subcategory}</td>
-                            <td className="py-3 px-4 text-right font-mono">
-                              {factor.factor_value} {factor.unit}
-                            </td>
-                            <td className="py-3 px-4 text-xs text-gray-500 max-w-xs truncate">
-                              {factor.literature_reference || 'N/A'}
-                            </td>
-                          </tr>
+              {/* Residue List by Sector */}
+              <div className="divide-y divide-gray-100">
+                {sectorSummary.map((sector: any) => {
+                  const sectorResidues = realResiduos.filter((r: any) => r.sector_codigo === sector.codigo)
+                  if (sectorResidues.length === 0) return null
+
+                  return (
+                    <div key={sector.codigo} className="p-6">
+                      {/* Sector Header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-2xl">{sector.emoji}</span>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{sector.nome}</h4>
+                          <p className="text-xs text-gray-500">{sectorResidues.length} resíduos</p>
+                        </div>
+                      </div>
+
+                      {/* Residue List */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {sectorResidues.map((residue: any) => (
+                          <button
+                            key={residue.id}
+                            onClick={() => {
+                              setViewMode('chemical')
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }}
+                            className="text-left p-3 bg-gray-50 hover:bg-green-50 rounded-lg border border-gray-200 hover:border-green-300 transition-all group"
+                          >
+                            <div className="font-medium text-gray-900 group-hover:text-green-700 text-sm leading-tight">
+                              {residue.nome}
+                            </div>
+                            {residue.bmp_medio && (
+                              <div className="text-xs text-gray-500 mt-1 font-mono">
+                                BMP: {residue.bmp_medio.toFixed(0)} L/kg SV
+                              </div>
+                            )}
+                          </button>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <p className="text-xs text-gray-500 text-center">
+                  Clique em um resíduo para ver a caracterização química completa
+                </p>
+              </div>
+            </div>
           )}
 
           {/* Kinetics Tab */}
@@ -1123,13 +1038,13 @@ export default function ScientificDatabasePage() {
 
                   {/* Residue Filter */}
                   <div className="mb-4">
-                    <label className="text-xs text-gray-600 block mb-1.5">Filtrar por Residuo</label>
+                    <label className="text-xs font-medium text-gray-600 block mb-1.5">Filtrar por Resíduo</label>
                     <select
                       value={selectedResidue}
                       onChange={(e) => setSelectedResidue(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
                     >
-                      <option value="">Todos os residuos</option>
+                      <option value="">Todos os resíduos</option>
                       {realResidueNames.map(residue => (
                         <option key={residue} value={residue}>
                           {residue}
@@ -1140,7 +1055,7 @@ export default function ScientificDatabasePage() {
 
                   {/* Sector Filter */}
                   <div className="mb-4">
-                    <label className="text-xs text-gray-600 block mb-1.5">Setor</label>
+                    <label className="text-xs font-medium text-gray-600 block mb-1.5">Setor Econômico</label>
                     <div className="space-y-2">
                       {([
                         { code: 'AG_AGRICULTURA' as SectorCode, label: '🌾 Agrícola', color: 'green' },
