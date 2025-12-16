@@ -952,21 +952,40 @@ export default function ScientificDatabasePage() {
                           label="BMP"
                           value={residue.bmp_medio?.toFixed(1) || 'N/A'}
                           unit="L/kg SV"
+                          min={residue.bmp_min}
+                          max={residue.bmp_max}
+                          nStudies={residue.bmp_n_studies || residue.reference_count}
                         />
 
-                        {/* Composition */}
+                        {/* Composition with ranges */}
                         <div className="grid grid-cols-3 gap-3 text-xs">
-                          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                            <div className="font-bold text-blue-900 text-base">{residue.ts_medio?.toFixed(1) || 'N/A'}%</div>
-                            <div className="text-blue-700 font-semibold mt-1">ST</div>
+                          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg border border-blue-200 dark:border-blue-700">
+                            <div className="font-bold text-blue-900 dark:text-blue-200 text-base">
+                              {residue.ts_medio?.toFixed(1) || 'N/A'}%
+                            </div>
+                            {(residue.ts_min || residue.ts_max) && (
+                              <div className="text-blue-600 dark:text-blue-400 text-[10px] mt-0.5">
+                                ({residue.ts_min?.toFixed(0)}-{residue.ts_max?.toFixed(0)})
+                              </div>
+                            )}
+                            <div className="text-blue-700 dark:text-blue-300 font-semibold mt-1">ST</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-                            <div className="font-bold text-green-900 text-base">{residue.vs_medio?.toFixed(1) || 'N/A'}%</div>
-                            <div className="text-green-700 font-semibold mt-1">SV</div>
+                          <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg border border-green-200 dark:border-green-700">
+                            <div className="font-bold text-green-900 dark:text-green-200 text-base">
+                              {residue.vs_medio?.toFixed(1) || 'N/A'}%
+                            </div>
+                            {(residue.vs_min || residue.vs_max) && (
+                              <div className="text-green-600 dark:text-green-400 text-[10px] mt-0.5">
+                                ({residue.vs_min?.toFixed(0)}-{residue.vs_max?.toFixed(0)})
+                              </div>
+                            )}
+                            <div className="text-green-700 dark:text-green-300 font-semibold mt-1">SV</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
-                            <div className="font-bold text-base" style={{ color: cnStatus.color }}>{residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1</div>
-                            <div className="text-amber-700 font-semibold mt-1">C:N</div>
+                          <div className="text-center p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-lg border border-amber-200 dark:border-amber-700">
+                            <div className="font-bold text-base" style={{ color: cnStatus.color }}>
+                              {residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1
+                            </div>
+                            <div className="text-amber-700 dark:text-amber-300 font-semibold mt-1">C:N</div>
                           </div>
                         </div>
 
