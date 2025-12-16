@@ -211,11 +211,11 @@ async def get_residuos(
                     s.nome as sector_nome,
                     s.emoji as sector_emoji,
                     ss.nome as subsector_nome,
-                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count,
-                    (SELECT CONCAT(authors, ' (', year, ')')
-                     FROM residuo_references rr
-                     WHERE rr.residuo_id = r.id
-                     ORDER BY is_primary DESC, year DESC
+                    (SELECT COUNT(*) FROM scientific_references sr WHERE sr.primary_residue = r.codigo) as reference_count,
+                    (SELECT CONCAT(authors, ' (', COALESCE(year, publication_year), ')')
+                     FROM scientific_references sr
+                     WHERE sr.primary_residue = r.codigo
+                     ORDER BY has_validated_params DESC, COALESCE(year, publication_year) DESC
                      LIMIT 1) as main_reference
                 FROM residuos r
                 JOIN sectors s ON r.sector_codigo = s.codigo
@@ -325,26 +325,27 @@ async def get_residuo(
                     residuo[key] = float(value)
 
             # Get references for this residue
+            # FIXED: Query scientific_references using codigo
             cursor.execute("""
                 SELECT
-                    id,
-                    parameter_type,
-                    citation,
-                    authors,
-                    title,
-                    journal,
-                    year,
-                    volume,
-                    pages,
-                    doi,
-                    url,
-                    reported_value,
-                    reported_unit,
-                    is_primary,
-                    validation_status
-                FROM residuo_references
-                WHERE residuo_id = %s
-                ORDER BY parameter_type, year DESC
+                    sr.id,
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                WHERE sr.primary_residue = (SELECT codigo FROM residuos WHERE id = %s)
+                ORDER BY COALESCE(sr.year, sr.publication_year) DESC
             """, (residuo_id,))
 
             ref_rows = cursor.fetchall()
@@ -399,31 +400,34 @@ async def get_all_references(
             cursor = conn.cursor()
 
             # Get all references with residue info
+            # FIXED: Query scientific_references (not residuo_references)
+            # Join on primary_residue = codigo (not residuo_id = id)
             cursor.execute("""
                 SELECT
-                    rr.id,
-                    rr.residuo_id,
+                    sr.id,
+                    sr.primary_residue as residuo_codigo,
+                    r.id as residuo_id,
                     r.nome as residuo_nome,
                     r.sector_codigo,
                     s.nome as sector_nome,
-                    rr.parameter_type,
-                    rr.citation,
-                    rr.authors,
-                    rr.title,
-                    rr.journal,
-                    rr.year,
-                    rr.volume,
-                    rr.pages,
-                    rr.doi,
-                    rr.url,
-                    rr.reported_value,
-                    rr.reported_unit,
-                    rr.is_primary,
-                    rr.validation_status
-                FROM residuo_references rr
-                JOIN residuos r ON rr.residuo_id = r.id
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                JOIN residuos r ON sr.primary_residue = r.codigo
                 JOIN sectors s ON r.sector_codigo = s.codigo
-                ORDER BY rr.year DESC, rr.authors
+                ORDER BY COALESCE(sr.year, sr.publication_year) DESC, sr.authors
                 LIMIT %s OFFSET %s
             """, (limit, offset))
 
@@ -444,8 +448,12 @@ async def get_all_references(
                     ref['reported_value'] = None
                 references.append(ref)
 
-            # Get total count
-            cursor.execute("SELECT COUNT(*) FROM residuo_references")
+            # Get total count from scientific_references
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM scientific_references sr
+                JOIN residuos r ON sr.primary_residue = r.codigo
+            """)
             count_result = cursor.fetchone()
             total = count_result['count'] if isinstance(count_result, dict) else count_result[0]
 
@@ -489,33 +497,36 @@ async def get_residuo_references(
                 raise HTTPException(status_code=404, detail="Residue not found")
 
             # Get references
+            # FIXED: Query scientific_references using codigo
             query = """
                 SELECT
-                    id,
-                    parameter_type,
-                    citation,
-                    authors,
-                    title,
-                    journal,
-                    year,
-                    volume,
-                    pages,
-                    doi,
-                    url,
-                    reported_value,
-                    reported_unit,
-                    is_primary,
-                    validation_status
-                FROM residuo_references
-                WHERE residuo_id = %s
+                    sr.id,
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                WHERE sr.primary_residue = (SELECT codigo FROM residuos WHERE id = %s)
             """
             params = [residuo_id]
 
-            if parameter_type:
-                query += " AND parameter_type = %s"
-                params.append(parameter_type)
+            # Note: scientific_references doesn't have parameter_type field
+            # This filter is disabled for now
+            # if parameter_type:
+            #     query += " AND parameter_type = %s"
+            #     params.append(parameter_type)
 
-            query += " ORDER BY parameter_type, year DESC"
+            query += " ORDER BY COALESCE(sr.year, sr.publication_year) DESC"
 
             cursor.execute(query, params)
 
@@ -663,8 +674,8 @@ async def get_summary_by_sector():
                     ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
                     ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content,
                     COALESCE(
-                        (SELECT COUNT(*) FROM residuo_references rr
-                         JOIN residuos r2 ON rr.residuo_id = r2.id
+                        (SELECT COUNT(*) FROM scientific_references sr
+                         JOIN residuos r2 ON sr.primary_residue = r2.codigo
                          WHERE r2.sector_codigo = s.codigo),
                         0
                     ) as total_references
@@ -750,7 +761,7 @@ async def compare_residuos(
                     r.fator_realista,
                     s.nome as sector_nome,
                     s.emoji as sector_emoji,
-                    (SELECT COUNT(*) FROM residuo_references rr WHERE rr.residuo_id = r.id) as reference_count
+                    (SELECT COUNT(*) FROM scientific_references sr WHERE sr.primary_residue = r.codigo) as reference_count
                 FROM residuos r
                 JOIN sectors s ON r.sector_codigo = s.codigo
                 WHERE r.id IN ({placeholders})
