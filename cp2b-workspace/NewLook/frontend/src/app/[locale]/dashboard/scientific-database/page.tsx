@@ -647,6 +647,7 @@ export default function ScientificDatabasePage() {
                             className="text-left p-3 bg-gray-50 hover:bg-green-50 rounded-lg border border-gray-200 hover:border-green-300 transition-all group"
                           >
                             <div className="font-medium text-gray-900 group-hover:text-green-700 text-sm leading-tight">
+                              {residue.icon && <span className="mr-1.5">{residue.icon}</span>}
                               {residue.nome}
                             </div>
                             {residue.bmp_medio && (
@@ -1248,15 +1249,15 @@ export default function ScientificDatabasePage() {
                             )}
                           </button>
 
-                          {ref.doi && (
+                          {ref.url && (
                             <a
-                              href={`https://doi.org/${ref.doi}`}
+                              href={ref.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
                             >
                               <ExternalLink className="h-4 w-4" />
-                              Acessar DOI
+                              Acessar o Artigo
                             </a>
                           )}
                         </div>
