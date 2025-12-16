@@ -331,9 +331,21 @@ export default function ScientificDatabasePage() {
   // Calculate co-digestion
   // Generate kinetic curve data for selected residues
   const kineticCurveData = useMemo(() => {
+    // Debug: log available kinetics data
+    if (kineticsData.length === 0) {
+      console.warn('⚠️ No kinetics data available')
+      return []
+    }
+
     const selected = selectedResidues.length > 0
       ? kineticsData.filter(k => selectedResidues.includes(k.residue_name))
       : kineticsData.slice(0, 4)  // Default to first 4
+
+    // Debug: check if filtering worked
+    if (selectedResidues.length > 0 && selected.length === 0) {
+      console.warn('⚠️ No kinetics data matched selected residues:', selectedResidues)
+      console.log('Available kinetics residue names:', kineticsData.map(k => k.residue_name))
+    }
 
     if (selected.length === 0) return []
 
@@ -343,8 +355,19 @@ export default function ScientificDatabasePage() {
     return timePoints.map(t => {
       const point: any = { time: t }
       selected.forEach(kinetic => {
-        const curve = generateKineticCurve(kinetic, 30)
-        point[kinetic.residue_name] = curve[t]?.yield || 0
+        try {
+          const curve = generateKineticCurve(kinetic, 30)
+          const yieldValue = curve[t]?.yield || 0
+          point[kinetic.residue_name] = yieldValue
+
+          // Debug: log zero yields
+          if (t === 0 || t === 30) {
+            console.log(`📊 ${kinetic.residue_name} at t=${t}: ${yieldValue.toFixed(2)}`)
+          }
+        } catch (error) {
+          console.error(`Error generating curve for ${kinetic.residue_name}:`, error)
+          point[kinetic.residue_name] = 0
+        }
       })
       return point
     })
@@ -705,34 +728,52 @@ export default function ScientificDatabasePage() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Curvas de Produção de Metano
                 </h3>
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={kineticCurveData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="time"
-                        label={{ value: 'Tempo (dias)', position: 'insideBottom', offset: -5 }}
-                      />
-                      <YAxis
-                        label={{ value: 'Producao (L CH4/kg SV)', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) => [`${value.toFixed(1)} L CH4/kg SV`, '']}
-                      />
-                      <Legend />
-                      {(selectedResidues.length > 0 ? selectedResidues : kineticsData.slice(0, 4).map(k => k.residue_name)).map((residue, idx) => (
-                        <Line
-                          key={residue}
-                          type="monotone"
-                          dataKey={residue}
-                          stroke={residueColors[idx % residueColors.length]}
-                          strokeWidth={2}
-                          dot={false}
+                {kineticsData.length === 0 ? (
+                  <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center p-6">
+                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium mb-2">Dados cinéticos não disponíveis</p>
+                      <p className="text-sm text-gray-500">Verifique se há dados de cinética na base de dados</p>
+                    </div>
+                  </div>
+                ) : kineticCurveData.length === 0 ? (
+                  <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center p-6">
+                      <Info className="h-12 w-12 text-blue-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium mb-2">Selecione resíduos para ver as curvas</p>
+                      <p className="text-sm text-gray-500">Use o seletor acima para escolher resíduos</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={kineticCurveData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="time"
+                          label={{ value: 'Tempo (dias)', position: 'insideBottom', offset: -5 }}
                         />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                        <YAxis
+                          label={{ value: 'Producao (L CH4/kg SV)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => [`${value.toFixed(1)} L CH4/kg SV`, '']}
+                        />
+                        <Legend />
+                        {(selectedResidues.length > 0 ? selectedResidues : kineticsData.slice(0, 4).map(k => k.residue_name)).map((residue, idx) => (
+                          <Line
+                            key={residue}
+                            type="monotone"
+                            dataKey={residue}
+                            stroke={residueColors[idx % residueColors.length]}
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
 
               {/* Kinetic Parameters Table */}
