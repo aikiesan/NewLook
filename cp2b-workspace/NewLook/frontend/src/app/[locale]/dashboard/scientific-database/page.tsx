@@ -146,9 +146,6 @@ export default function ScientificDatabasePage() {
   // Error state
   const [error, setError] = useState<string | null>(null)
 
-  // Expanded reference cards
-  const [expandedRefs, setExpandedRefs] = useState<Set<number>>(new Set())
-
   // Fetch all data
   const fetchAllData = useCallback(async () => {
     setLoading(true)
@@ -334,9 +331,21 @@ export default function ScientificDatabasePage() {
   // Calculate co-digestion
   // Generate kinetic curve data for selected residues
   const kineticCurveData = useMemo(() => {
+    // Debug: log available kinetics data
+    if (kineticsData.length === 0) {
+      console.warn('⚠️ No kinetics data available')
+      return []
+    }
+
     const selected = selectedResidues.length > 0
       ? kineticsData.filter(k => selectedResidues.includes(k.residue_name))
       : kineticsData.slice(0, 4)  // Default to first 4
+
+    // Debug: check if filtering worked
+    if (selectedResidues.length > 0 && selected.length === 0) {
+      console.warn('⚠️ No kinetics data matched selected residues:', selectedResidues)
+      console.log('Available kinetics residue names:', kineticsData.map(k => k.residue_name))
+    }
 
     if (selected.length === 0) return []
 
@@ -346,8 +355,19 @@ export default function ScientificDatabasePage() {
     return timePoints.map(t => {
       const point: any = { time: t }
       selected.forEach(kinetic => {
-        const curve = generateKineticCurve(kinetic, 30)
-        point[kinetic.residue_name] = curve[t]?.yield || 0
+        try {
+          const curve = generateKineticCurve(kinetic, 30)
+          const yieldValue = curve[t]?.yield || 0
+          point[kinetic.residue_name] = yieldValue
+
+          // Debug: log zero yields
+          if (t === 0 || t === 30) {
+            console.log(`📊 ${kinetic.residue_name} at t=${t}: ${yieldValue.toFixed(2)}`)
+          }
+        } catch (error) {
+          console.error(`Error generating curve for ${kinetic.residue_name}:`, error)
+          point[kinetic.residue_name] = 0
+        }
       })
       return point
     })
@@ -410,17 +430,6 @@ export default function ScientificDatabasePage() {
 
     return filtered
   }, [references, searchQuery, selectedResidue, selectedSectors, peerReviewedOnly, yearRange])
-
-  // Toggle reference expansion
-  const toggleRefExpansion = (id: number) => {
-    const newExpanded = new Set(expandedRefs)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedRefs(newExpanded)
-  }
 
   // Initial data fetch
   useEffect(() => {
@@ -719,34 +728,52 @@ export default function ScientificDatabasePage() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Curvas de Produção de Metano
                 </h3>
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={kineticCurveData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="time"
-                        label={{ value: 'Tempo (dias)', position: 'insideBottom', offset: -5 }}
-                      />
-                      <YAxis
-                        label={{ value: 'Producao (L CH4/kg SV)', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) => [`${value.toFixed(1)} L CH4/kg SV`, '']}
-                      />
-                      <Legend />
-                      {(selectedResidues.length > 0 ? selectedResidues : kineticsData.slice(0, 4).map(k => k.residue_name)).map((residue, idx) => (
-                        <Line
-                          key={residue}
-                          type="monotone"
-                          dataKey={residue}
-                          stroke={residueColors[idx % residueColors.length]}
-                          strokeWidth={2}
-                          dot={false}
+                {kineticsData.length === 0 ? (
+                  <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center p-6">
+                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium mb-2">Dados cinéticos não disponíveis</p>
+                      <p className="text-sm text-gray-500">Verifique se há dados de cinética na base de dados</p>
+                    </div>
+                  </div>
+                ) : kineticCurveData.length === 0 ? (
+                  <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center p-6">
+                      <Info className="h-12 w-12 text-blue-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium mb-2">Selecione resíduos para ver as curvas</p>
+                      <p className="text-sm text-gray-500">Use o seletor acima para escolher resíduos</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={kineticCurveData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="time"
+                          label={{ value: 'Tempo (dias)', position: 'insideBottom', offset: -5 }}
                         />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                        <YAxis
+                          label={{ value: 'Producao (L CH4/kg SV)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => [`${value.toFixed(1)} L CH4/kg SV`, '']}
+                        />
+                        <Legend />
+                        {(selectedResidues.length > 0 ? selectedResidues : kineticsData.slice(0, 4).map(k => k.residue_name)).map((residue, idx) => (
+                          <Line
+                            key={residue}
+                            type="monotone"
+                            dataKey={residue}
+                            stroke={residueColors[idx % residueColors.length]}
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
 
               {/* Kinetic Parameters Table */}
@@ -1230,25 +1257,16 @@ export default function ScientificDatabasePage() {
                           ))}
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-3 pt-2">
-                          <button
-                            onClick={() => toggleRefExpansion(ref.id)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-green-700 font-medium bg-gray-50 hover:bg-green-50 rounded-lg transition-all border border-gray-200 hover:border-green-300"
-                          >
-                            {expandedRefs.has(ref.id) ? (
-                              <>
-                                <ChevronUp className="h-4 w-4" />
-                                Ver menos
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="h-4 w-4" />
-                                Ver detalhes
-                              </>
-                            )}
-                          </button>
-
+                        {/* DOI and URL information */}
+                        <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
+                          {ref.doi && (
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <span className="font-semibold text-gray-500">DOI:</span>
+                              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                                {ref.doi}
+                              </span>
+                            </div>
+                          )}
                           {ref.url && (
                             <a
                               href={ref.url}
@@ -1261,57 +1279,6 @@ export default function ScientificDatabasePage() {
                             </a>
                           )}
                         </div>
-
-                        {expandedRefs.has(ref.id) && (
-                          <div className="mt-6 pt-6 border-t-2 border-gray-100 space-y-4 bg-gray-50/50 -mx-6 px-6 py-6 rounded-b-xl">
-                            {ref.abstract && (
-                              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                                <h5 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                  <span className="text-lg">📄</span>
-                                  Resumo
-                                </h5>
-                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                                  {ref.abstract}
-                                </p>
-                              </div>
-                            )}
-
-                            {ref.key_findings && ref.key_findings.length > 0 && (
-                              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                                <h5 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                  <span className="text-lg">🔍</span>
-                                  Principais Achados
-                                </h5>
-                                <ul className="list-disc ml-6 text-sm text-gray-700 space-y-2">
-                                  {ref.key_findings.map((finding, idx) => (
-                                    <li key={idx} className="leading-relaxed">{finding}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            <div className="flex flex-wrap gap-4 text-xs text-gray-600 bg-white rounded-lg p-4 border border-gray-200">
-                              {ref.reference_type && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-gray-500">Tipo:</span>
-                                  <span className="font-medium text-gray-800 px-2 py-0.5 bg-gray-100 rounded">{ref.reference_type}</span>
-                                </div>
-                              )}
-                              {(ref as any).cited_by && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-gray-500">Citações:</span>
-                                  <span className="font-bold text-green-700 px-2 py-0.5 bg-green-50 rounded">{(ref as any).cited_by}</span>
-                                </div>
-                              )}
-                              {ref.doi && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-gray-500">DOI:</span>
-                                  <code className="font-mono text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{ref.doi}</code>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   ))
