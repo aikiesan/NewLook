@@ -7,10 +7,10 @@
       "about": "Sobre",
       "hub": "Hub",
       "proximity": "Proximidade",
-      "simulation": "Simulação I-O",
-      "technology_routes": "Rotas Tech",
+      "simulation": "Simulação",
+      "technology_routes": "Rotas Tecnológicas",
       "scientific_database": "Base Científica",
-      "advanced": "Avançado"
+      "advanced": "Análises"
     },
     "nav_descriptions": {
       "hub": "Central de Recursos",
