@@ -429,6 +429,18 @@ export default function ScientificDatabasePage() {
     }
   }, [isAuthenticated, fetchAllData])
 
+  // Auto-refresh data every 30 seconds to catch database updates
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const intervalId = setInterval(() => {
+      console.log('🔄 Auto-refreshing scientific database data...')
+      fetchAllData()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(intervalId)
+  }, [isAuthenticated, fetchAllData])
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
