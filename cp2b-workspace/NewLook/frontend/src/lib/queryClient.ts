@@ -17,24 +17,25 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Data is considered fresh for 5 minutes
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      // Data is considered fresh for 30 seconds (reduced from 5 minutes for database content)
+      // This ensures users see new references quickly after database updates
+      staleTime: 1000 * 30, // 30 seconds
 
-      // Keep unused data in cache for 10 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+      // Keep unused data in cache for 5 minutes
+      gcTime: 1000 * 60 * 5, // 5 minutes (formerly cacheTime)
 
       // Retry failed requests 3 times with exponential backoff
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 
       // Refetch on window focus for fresh data
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
 
       // Refetch on reconnect
       refetchOnReconnect: true,
 
-      // Refetch on mount only if data is stale (prevents infinite refetching on auth changes)
-      refetchOnMount: false,
+      // Refetch on mount if data is stale (allows fresh data after database updates)
+      refetchOnMount: true,
 
       // Enable structural sharing for better performance
       structuralSharing: true,

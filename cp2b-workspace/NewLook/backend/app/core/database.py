@@ -126,6 +126,13 @@ def get_db():
         raise
     finally:
         if conn:
+            # Commit any pending transaction to ensure fresh data on next use
+            # This prevents stale transaction snapshots when connection is reused
+            try:
+                conn.commit()
+            except Exception:
+                pass  # Connection might already be in error state
+
             # Return connection to pool instead of closing it
             connection_pool.putconn(conn)
             logger.debug("Connection returned to pool")
