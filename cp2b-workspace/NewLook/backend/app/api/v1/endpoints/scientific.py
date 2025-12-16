@@ -7,6 +7,41 @@ import json
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+def safe_float(value, default=0.0):
+    """
+    Safely convert a value to float, handling strings with units or ranges.
+    Examples: "35", "35-37", "mesophilic 35-37°C" -> 35.0
+    """
+    if value is None:
+        return default
+
+    # If already a number, return it
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    # Convert to string and extract first number
+    try:
+        import re
+        value_str = str(value)
+        # Find first number (integer or decimal) in the string
+        match = re.search(r'(\d+\.?\d*)', value_str)
+        if match:
+            return float(match.group(1))
+        return default
+    except:
+        return default
+
+def safe_int(value, default=0):
+    """Safely convert a value to int, handling non-numeric values."""
+    try:
+        if value is None:
+            return default
+        if isinstance(value, (int, float)):
+            return int(value)
+        return int(float(str(value)))
+    except:
+        return default
+
 @router.get("/kinetics")
 async def get_kinetics(
     sector_codigo: Optional[str] = None,
@@ -81,35 +116,36 @@ async def get_kinetics(
 
                 # Map to frontend interface
                 # Default values provided if missing in JSON
+                # Use safe_float/safe_int to handle string values in database
                 mapped_item = {
                     "residue_id": row_dict['residue_id'],
                     "residue_name": row_dict['residue_name'],
                     "sector": row_dict['sector'],
-                    
+
                     # Kinetic Constants
-                    "k_slow": float(kinetics_data.get('k_slow', 0.05)),
-                    "k_med": float(kinetics_data.get('k_med', 0.5)),
-                    "k_fast": float(kinetics_data.get('k_fast', 5.0)),
-                    
+                    "k_slow": safe_float(kinetics_data.get('k_slow'), 0.05),
+                    "k_med": safe_float(kinetics_data.get('k_med'), 0.5),
+                    "k_fast": safe_float(kinetics_data.get('k_fast'), 5.0),
+
                     # Fractions
-                    "f_slow": float(kinetics_data.get('f_slow', 0)),
-                    "f_med": float(kinetics_data.get('f_med', 0)),
-                    "f_fast": float(kinetics_data.get('f_fast', 0)),
-                    "fq": float(kinetics_data.get('FQ', kinetics_data.get('fq', 0.95))),
-                    
+                    "f_slow": safe_float(kinetics_data.get('f_slow'), 0),
+                    "f_med": safe_float(kinetics_data.get('f_med'), 0),
+                    "f_fast": safe_float(kinetics_data.get('f_fast'), 0),
+                    "fq": safe_float(kinetics_data.get('FQ', kinetics_data.get('fq')), 0.95),
+
                     "classification": kinetics_data.get('classification', 'medium'),
-                    
+
                     # BMP
-                    "bmp_experimental": float(row_dict['bmp_experimental'] or 0),
-                    "bmp_simulated": float(kinetics_data.get('bmp_simulated', row_dict['bmp_experimental'] or 0)),
-                    
+                    "bmp_experimental": safe_float(row_dict['bmp_experimental'], 0),
+                    "bmp_simulated": safe_float(kinetics_data.get('bmp_simulated', row_dict['bmp_experimental']), 0),
+
                     # Test Parameters
-                    "t50": int(kinetics_data.get('t50', 0)),
-                    "t80": int(kinetics_data.get('t80', 0)),
+                    "t50": safe_int(kinetics_data.get('t50'), 0),
+                    "t80": safe_int(kinetics_data.get('t80'), 0),
                     "test_standard": kinetics_data.get('test_standard', 'VDI 4630'),
-                    "temperature": float(kinetics_data.get('temperature', 35)),
-                    "retention_time": float(kinetics_data.get('retention_time', 30)),
-                    
+                    "temperature": safe_float(kinetics_data.get('temperature'), 35),
+                    "retention_time": safe_float(kinetics_data.get('retention_time'), 30),
+
                     "references": row_dict['references_list']
                 }
                 results.append(mapped_item)
