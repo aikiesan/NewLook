@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -12,12 +11,28 @@ import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { locales, type Locale } from '@/config/i18n'
 
-const inter = Inter({ subsets: ['latin'] });
+// Generate dynamic metadata based on locale
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
 
-export const metadata: Metadata = {
-  title: 'NewLook Delta',
-  description: 'Biogas and renewable energy spatial analysis platform',
-};
+  return {
+    title: t('title'),
+    description: t('description'),
+    keywords: t('keywords'),
+    authors: [{ name: 'NIPE-UNICAMP / CP2B' }],
+    openGraph: {
+      title: t('title'),
+      description: t('description'),
+      locale: locale === 'pt-BR' ? 'pt_BR' : 'en_US',
+      type: 'website',
+    },
+  };
+}
 
 // Generate static paths for all locales
 export function generateStaticParams() {
@@ -47,7 +62,7 @@ export default async function LocaleLayout({
     const messages = await getMessages({ locale });
     
     return (
-      <html lang={locale} className={inter.className} suppressHydrationWarning>
+      <html lang={locale} suppressHydrationWarning>
         <head>
           {/* Prevent flash of unstyled content */}
           <script

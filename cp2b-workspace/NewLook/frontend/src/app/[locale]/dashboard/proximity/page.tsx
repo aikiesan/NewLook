@@ -6,7 +6,7 @@
  * Fully functional implementation using backend API
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {

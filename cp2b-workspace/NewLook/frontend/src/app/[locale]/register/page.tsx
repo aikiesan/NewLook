@@ -5,16 +5,17 @@
  * WCAG 2.1 AA Compliant
  */
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link, useRouter } from '@/navigation'
 import Image from 'next/image'
 import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getErrorMessage } from '@/types/errors'
+import { useTranslations } from 'next-intl'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register, loading } = useAuth()
+  const t = useTranslations('auth')
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -46,17 +47,17 @@ export default function RegisterPage() {
 
     // Client-side validation
     if (!formData.full_name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Por favor, preencha todos os campos')
+      setError(t('errors.fill_all_fields'))
       return
     }
 
     if (formData.password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres')
+      setError(t('errors.password_min_length'))
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('As senhas não coincidem')
+      setError(t('errors.passwords_no_match'))
       return
     }
 
@@ -66,10 +67,10 @@ export default function RegisterPage() {
         password: formData.password,
         full_name: formData.full_name
       })
-      // Use window.location for static export compatibility
-      window.location.href = '/dashboard'
+      // Use locale-aware router for navigation
+      router.push('/dashboard')
     } catch (err: unknown) {
-      setError(getErrorMessage(err) || 'Falha no registro. Tente novamente.')
+      setError(getErrorMessage(err) || t('errors.registration_failed'))
     }
   }
 
@@ -81,9 +82,9 @@ export default function RegisterPage() {
 
   const getPasswordStrengthText = () => {
     if (passwordStrength === 0) return ''
-    if (passwordStrength < 40) return 'Fraca'
-    if (passwordStrength < 70) return 'Média'
-    return 'Forte'
+    if (passwordStrength < 40) return t('register.password_weak')
+    if (passwordStrength < 70) return t('register.password_medium')
+    return t('register.password_strong')
   }
 
   return (
@@ -94,21 +95,21 @@ export default function RegisterPage() {
           <Link
             href="/"
             className="inline-flex items-center space-x-2 text-white hover:text-cp2b-accent transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cp2b-primary rounded-lg"
-            aria-label="Voltar para página inicial"
+            aria-label={t('register.back_to_home')}
           >
             <Image src="/images/logotipo-full-black.png" alt="CP2B Maps Logo" width={200} height={55} className="brightness-0 invert" priority />
-            
+
           </Link>
           <h1 className="mt-6 text-3xl font-extrabold text-white">
-            Criar nova conta
+            {t('register.title')}
           </h1>
           <p className="mt-2 text-sm text-gray-200">
-            Ou{' '}
+            {t('register.or')}{' '}
             <Link
               href="/login"
               className="font-medium text-cp2b-accent hover:text-yellow-300 underline focus:outline-none focus:ring-2 focus:ring-cp2b-accent rounded"
             >
-              faça login com sua conta existente
+              {t('register.login_existing')}
             </Link>
           </p>
         </div>
@@ -139,7 +140,7 @@ export default function RegisterPage() {
                 htmlFor="full_name"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Nome completo
+                {t('register.full_name_label')}
               </label>
               <input
                 id="full_name"
@@ -152,7 +153,7 @@ export default function RegisterPage() {
                   setFormData((prev) => ({ ...prev, full_name: e.target.value }))
                 }
                 className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cp2b-primary focus:border-transparent transition-colors"
-                placeholder="João Silva"
+                placeholder={t('register.full_name_placeholder')}
                 aria-required="true"
                 aria-invalid={!!error}
                 disabled={loading}
@@ -165,7 +166,7 @@ export default function RegisterPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Endereço de e-mail
+                {t('register.email_label')}
               </label>
               <input
                 id="email"
@@ -178,7 +179,7 @@ export default function RegisterPage() {
                   setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
                 className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cp2b-primary focus:border-transparent transition-colors"
-                placeholder="seu@email.com"
+                placeholder={t('register.email_placeholder')}
                 aria-required="true"
                 aria-invalid={!!error}
                 disabled={loading}
@@ -191,7 +192,7 @@ export default function RegisterPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Senha
+                {t('register.password_label')}
               </label>
               <input
                 id="password"
@@ -214,7 +215,7 @@ export default function RegisterPage() {
                 <div className="mt-2" id="password-strength" aria-live="polite">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-600">
-                      Força da senha: <span className="font-medium">{getPasswordStrengthText()}</span>
+                      {t('register.password_strength')}: <span className="font-medium">{getPasswordStrengthText()}</span>
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -237,7 +238,7 @@ export default function RegisterPage() {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Confirmar senha
+                {t('register.confirm_password_label')}
               </label>
               <input
                 id="confirmPassword"
@@ -268,19 +269,19 @@ export default function RegisterPage() {
                 aria-required="true"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                Eu concordo com os{' '}
+                {t('register.agree_to')}{' '}
                 <a
                   href="#"
                   className="font-medium text-cp2b-primary hover:text-cp2b-secondary underline"
                 >
-                  Termos de Serviço
+                  {t('register.terms_of_service')}
                 </a>{' '}
-                e{' '}
+                {t('register.and')}{' '}
                 <a
                   href="#"
                   className="font-medium text-cp2b-primary hover:text-cp2b-secondary underline"
                 >
-                  Política de Privacidade
+                  {t('register.privacy_policy')}
                 </a>
               </label>
             </div>
@@ -290,7 +291,7 @@ export default function RegisterPage() {
               type="submit"
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-cp2b-primary hover:bg-cp2b-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-              aria-label={loading ? 'Criando conta...' : 'Criar conta'}
+              aria-label={loading ? t('register.submitting') : t('register.submit')}
             >
               {loading ? (
                 <>
@@ -298,12 +299,12 @@ export default function RegisterPage() {
                     className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"
                     aria-hidden="true"
                   ></div>
-                  <span>Criando conta...</span>
+                  <span>{t('register.submitting')}</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="h-5 w-5" aria-hidden="true" />
-                  <span>Criar conta</span>
+                  <span>{t('register.submit')}</span>
                 </>
               )}
             </button>
@@ -317,7 +318,7 @@ export default function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Já tem uma conta?
+                  {t('register.already_have_account')}
                 </span>
               </div>
             </div>
@@ -327,7 +328,7 @@ export default function RegisterPage() {
                 href="/login"
                 className="w-full flex justify-center py-3 px-4 border border-cp2b-primary text-base font-medium rounded-lg text-cp2b-primary bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cp2b-primary transition-colors"
               >
-                Fazer login
+                {t('register.login')}
               </Link>
             </div>
           </div>
@@ -335,7 +336,7 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-sm text-gray-200">
-          © 2025 CP2B Maps V3. Plataforma de Análise de Biogás.
+          {t('common.copyright')}
         </p>
       </div>
     </div>
