@@ -473,10 +473,10 @@ export default function ScientificDatabasePage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2 tracking-tight">
-                Base de Conhecimento Cientifico
+                Base de Conhecimento Científico
               </h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Dados fisico-quimicos, cinetica de degradacao e referencias cientificas para residuos de Sao Paulo
+                Dados físico-químicos, cinética de degradação e referências científicas para resíduos de São Paulo
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -517,46 +517,46 @@ export default function ScientificDatabasePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-gray-600">Referencias</div>
+                <div className="text-sm font-medium text-gray-600">Referências</div>
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                   <BookOpen className="h-5 w-5 text-blue-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{summary.total_references}</div>
-              <div className="text-xs text-gray-500 mt-1">papers peer-reviewed</div>
+              <div className="text-xs text-gray-500 mt-1">artigos científicos</div>
             </div>
 
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-gray-600">Residuos</div>
+                <div className="text-sm font-medium text-gray-600">Resíduos</div>
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <FlaskConical className="h-5 w-5 text-green-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{summary.total_residues}</div>
-              <div className="text-xs text-gray-500 mt-1">completamente caracterizados</div>
+              <div className="text-xs text-gray-500 mt-1">caracterizados</div>
             </div>
 
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-gray-600">Parametros</div>
+                <div className="text-sm font-medium text-gray-600">Parâmetros</div>
                 <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
                   <TestTube2 className="h-5 w-5 text-amber-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{summary.total_parameters}</div>
-              <div className="text-xs text-gray-500 mt-1">BMP, C:N, pH, COD...</div>
+              <div className="text-xs text-gray-500 mt-1">BMP, TS, VS, C:N, pH...</div>
             </div>
 
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-medium text-gray-600">Validacoes FDE</div>
+                <div className="text-sm font-medium text-gray-600">Validações FDE</div>
                 <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                   <Beaker className="h-5 w-5 text-orange-600" />
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{summary.fde_validated_pct.toFixed(0)}%</div>
-              <div className="text-xs text-gray-500 mt-1">com FDE calculado</div>
+              <div className="text-xs text-gray-500 mt-1">fator de disponibilidade</div>
             </div>
           </div>
         )}
@@ -565,11 +565,11 @@ export default function ScientificDatabasePage() {
         <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
           <div className="flex flex-wrap gap-2">
             {[
-              { id: 'residuosDb', label: 'Base de Residuos', icon: FlaskConical },
-              { id: 'kinetics', label: 'Cinetica de Degradacao', icon: TestTube2 },
-              { id: 'chemical', label: 'Caracterizacao Quimica', icon: FlaskConical },
-              { id: 'references', label: 'Referencias Cientificas', icon: BookOpen },
-              { id: 'comparison', label: 'Comparacao Interativa', icon: GitCompare }
+              { id: 'residuosDb', label: 'Base de Resíduos', icon: FlaskConical },
+              { id: 'kinetics', label: 'Cinética de Degradação', icon: TestTube2 },
+              { id: 'chemical', label: 'Caracterização Química', icon: FlaskConical },
+              { id: 'references', label: 'Referências Científicas', icon: BookOpen },
+              { id: 'comparison', label: 'Comparação Interativa', icon: GitCompare }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -602,13 +602,13 @@ export default function ScientificDatabasePage() {
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-2xl">{sector.emoji}</span>
                       <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                        {sector.num_residuos} residuos
+                        {sector.num_residuos} resíduos
                       </span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-1">{sector.nome}</h4>
                     <div className="text-sm text-gray-600 space-y-1">
-                      <div>BMP medio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
-                      <div>Referencias: {sector.total_references || 0}</div>
+                      <div>BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV</div>
+                      <div>Referências: {sector.total_references || 0}</div>
                     </div>
                   </div>
                 ))}
@@ -638,7 +638,7 @@ export default function ScientificDatabasePage() {
                         {realResiduos.length}
                       </div>
                       <div className="text-sm text-green-700 font-medium">
-                        Residuos Caracterizados
+                        Resíduos Caracterizados
                       </div>
                     </div>
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
@@ -646,7 +646,7 @@ export default function ScientificDatabasePage() {
                         {sectorSummary.reduce((acc: number, s: any) => acc + (s.total_references || 0), 0)}
                       </div>
                       <div className="text-sm text-blue-700 font-medium">
-                        Referencias Cientificas
+                        Referências Científicas
                       </div>
                     </div>
                     <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
@@ -654,7 +654,7 @@ export default function ScientificDatabasePage() {
                         {sectorSummary.length}
                       </div>
                       <div className="text-sm text-amber-700 font-medium">
-                        Setores Economicos
+                        Setores Econômicos
                       </div>
                     </div>
                   </div>
@@ -674,7 +674,7 @@ export default function ScientificDatabasePage() {
                             <div className="flex-1">
                               <div className="font-semibold text-gray-900">{sector.nome}</div>
                               <div className="text-sm text-gray-600 mt-1">
-                                {sectorCount} residuos • BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV
+                                {sectorCount} resíduos • BMP médio: {sector.avg_bmp?.toFixed(0) || 'N/A'} L/kg SV
                               </div>
                             </div>
                           </div>
@@ -692,15 +692,15 @@ export default function ScientificDatabasePage() {
                     <ul className="text-sm text-blue-800 space-y-1.5">
                       <li className="flex items-start gap-2">
                         <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Use a aba <strong>Caracterização Química</strong> para ver detalhes de cada residuo</span>
+                        <span>Use a aba <strong>Caracterização Química</strong> para ver detalhes de cada resíduo</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Consulte a aba <strong>Referencias Científicas</strong> para acessar a literatura</span>
+                        <span>Consulte a aba <strong>Referências Científicas</strong> para acessar a literatura</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-blue-600 mt-0.5">•</span>
-                        <span>Use a aba <strong>Comparação Interativa</strong> para comparar até 5 residuos</span>
+                        <span>Use a aba <strong>Comparação Interativa</strong> para comparar até 5 resíduos</span>
                       </li>
                     </ul>
                   </div>
@@ -711,7 +711,7 @@ export default function ScientificDatabasePage() {
               {conversionFactors.length > 0 && (
                 <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Fatores de Conversao com Literatura
+                    Fatores de Conversão da Literatura
                   </h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -751,7 +751,7 @@ export default function ScientificDatabasePage() {
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Filter className="h-5 w-5 text-green-600" />
-                  Selecionar Residuos para Comparacao
+                  Selecionar Resíduos para Comparação
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {residueList.map((residue, idx) => (
@@ -781,7 +781,7 @@ export default function ScientificDatabasePage() {
                 </div>
                 {selectedResidues.length === 0 && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Selecione ate 6 residuos para comparar (mostrando 4 padrao)
+                    Selecione até 6 resíduos para comparar (mostrando 4 padrão)
                   </p>
                 )}
               </div>
@@ -789,7 +789,7 @@ export default function ScientificDatabasePage() {
               {/* Kinetic Curve Chart */}
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Curvas de Producao de Metano
+                  Curvas de Produção de Metano
                 </h3>
                 <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -824,14 +824,14 @@ export default function ScientificDatabasePage() {
               {/* Kinetic Parameters Table */}
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Parametros Cineticos (Modelo de Tres Fracoes)
+                  Parâmetros Cinéticos (Modelo de Três Frações)
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Residuo</th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-700">Cinetica</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Resíduo</th>
+                        <th className="text-center py-3 px-4 font-semibold text-gray-700">Cinética</th>
                         <th className="text-center py-3 px-4 font-semibold text-gray-700">f_slow</th>
                         <th className="text-center py-3 px-4 font-semibold text-gray-700">f_med</th>
                         <th className="text-center py-3 px-4 font-semibold text-gray-700">f_fast</th>
@@ -892,15 +892,15 @@ export default function ScientificDatabasePage() {
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
                     <Info className="h-4 w-4" />
-                    Modelo de Tres Fracoes (DBFZ)
+                    Modelo de Três Frações (DBFZ)
                   </h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>k_slow = 0.05 d^-1 (fracao lenta)</li>
-                    <li>k_med = 0.5 d^-1 (fracao media)</li>
-                    <li>k_fast = 5.0 d^-1 (fracao rapida)</li>
+                    <li><strong>k_slow</strong> = 0.05 d⁻¹ (fração lenta)</li>
+                    <li><strong>k_med</strong> = 0.5 d⁻¹ (fração média)</li>
+                    <li><strong>k_fast</strong> = 5.0 d⁻¹ (fração rápida)</li>
                   </ul>
                   <p className="text-sm text-blue-700 mt-2">
-                    FQ (Fermentability Quotient) = f_slow + f_med + f_fast representa a fracao digerivel dos Solidos Volateis.
+                    <strong>FQ</strong> (Fermentability Quotient) = f_slow + f_med + f_fast representa a fração digerível dos Sólidos Voláteis.
                   </p>
                 </div>
               </div>
@@ -930,22 +930,27 @@ export default function ScientificDatabasePage() {
 
               {/* Chemical Data Cards */}
               {realResiduos.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {realResiduos.map((residue) => {
                   const cnStatus = getCNStatus(residue.chemical_cn_ratio);
                   return (
                     <div
                       key={residue.id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-300 transition-all duration-200"
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-200"
                     >
-                      <div className="mb-5">
-                        <h4 className="text-lg font-bold text-gray-900 mb-2 leading-tight">{residue.nome}</h4>
-                        <span className="inline-block px-3 py-1 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 text-xs font-semibold rounded-lg border border-gray-200">
-                          {residue.sector_nome}
-                        </span>
+                      {/* Card Header with sector badge */}
+                      <div className="px-5 pt-5 pb-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className="text-lg font-bold text-gray-900 leading-tight flex-1">{residue.nome}</h4>
+                          <span className="flex-shrink-0 px-2.5 py-1 bg-white text-gray-600 text-xs font-semibold rounded-lg border border-gray-200 shadow-sm">
+                            {residue.sector_nome}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="space-y-3">
+                      {/* Card Body */}
+                      <div className="p-5 space-y-4">
+                        {/* BMP - Main parameter with reference */}
                         <ParameterWithReference
                           residueId={residue.id}
                           parameterType="bmp"
@@ -957,85 +962,104 @@ export default function ScientificDatabasePage() {
                           nStudies={residue.bmp_n_studies || residue.reference_count}
                         />
 
-                        {/* Composition with ranges */}
-                        <div className="grid grid-cols-3 gap-3 text-xs">
-                          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg border border-blue-200 dark:border-blue-700">
-                            <div className="font-bold text-blue-900 dark:text-blue-200 text-base">
+                        {/* Composition Grid */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="font-bold text-blue-900 text-sm">
                               {residue.ts_medio?.toFixed(1) || 'N/A'}%
                             </div>
                             {(residue.ts_min || residue.ts_max) && (
-                              <div className="text-blue-600 dark:text-blue-400 text-[10px] mt-0.5">
+                              <div className="text-blue-500 text-[10px]">
                                 ({residue.ts_min?.toFixed(0)}-{residue.ts_max?.toFixed(0)})
                               </div>
                             )}
-                            <div className="text-blue-700 dark:text-blue-300 font-semibold mt-1">ST</div>
+                            <div className="text-blue-600 font-medium mt-0.5">ST</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg border border-green-200 dark:border-green-700">
-                            <div className="font-bold text-green-900 dark:text-green-200 text-base">
+                          <div className="text-center p-2.5 bg-green-50 rounded-lg border border-green-100">
+                            <div className="font-bold text-green-900 text-sm">
                               {residue.vs_medio?.toFixed(1) || 'N/A'}%
                             </div>
                             {(residue.vs_min || residue.vs_max) && (
-                              <div className="text-green-600 dark:text-green-400 text-[10px] mt-0.5">
+                              <div className="text-green-500 text-[10px]">
                                 ({residue.vs_min?.toFixed(0)}-{residue.vs_max?.toFixed(0)})
                               </div>
                             )}
-                            <div className="text-green-700 dark:text-green-300 font-semibold mt-1">SV</div>
+                            <div className="text-green-600 font-medium mt-0.5">SV</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-lg border border-amber-200 dark:border-amber-700">
-                            <div className="font-bold text-base" style={{ color: cnStatus.color }}>
+                          <div className="text-center p-2.5 bg-amber-50 rounded-lg border border-amber-100">
+                            <div className="font-bold text-sm" style={{ color: cnStatus.color }}>
                               {residue.chemical_cn_ratio?.toFixed(1) || 'N/A'}:1
                             </div>
-                            <div className="text-amber-700 dark:text-amber-300 font-semibold mt-1">C:N</div>
+                            <div className="text-amber-600 font-medium mt-0.5">C:N</div>
                           </div>
                         </div>
 
-                        {residue.ph && (
-                          <ParameterWithReference
-                            residueId={residue.id}
-                            parameterType="ph"
-                            label="pH"
-                            value={residue.ph}
-                          />
-                        )}
+                        {/* Additional Parameters */}
+                        <div className="space-y-2">
+                          {residue.ph && (
+                            <ParameterWithReference
+                              residueId={residue.id}
+                              parameterType="ph"
+                              label="pH"
+                              value={residue.ph}
+                            />
+                          )}
 
-                        {residue.chemical_ch4_content && (
-                          <ParameterWithReference
-                            residueId={residue.id}
-                            parameterType="ch4_content"
-                            label="Teor CH4"
-                            value={`${residue.chemical_ch4_content}%`}
-                          />
+                          {residue.chemical_ch4_content && (
+                            <ParameterWithReference
+                              residueId={residue.id}
+                              parameterType="ch4_content"
+                              label="CH₄"
+                              value={`${residue.chemical_ch4_content}%`}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Card Footer - References Section */}
+                      <div className="px-5 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-100">
+                        {/* Primary DOI Link */}
+                        {residue.primary_doi && (
+                          <a
+                            href={`https://doi.org/${residue.primary_doi}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 mb-3 text-sm text-blue-700 hover:text-blue-900 font-medium group"
+                          >
+                            <ExternalLink className="h-4 w-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                            <span className="truncate">DOI: {residue.primary_doi}</span>
+                          </a>
                         )}
 
                         {/* References Button */}
-                        {residue.reference_count && residue.reference_count > 0 && (
-                          <button
-                            onClick={() => {
-                              // Switch to References tab
-                              setViewMode('references')
-                              // Filter by residue name using the residue filter
-                              setSelectedResidue(residue.nome)
-                              // Clear other filters for clean results
-                              setSearchQuery('')
-                              setSelectedSectors([])
-                              setPeerReviewedOnly(false)
-                              // Scroll to top smoothly
-                              window.scrollTo({ top: 0, behavior: 'smooth' })
-                            }}
-                            className="w-full flex items-start gap-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg transition-all text-left border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md"
-                          >
-                            <BookOpen className="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-700" />
-                            <div className="flex flex-col items-start overflow-hidden flex-1">
-                              <span className="text-sm font-bold text-blue-900">
-                                Ver Referências ({residue.reference_count})
-                              </span>
-                              {residue.main_reference && (
-                                <span className="text-xs text-blue-700 truncate w-full mt-1" title={residue.main_reference}>
-                                  {residue.main_reference}
-                                </span>
-                              )}
-                            </div>
-                          </button>
+                        <button
+                          onClick={() => {
+                            setViewMode('references')
+                            setSelectedResidue(residue.nome)
+                            setSearchQuery('')
+                            setSelectedSectors([])
+                            setPeerReviewedOnly(false)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-white hover:bg-blue-50 rounded-lg transition-all text-left border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow group"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <BookOpen className="w-4 h-4 text-blue-600 group-hover:text-blue-700" />
+                            <span className="text-sm font-semibold text-gray-800 group-hover:text-blue-900">
+                              {residue.reference_count > 0
+                                ? `${residue.reference_count} Referência${residue.reference_count > 1 ? 's' : ''}`
+                                : 'Ver Referências'
+                              }
+                            </span>
+                          </div>
+                          <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        </button>
+
+                        {/* Main Reference Citation */}
+                        {residue.main_reference && (
+                          <p className="mt-2 text-xs text-gray-500 line-clamp-2" title={residue.main_reference}>
+                            {residue.main_reference}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -1374,7 +1398,7 @@ export default function ScientificDatabasePage() {
               {/* Residue Selector for Comparison */}
               <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Selecione residuos para comparar
+                  Selecione resíduos para comparar (máx. 5)
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {realResidueNames.map((residue, idx) => (
@@ -1409,7 +1433,7 @@ export default function ScientificDatabasePage() {
                   {/* Radar Chart */}
                   <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                      Comparacao Multi-Parametros
+                      Comparação Multi-Parâmetros
                     </h3>
                     <div className="h-[400px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -1437,7 +1461,7 @@ export default function ScientificDatabasePage() {
                       <table className="w-full text-sm">
                         <thead className="bg-gray-50">
                           <tr className="border-b border-gray-200">
-                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Parametro</th>
+                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Parâmetro</th>
                             {selectedResidues.map((residue, idx) => (
                               <th
                                 key={residue}
@@ -1532,8 +1556,8 @@ export default function ScientificDatabasePage() {
               {selectedResidues.length < 2 && (
                 <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100 text-center">
                   <GitCompare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-lg font-medium text-gray-900 mb-1">Selecione pelo menos 2 residuos</p>
-                  <p className="text-sm text-gray-500">Para gerar a comparacao interativa</p>
+                  <p className="text-lg font-medium text-gray-900 mb-1">Selecione pelo menos 2 resíduos</p>
+                  <p className="text-sm text-gray-500">Para gerar a comparação interativa</p>
                 </div>
               )}
             </>
