@@ -494,15 +494,16 @@ export default function AdvancedAnalysisPage() {
           </div>
         )}
 
-        {/* Info Banner - Industrial Category API Limitation */}
-        {selectedCategory === 'industrial' && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-800 px-6 py-4 rounded-lg mb-6 shadow-sm flex items-start gap-3">
-            <Info className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600" />
+        {/* Info Banner - Industrial Category - Select Specific Residues */}
+        {selectedCategory === 'industrial' && selectedResidueCodes.length === 0 && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-800 px-6 py-4 rounded-lg mb-6 shadow-sm flex items-start gap-3">
+            <Info className="h-5 w-5 flex-shrink-0 mt-0.5 text-blue-600" />
             <div className="flex-1">
-              <h3 className="font-semibold mb-1 text-amber-900">Categoria Industrial - Dados em Desenvolvimento</h3>
-              <p className="text-sm text-amber-800">
-                Os dados municipais para a categoria Industrial estão sendo processados. Os valores apresentados podem incluir dados agregados de múltiplas categorias.
-                Os resíduos industriais específicos (incluindo Torta de Filtro e Vinhaça) estão corretamente classificados e seus fatores FDE individuais são aplicados.
+              <h3 className="font-semibold mb-1 text-blue-900">Selecione Resíduos Industriais Específicos</h3>
+              <p className="text-sm text-blue-800">
+                Para visualizar dados precisos da categoria Industrial, selecione um ou mais resíduos industriais específicos
+                (Torta de Filtro, Vinhaça, Bagaço de Malte, etc.) no painel lateral.
+                Os cálculos serão baseados nos dados municipais reais para os resíduos selecionados com seus fatores FDE individuais.
               </p>
             </div>
           </div>
@@ -633,15 +634,7 @@ export default function AdvancedAnalysisPage() {
                 />
               </div>
 
-              {/* Spacer to align with Scenario Selector + Info card in main area */}
-              {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && viewMode === 'cascade' && (
-                <div className="h-[200px]" aria-hidden="true"></div>
-              )}
-              {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && viewMode === 'flow' && (
-                <div className="h-[180px]" aria-hidden="true"></div>
-              )}
-
-              {/* Factor Adjustment Panel (in sidebar) - Tied to Cascade Visualization - ALIGNED */}
+              {/* Factor Adjustment Panel (in sidebar) - Tied to Cascade Visualization */}
               {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && (
                 <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md border-l-4 border-blue-500 p-4 relative">
                   {/* Connection Indicator */}
@@ -815,15 +808,6 @@ export default function AdvancedAnalysisPage() {
                     />
                   </div>
                 </div>
-
-                {/* Top 5 Municipalities Mini Card - Compact View */}
-                <TopMunicipalitiesMiniCard
-                  data={filteredMunicipalities}
-                  loading={loadingMunicipalities}
-                  maxItems={5}
-                  title={`Top 5 Municípios - ${categoryLabels[selectedCategory]}`}
-                  onViewAll={() => setViewMode('table')}
-                />
               </>
             )}
 
