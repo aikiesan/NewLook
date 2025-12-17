@@ -3,21 +3,20 @@
 /**
  * CP2B Maps V3 - References Page
  * Bibliography and data sources for the project
+ * PUBLIC PAGE - No authentication required
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from '@/navigation'
-import { ArrowLeft, BookOpen, Database, Globe, FileText } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { ArrowLeft, BookOpen, Database, Globe, FileText, ExternalLink } from 'lucide-react'
 import ReferenceList from '@/components/scientific/ReferenceList'
 
 export default function ReferencesPage() {
   const router = useRouter()
-  const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // State
   const [selectedResidueCode, setSelectedResidueCode] = useState<string>('URB_LODO_PRIMARIO')
-  const [activeTab, setActiveTab] = useState<'residue' | 'geospatial' | 'economic'>('residue')
+  const [activeTab, setActiveTab] = useState<'scientific' | 'datasources' | 'economic'>('scientific')
 
   // Sample residue codes from the prioritized list
   const sampleResidues = [
@@ -32,28 +31,6 @@ export default function ReferencesPage() {
     { code: 'PEC_CAMA_AVIARIO', name: 'Cama de Aviário' },
     { code: 'AG_CANA_TORTA_FILTRO', name: 'Torta de Filtro (Cana)' }
   ]
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login')
-    }
-  }, [authLoading, isAuthenticated, router])
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cp2b-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -86,26 +63,26 @@ export default function ReferencesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-4">
             <button
-              onClick={() => setActiveTab('residue')}
+              onClick={() => setActiveTab('scientific')}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'residue'
+                activeTab === 'scientific'
                   ? 'border-green-600 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               <BookOpen className="h-4 w-4" />
-              Resíduos e BMP
+              Referências Científicas
             </button>
             <button
-              onClick={() => setActiveTab('geospatial')}
+              onClick={() => setActiveTab('datasources')}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'geospatial'
+                activeTab === 'datasources'
                   ? 'border-green-600 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <Globe className="h-4 w-4" />
-              Dados Geoespaciais
+              <Database className="h-4 w-4" />
+              Fontes de Dados
             </button>
             <button
               onClick={() => setActiveTab('economic')}
@@ -124,8 +101,8 @@ export default function ReferencesPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Residue References Tab */}
-        {activeTab === 'residue' && (
+        {/* Scientific References Tab */}
+        {activeTab === 'scientific' && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar - Residue Selector */}
             <div className="lg:col-span-1">
@@ -173,93 +150,212 @@ export default function ReferencesPage() {
           </div>
         )}
 
-        {/* Geospatial Data Tab */}
-        {activeTab === 'geospatial' && (
+        {/* Data Sources Tab */}
+        {activeTab === 'datasources' && (
           <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <Globe className="h-7 w-7 text-green-600" />
-              Fontes de Dados Geoespaciais
+              <Database className="h-7 w-7 text-green-600" />
+              Fontes de Dados do CP2B Maps
             </h2>
 
-            <div className="space-y-6">
-              {/* IBGE */}
-              <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h3 className="font-bold text-gray-900 mb-2">IBGE - Instituto Brasileiro de Geografia e Estatística</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Dados de municípios, população, área territorial e malhas municipais de São Paulo (2024)
-                </p>
-                <a
-                  href="https://www.ibge.gov.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  www.ibge.gov.br →
-                </a>
+            <div className="space-y-8">
+              {/* Agricultural Data */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-4 flex items-center gap-2">
+                  🌾 Dados Agrícolas
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-green-500 pl-4 py-2 bg-green-50">
+                    <h4 className="font-bold text-gray-900 mb-2">IBGE - PAM (Produção Agrícola Municipal)</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Produção municipal de cana-de-açúcar, milho, mandioca e outras culturas agrícolas (2018-2023)
+                    </p>
+                    <a
+                      href="https://sidra.ibge.gov.br/pesquisa/pam"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-800"
+                    >
+                      sidra.ibge.gov.br/pesquisa/pam <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-green-500 pl-4 py-2 bg-green-50">
+                    <h4 className="font-bold text-gray-900 mb-2">CEPAGRI/UNICAMP</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Índices de resíduos agrícolas (RPR - Residue to Product Ratio) para cana-de-açúcar, milho e outras culturas
+                    </p>
+                    <a
+                      href="https://www.cpa.unicamp.br/acervo-digital.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-800"
+                    >
+                      www.cpa.unicamp.br <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              {/* MapBiomas */}
-              <div className="border-l-4 border-green-500 pl-4 py-2">
-                <h3 className="font-bold text-gray-900 mb-2">MapBiomas - Projeto de Mapeamento Anual do Uso e Cobertura da Terra</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Dados de uso do solo e cobertura vegetal (Coleção 9, 2024). Identificação de áreas agrícolas, pastagens e vegetação.
-                </p>
-                <a
-                  href="https://mapbiomas.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-green-600 hover:text-green-800"
-                >
-                  mapbiomas.org →
-                </a>
+              {/* Livestock Data */}
+              <div>
+                <h3 className="text-xl font-bold text-orange-700 mb-4 flex items-center gap-2">
+                  🐄 Dados Pecuários
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-orange-500 pl-4 py-2 bg-orange-50">
+                    <h4 className="font-bold text-gray-900 mb-2">IBGE - PPM (Pesquisa Pecuária Municipal)</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Rebanhos bovinos, suínos, aves e outros animais por município (2018-2023)
+                    </p>
+                    <a
+                      href="https://sidra.ibge.gov.br/pesquisa/ppm"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-800"
+                    >
+                      sidra.ibge.gov.br/pesquisa/ppm <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-orange-500 pl-4 py-2 bg-orange-50">
+                    <h4 className="font-bold text-gray-900 mb-2">IEA - Instituto de Economia Agrícola (SP)</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Dados regionalizados de produção animal e sistemas de criação no estado de São Paulo
+                    </p>
+                    <a
+                      href="http://www.iea.sp.gov.br"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-800"
+                    >
+                      www.iea.sp.gov.br <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              {/* ANP */}
-              <div className="border-l-4 border-orange-500 pl-4 py-2">
-                <h3 className="font-bold text-gray-900 mb-2">ANP - Agência Nacional do Petróleo, Gás Natural e Biocombustíveis</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Localização de plantas de biogás autorizadas no Brasil (2024)
-                </p>
-                <a
-                  href="https://www.gov.br/anp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-orange-600 hover:text-orange-800"
-                >
-                  www.gov.br/anp →
-                </a>
+              {/* Urban Data */}
+              <div>
+                <h3 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+                  🏙️ Dados Urbanos e Saneamento
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50">
+                    <h4 className="font-bold text-gray-900 mb-2">SNIS - Sistema Nacional de Informações sobre Saneamento</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Dados de ETEs, lodo de esgoto, coleta de resíduos sólidos urbanos e população atendida (2018-2023)
+                    </p>
+                    <a
+                      href="http://www.snis.gov.br"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      www.snis.gov.br <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50">
+                    <h4 className="font-bold text-gray-900 mb-2">IBGE - Censo Demográfico e Estimativas Populacionais</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      População municipal, área territorial e densidade demográfica (2022-2024)
+                    </p>
+                    <a
+                      href="https://www.ibge.gov.br/estatisticas/sociais/populacao"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      www.ibge.gov.br <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              {/* EPE */}
-              <div className="border-l-4 border-purple-500 pl-4 py-2">
-                <h3 className="font-bold text-gray-900 mb-2">EPE - Empresa de Pesquisa Energética</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Dados de infraestrutura energética: gasodutos, linhas de transmissão, subestações e rodovias (2023-2024)
-                </p>
-                <a
-                  href="https://www.epe.gov.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-purple-600 hover:text-purple-800"
-                >
-                  www.epe.gov.br →
-                </a>
+              {/* Plants and Infrastructure */}
+              <div>
+                <h3 className="text-xl font-bold text-purple-700 mb-4 flex items-center gap-2">
+                  📍 Plantas e Infraestrutura Energética
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-purple-500 pl-4 py-2 bg-purple-50">
+                    <h4 className="font-bold text-gray-900 mb-2">ANP - Agência Nacional do Petróleo, Gás Natural e Biocombustíveis</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Localização e capacidade de plantas de biogás, biodigestores e unidades autorizadas no Brasil (2024)
+                    </p>
+                    <a
+                      href="https://www.gov.br/anp"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800"
+                    >
+                      www.gov.br/anp <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-purple-500 pl-4 py-2 bg-purple-50">
+                    <h4 className="font-bold text-gray-900 mb-2">EPE - Empresa de Pesquisa Energética</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Gasodutos, linhas de transmissão, subestações e infraestrutura do setor elétrico (2023-2024)
+                    </p>
+                    <a
+                      href="https://www.epe.gov.br"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800"
+                    >
+                      www.epe.gov.br <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-purple-500 pl-4 py-2 bg-purple-50">
+                    <h4 className="font-bold text-gray-900 mb-2">DNIT/OSM - Rodovias Federais e Estaduais</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Malha rodoviária do estado de São Paulo para análises logísticas
+                    </p>
+                    <a
+                      href="https://www.gov.br/dnit"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800"
+                    >
+                      www.gov.br/dnit <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              {/* SNIS */}
-              <div className="border-l-4 border-teal-500 pl-4 py-2">
-                <h3 className="font-bold text-gray-900 mb-2">SNIS - Sistema Nacional de Informações sobre Saneamento</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Dados de ETEs (Estações de Tratamento de Esgoto) no estado de São Paulo (2023)
-                </p>
-                <a
-                  href="http://www.snis.gov.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-teal-600 hover:text-teal-800"
-                >
-                  www.snis.gov.br →
-                </a>
+              {/* Geospatial and Land Use */}
+              <div>
+                <h3 className="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+                  🗺️ Dados Geoespaciais e Uso do Solo
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-teal-500 pl-4 py-2 bg-teal-50">
+                    <h4 className="font-bold text-gray-900 mb-2">MapBiomas - Projeto de Mapeamento Anual do Uso e Cobertura da Terra</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Dados de uso do solo e cobertura vegetal em resolução de 30m (Coleção 9, 2024). Identificação de áreas agrícolas, pastagens, vegetação nativa e áreas urbanas.
+                    </p>
+                    <a
+                      href="https://mapbiomas.org"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-800"
+                    >
+                      mapbiomas.org <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <div className="border-l-4 border-teal-500 pl-4 py-2 bg-teal-50">
+                    <h4 className="font-bold text-gray-900 mb-2">IBGE - Malhas Territoriais</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Malhas municipais digitalizadas de São Paulo (2022-2024) em formato shapefile/GeoJSON
+                    </p>
+                    <a
+                      href="https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-800"
+                    >
+                      www.ibge.gov.br/geociencias <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -308,21 +404,24 @@ export default function ReferencesPage() {
         <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Sobre as Referências
+            Sobre as Referências do CP2B Maps
           </h3>
           <ul className="text-sm text-blue-800 space-y-2">
             <li>
-              <strong>Resíduos e BMP:</strong> Referências científicas sobre Potencial Bioquímico de Metano (BMP),
-              Total de Sólidos (TS), Sólidos Voláteis (VS) e outros parâmetros técnicos.
+              <strong>Referências Científicas:</strong> Literatura acadêmica sobre Potencial Bioquímico de Metano (BMP),
+              Total de Sólidos (TS), Sólidos Voláteis (VS) e outros parâmetros de digestão anaeróbia.
             </li>
             <li>
-              <strong>Dados Geoespaciais:</strong> Fontes oficiais de dados geográficos, uso do solo e infraestrutura.
+              <strong>Fontes de Dados:</strong> Instituições oficiais brasileiras (IBGE, ANP, EPE, SNIS, MapBiomas)
+              fornecendo dados de produção agrícola, rebanhos, saneamento e infraestrutura energética.
             </li>
             <li>
-              <strong>Dados Econômicos:</strong> Fontes para modelagem econômica e análise de viabilidade.
+              <strong>Dados Econômicos:</strong> Matriz Insumo-Produto do IBGE para simulações de impacto econômico
+              e estudos de viabilidade baseados em literatura especializada.
             </li>
             <li>
-              <strong>Atualização:</strong> Todas as referências são revisadas periodicamente para garantir a qualidade dos dados.
+              <strong>Transparência e Rastreabilidade:</strong> Todas as fontes incluem links diretos para acesso público.
+              As referências são revisadas periodicamente para garantir atualização e qualidade.
             </li>
           </ul>
         </div>
