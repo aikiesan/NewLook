@@ -47,6 +47,10 @@ const MapBiomasLegend = dynamic(() => import('./MapBiomasLegend'), {
   ssr: false,
 });
 
+const BiomassLayerLegend = dynamic(() => import('./BiomassLayerLegend'), {
+  ssr: false,
+});
+
 const HeatmapLegend = dynamic(() => import('./HeatmapLegend'), {
   ssr: false,
 });
@@ -89,7 +93,7 @@ export default function MapComponent({
   const [layers, setLayers] = useState([
     { id: 'municipalities', name: 'Municípios SP', visible: true, icon: '📍' },
     { id: 'mapbiomas', name: 'MapBiomas 2024', visible: false, icon: '🌳' },
-    { id: 'biogas-plants', name: 'Plantas de Biogás (MapBiomas+ANP, 2024)', visible: false, icon: '🏭' },
+    { id: 'biogas-plants', name: 'Plantas de Biomassa (MapBiomas+ANP, 2024)', visible: false, icon: '🏭' },
     { id: 'pipelines', name: 'Gasodutos (EPE, 2024)', visible: false, icon: '🔧' },
     { id: 'substations', name: 'Subestações (EPE, 2024)', visible: false, icon: '⚡' },
     { id: 'transmission-lines', name: 'Linhas de Transmissão (EPE, 2023)', visible: false, icon: '🔌' },
@@ -99,6 +103,9 @@ export default function MapComponent({
 
   // MapBiomas legend visibility state
   const [showMapBiomasLegend, setShowMapBiomasLegend] = useState(false);
+
+  // Biomass layer legend visibility state
+  const [showBiomassLayerLegend, setShowBiomassLayerLegend] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -131,6 +138,11 @@ export default function MapComponent({
     // Toggle MapBiomas legend visibility when MapBiomas layer is toggled
     if (layerId === 'mapbiomas') {
       setShowMapBiomasLegend(visible);
+    }
+
+    // Toggle Biomass layer legend visibility when biogas-plants layer is toggled
+    if (layerId === 'biogas-plants') {
+      setShowBiomassLayerLegend(visible);
     }
   };
 
@@ -441,6 +453,9 @@ export default function MapComponent({
 
       {/* MapBiomas Legend (Bottom-Right, above MapLegend) */}
       {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
+
+      {/* Biomass Layer Legend (Bottom-Left, above stats panel) */}
+      {isMounted && <BiomassLayerLegend visible={showBiomassLayerLegend} />}
     </div>
   );
 }
