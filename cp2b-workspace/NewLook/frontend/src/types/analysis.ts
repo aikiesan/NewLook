@@ -1,7 +1,7 @@
 /**
  * CP2B Maps V3 - Analysis TypeScript Types
  * Type definitions for correction factors, cascade analysis, and scenario planning
- * Based on SAF (Surplus Availability Factor) methodology
+ * Based on FDE (Fator de Disponibilidade Efetiva) methodology
  */
 
 // Correction Factors for FDE (Factor de Disponibilidade Efetiva)

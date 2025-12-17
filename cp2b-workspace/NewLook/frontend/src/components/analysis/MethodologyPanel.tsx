@@ -220,24 +220,20 @@ export default function MethodologyPanel({
           <div className="bg-blue-50 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Sobre a Metodologia SAF
+              Sobre a Metodologia FDE
             </h3>
             <p className="text-xs text-blue-700 mb-3">
-              O Sistema de Avaliacao de Fatores (SAF) foi desenvolvido pelo projeto CP2B
-              para converter potencial teorico em disponibilidade efetiva real de biomassa
-              para producao de biogas.
+              A metodologia FDE (Fator de Disponibilidade Efetiva) converte potencial
+              teorico em disponibilidade efetiva real de biomassa para producao de biogas,
+              considerando fatores praticos de coleta, competicao, sazonalidade e logistica.
             </p>
-            <p className="text-xs text-blue-700 mb-3">
-              Os fatores de correcao foram validados com dados de 521 plantas de biogas
-              em operacao no estado de Sao Paulo, garantindo estimativas realistas.
-            </p>
-            <div className="bg-green-100 rounded-md p-2 mb-3">
-              <p className="text-xs text-green-800 font-semibold mb-1">
-                🌱 Calibracao Setor Sucroenergetico (2024)
+            <div className="bg-amber-100 rounded-md p-2 mb-3">
+              <p className="text-xs text-amber-800 font-semibold mb-1">
+                ⚠️ Dados em Validacao
               </p>
-              <p className="text-xs text-green-700">
-                Fatores calibrados com dados reais da UNICA: Cocal Narandiba (8.9M Nm³/ano)
-                e Raizen Geo Biogas Bonfim (19.0M Nm³/ano). FCP=0.801, FDE=0.143.
+              <p className="text-xs text-amber-700">
+                Os fatores de correcao estao sendo validados. Os valores apresentados
+                sao estimativas preliminares baseadas em dados da literatura cientifica.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs">

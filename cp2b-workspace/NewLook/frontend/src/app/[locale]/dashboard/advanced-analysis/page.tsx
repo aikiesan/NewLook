@@ -3,7 +3,7 @@
 /**
  * Dashboard Advanced Analysis Page for CP2B Maps V3
  * Enhanced with DBFZ-inspired features: correction factors, cascade, Sankey, scenarios
- * Based on SAF (Surplus Availability Factor) methodology
+ * Based on FDE (Fator de Disponibilidade Efetiva) methodology
  */
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from '@/navigation'
@@ -442,7 +442,7 @@ export default function AdvancedAnalysisPage() {
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2 tracking-tight">Analises Avancadas</h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Potencial de biogas com fatores de correcao SAF (FC, FCp, FS, FL)
+                Potencial de biogas com fatores de correcao FDE (FC, FCp, FS, FL)
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
