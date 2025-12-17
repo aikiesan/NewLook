@@ -39,12 +39,6 @@ const REFERENCES: ReferenceCategory[] = [
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     references: [
       {
-        residue: 'Calibração UNICA - Fatores Sucroenergético',
-        authors: 'UNICA & CP2B Maps',
-        year: 2024,
-        description: 'Calibração com dados reais de plantas: FCP=0.801, FDE=0.143 (baseado em Cocal Narandiba 8.9M Nm³/ano e Raízen Geo Biogás Bonfim 19.0M Nm³/ano)'
-      },
-      {
         residue: 'Bagaço',
         authors: 'Ver base de dados científica',
         year: 2024,
@@ -71,12 +65,6 @@ const REFERENCES: ReferenceCategory[] = [
         year: 2024,
         url: '/pt-BR/dashboard/scientific-database',
         description: '31 referências científicas validadas para palha de cana'
-      },
-      {
-        residue: 'Metodologia Setor Sucroenergético',
-        authors: 'DBFZ & UNICA',
-        year: 2024,
-        description: 'Protocolo de calibração de fatores para vinhaça, torta de filtro e bagaço usando dados operacionais de plantas comerciais em São Paulo'
       }
     ]
   },
@@ -356,7 +344,7 @@ const DATA_SOURCES: DataSourceCategory[] = [
         url: 'https://cibiogas.org',
         type: 'Base nacional',
         year: '2019',
-        description: '521 plantas operacionais - Capacidade, feedstock, tecnologia'
+        description: 'Plantas de biogás operacionais - Capacidade, feedstock, tecnologia'
       },
       {
         name: 'ANP - Painel Dinâmico de Produtores de Etanol',
@@ -575,11 +563,8 @@ export default function ReferencesModal({ isOpen, onClose }: ReferencesModalProp
                     <div className="text-sm text-blue-800 dark:text-blue-300">
                       <p className="font-semibold mb-1">Sobre as referências</p>
                       <p className="text-blue-700 dark:text-blue-400">
-                        Todas as referências foram validadas e são utilizadas no cálculo dos fatores de conversão de resíduos para biogás.
-                        Os fatores de disponibilidade foram calibrados para o contexto do Estado de São Paulo.
-                      </p>
-                      <p className="mt-2 text-blue-600 dark:text-blue-400 text-xs">
-                        <strong>Setor Sucroenergético:</strong> Fatores calibrados com dados reais de plantas UNICA (Cocal Narandiba e Raízen Geo Biogás Bonfim).
+                        Todas as referências são utilizadas no cálculo dos fatores de conversão de resíduos para biogás.
+                        Os fatores de disponibilidade estão sendo validados para o contexto do Estado de São Paulo.
                       </p>
                     </div>
                   </div>
