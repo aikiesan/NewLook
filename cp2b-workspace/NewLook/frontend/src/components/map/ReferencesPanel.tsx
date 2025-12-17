@@ -166,6 +166,7 @@ const REFERENCES_DATA: ReferenceCategory[] = [
     id: 'urban',
     title: 'Setor Urbano',
     icon: '🏙️',
+    sources: [],
     subcategories: [
       {
         title: 'Resíduos Sólidos Urbanos (RSU)',
@@ -214,6 +215,7 @@ const REFERENCES_DATA: ReferenceCategory[] = [
     id: 'infrastructure',
     title: 'Camadas de Infraestrutura',
     icon: '📍',
+    sources: [],
     subcategories: [
       {
         title: 'Malhas Territoriais',
@@ -388,7 +390,7 @@ export default function ReferencesPanel() {
 
     const query = searchQuery.toLowerCase();
     return REFERENCES_DATA.map(category => {
-      const filteredSources = category.sources.filter(source =>
+      const filteredSources = (category.sources || []).filter(source =>
         source.name.toLowerCase().includes(query) ||
         source.organization.toLowerCase().includes(query) ||
         source.description?.toLowerCase().includes(query)
@@ -396,19 +398,19 @@ export default function ReferencesPanel() {
 
       const filteredSubcategories = category.subcategories?.map(subcat => ({
         ...subcat,
-        sources: subcat.sources.filter(source =>
+        sources: (subcat.sources || []).filter(source =>
           source.name.toLowerCase().includes(query) ||
           source.organization.toLowerCase().includes(query) ||
           source.description?.toLowerCase().includes(query)
         )
-      })).filter(subcat => subcat.sources.length > 0);
+      })).filter(subcat => subcat.sources && subcat.sources.length > 0);
 
       return {
         ...category,
         sources: filteredSources,
         subcategories: filteredSubcategories
       };
-    }).filter(cat => cat.sources.length > 0 || (cat.subcategories && cat.subcategories.length > 0));
+    }).filter(cat => (cat.sources && cat.sources.length > 0) || (cat.subcategories && cat.subcategories.length > 0));
   }, [searchQuery]);
 
   if (!isOpen) {
@@ -480,7 +482,7 @@ export default function ReferencesPanel() {
                 {expandedCategories.includes(category.id) && (
                   <div className="p-4 space-y-3 bg-white">
                     {/* Direct sources */}
-                    {category.sources.map((source, idx) => {
+                    {category.sources && category.sources.length > 0 && category.sources.map((source, idx) => {
                       const sourceId = `${category.id}-${idx}`;
                       return (
                         <div key={sourceId} className="border-l-4 border-blue-500 pl-4">
@@ -552,7 +554,7 @@ export default function ReferencesPanel() {
                           {subcat.title}
                         </h4>
                         <div className="space-y-3 ml-4">
-                          {subcat.sources.map((source, idx) => {
+                          {subcat.sources && subcat.sources.length > 0 && subcat.sources.map((source, idx) => {
                             const sourceId = `${category.id}-${subcatIdx}-${idx}`;
                             return (
                               <div key={sourceId} className="border-l-4 border-blue-300 pl-4">
