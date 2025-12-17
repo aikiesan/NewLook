@@ -89,6 +89,30 @@ const createSubstationIcon = () => {
   });
 };
 
+// Icon for Ethanol plants
+const createEthanolPlantIcon = () => {
+  return L.divIcon({
+    className: 'custom-ethanol-plant-icon',
+    html: `
+      <div style="
+        background-color: #9B59B6;
+        border: 2px solid #6C3483;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <span style="color: white; font-size: 12px; font-weight: bold;">🌽</span>
+      </div>
+    `,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  });
+};
+
+// Icon for Biogas plants
 const createBiogasPlantIcon = () => {
   return L.divIcon({
     className: 'custom-biogas-plant-icon',
@@ -104,6 +128,52 @@ const createBiogasPlantIcon = () => {
         justify-content: center;
       ">
         <span style="color: white; font-size: 12px; font-weight: bold;">🏭</span>
+      </div>
+    `,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  });
+};
+
+// Icon for Biomethane plants
+const createBiomethaneIcon = () => {
+  return L.divIcon({
+    className: 'custom-biomethane-plant-icon',
+    html: `
+      <div style="
+        background-color: #3498DB;
+        border: 2px solid #1F618D;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <span style="color: white; font-size: 12px; font-weight: bold;">💨</span>
+      </div>
+    `,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  });
+};
+
+// Icon for Biomass UTE (Thermoelectric) plants
+const createBiomassUTEIcon = () => {
+  return L.divIcon({
+    className: 'custom-biomass-ute-icon',
+    html: `
+      <div style="
+        background-color: #E67E22;
+        border: 2px solid #BA4A00;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <span style="color: white; font-size: 12px; font-weight: bold;">⚡</span>
       </div>
     `,
     iconSize: [18, 18],
@@ -168,7 +238,24 @@ export default function InfrastructureLayer({ layerType }: InfrastructureLayerPr
     if (layerType === 'substations') {
       icon = createSubstationIcon();
     } else if (layerType === 'biogas-plants') {
-      icon = createBiogasPlantIcon();
+      // Differentiate biomass plants by type
+      const props = feature.properties;
+      const subtype = props.SUBTIPO?.toLowerCase() || '';
+      const plantType = props.TIPO_PLANT?.toLowerCase() || '';
+
+      // Determine icon based on plant subtype or type
+      if (subtype.includes('etanol') || plantType.includes('etanol')) {
+        icon = createEthanolPlantIcon();
+      } else if (subtype.includes('biometano') || plantType.includes('biometano')) {
+        icon = createBiomethaneIcon();
+      } else if (subtype.includes('ute') || plantType.includes('ute') || subtype.includes('termelétrica') || subtype.includes('termeletrica')) {
+        icon = createBiomassUTEIcon();
+      } else if (subtype.includes('biogás') || subtype.includes('biogas') || plantType.includes('biogás') || plantType.includes('biogas')) {
+        icon = createBiogasPlantIcon();
+      } else {
+        // Default to biogas icon for unknown types
+        icon = createBiogasPlantIcon();
+      }
     } else if (layerType === 'etes') {
       icon = createETEIcon();
     } else {
