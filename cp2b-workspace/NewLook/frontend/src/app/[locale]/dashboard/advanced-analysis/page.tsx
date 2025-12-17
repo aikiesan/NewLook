@@ -24,7 +24,11 @@ import {
   GitBranch,
   Layers,
   BookOpen,
-  FileText
+  FileText,
+  Wheat,
+  Beef,
+  Building2,
+  Factory
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -505,9 +509,9 @@ export default function AdvancedAnalysisPage() {
           </div>
         </div>
 
-        {/* Stats Summary with FDE */}
+        {/* Stats Summary with FDE - Sector Specific */}
         {categoryStats && !loadingStats && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-xs sm:text-sm font-medium text-gray-600">Total Municipios</div>
@@ -521,9 +525,44 @@ export default function AdvancedAnalysisPage() {
               <div className="text-xs text-gray-500 mt-1">municipios cadastrados</div>
             </div>
 
+            <div className={`bg-gradient-to-br rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 ${
+              selectedCategory === 'agricultural' ? 'from-green-50 to-white border-green-500' :
+              selectedCategory === 'livestock' ? 'from-orange-50 to-white border-orange-500' :
+              selectedCategory === 'urban' ? 'from-blue-50 to-white border-blue-500' :
+              'from-purple-50 to-white border-purple-500'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Categoria</div>
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${
+                  selectedCategory === 'agricultural' ? 'bg-green-100' :
+                  selectedCategory === 'livestock' ? 'bg-orange-100' :
+                  selectedCategory === 'urban' ? 'bg-blue-100' :
+                  'bg-purple-100'
+                }`}>
+                  {selectedCategory === 'agricultural' && <Wheat className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />}
+                  {selectedCategory === 'livestock' && <Beef className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />}
+                  {selectedCategory === 'urban' && <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />}
+                  {selectedCategory === 'industrial' && <Factory className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />}
+                </div>
+              </div>
+              <div className={`text-xl sm:text-2xl font-bold ${
+                selectedCategory === 'agricultural' ? 'text-green-700' :
+                selectedCategory === 'livestock' ? 'text-orange-700' :
+                selectedCategory === 'urban' ? 'text-blue-700' :
+                'text-purple-700'
+              }`}>
+                {categoryLabels[selectedCategory]}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {selectedResidueCodes.length > 0
+                  ? `${selectedResidueCodes.length} resíduo(s) selecionado(s)`
+                  : 'Todos os resíduos'}
+              </div>
+            </div>
+
             <div className="bg-gradient-to-br from-green-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-green-500">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Teorico</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Potencial Teorico</div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 </div>
@@ -536,7 +575,7 @@ export default function AdvancedAnalysisPage() {
 
             <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-emerald-600">
               <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">FDE Ajustado</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600">Potencial Real (FDE)</div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
                 </div>
@@ -547,32 +586,6 @@ export default function AdvancedAnalysisPage() {
               <div className="text-xs text-gray-500 mt-1">
                 m3/ano ({(calculateFDE(effectiveFactors) * 100).toFixed(1)}%)
               </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-orange-500">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Pecuario</div>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-                </div>
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                {(categoryStats.categories.livestock.total / 1000000000).toFixed(2)}B
-              </div>
-              <div className="text-xs text-gray-500 mt-1">m3/ano de biogas</div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 sm:p-6 border-l-4 border-blue-500">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs sm:text-sm font-medium text-gray-600">Urbano</div>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                </div>
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                {(categoryStats.categories.urban.total / 1000000000).toFixed(2)}B
-              </div>
-              <div className="text-xs text-gray-500 mt-1">m3/ano de biogas</div>
             </div>
           </div>
         )}
@@ -591,9 +604,27 @@ export default function AdvancedAnalysisPage() {
                 onApply={handleApplyFilter}
               />
 
-              {/* Factor Adjustment Panel (in sidebar) */}
+              {/* Factor Adjustment Panel (in sidebar) - Tied to Cascade Visualization */}
               {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && (
-                <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md border-l-4 border-blue-500 p-4">
+                <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md border-l-4 border-blue-500 p-4 relative">
+                  {/* Connection Indicator */}
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 z-10">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                      <GitBranch className="w-3 h-3 text-white rotate-90" />
+                    </div>
+                  </div>
+
+                  {/* Header with connection note */}
+                  <div className="mb-3 pb-3 border-b border-blue-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <GitBranch className="h-4 w-4 text-blue-600" />
+                      <h4 className="text-xs font-semibold text-blue-900">Ajuste Integrado</h4>
+                    </div>
+                    <p className="text-[10px] text-blue-700">
+                      Os ajustes aqui refletem em tempo real na Cascata de Potencial
+                    </p>
+                  </div>
+
                   {selectedResidueCodes.length > 0 ? (
                     <PerResidueFactorEditor
                       selectedResidueCodes={selectedResidueCodes}
@@ -741,13 +772,27 @@ export default function AdvancedAnalysisPage() {
                   </div>
                 </div>
 
-                {/* Potential Cascade Chart */}
-                <PotentialCascadeChart
-                  theoreticalPotential={theoreticalPotential}
-                  factors={effectiveFactors}
-                  title={`Cascata de Potencial - ${RESIDUE_SCENARIOS[currentScenario].name} ${selectedResidueCodes.length > 0 ? `(${selectedResidueCodes.length} resíduos)` : ''}`}
-                  loading={loadingStats}
-                />
+                {/* Potential Cascade Chart - Connected to Factor Adjustment */}
+                <div className="relative">
+                  {/* Connection Indicator */}
+                  {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && (
+                    <div className="absolute -left-3 top-8 z-10">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                        <GitBranch className="w-3 h-3 text-white rotate-90" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cascade Chart with Visual Connection Styling */}
+                  <div className={`${(selectedResidueCodes.length > 0 || currentScenario === 'custom') ? 'ring-2 ring-blue-200 ring-offset-2' : ''} rounded-xl`}>
+                    <PotentialCascadeChart
+                      theoreticalPotential={theoreticalPotential}
+                      factors={effectiveFactors}
+                      title={`Cascata de Potencial - ${RESIDUE_SCENARIOS[currentScenario].name} ${selectedResidueCodes.length > 0 ? `(${selectedResidueCodes.length} resíduos)` : ''}`}
+                      loading={loadingStats}
+                    />
+                  </div>
+                </div>
 
                 {/* Top 5 Municipalities Mini Card - Compact View */}
                 <TopMunicipalitiesMiniCard
