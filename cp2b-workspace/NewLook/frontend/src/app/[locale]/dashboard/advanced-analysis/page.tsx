@@ -494,6 +494,20 @@ export default function AdvancedAnalysisPage() {
           </div>
         )}
 
+        {/* Info Banner - Industrial Category API Limitation */}
+        {selectedCategory === 'industrial' && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-800 px-6 py-4 rounded-lg mb-6 shadow-sm flex items-start gap-3">
+            <Info className="h-5 w-5 flex-shrink-0 mt-0.5 text-amber-600" />
+            <div className="flex-1">
+              <h3 className="font-semibold mb-1 text-amber-900">Categoria Industrial - Dados em Desenvolvimento</h3>
+              <p className="text-sm text-amber-800">
+                Os dados municipais para a categoria Industrial estão sendo processados. Os valores apresentados podem incluir dados agregados de múltiplas categorias.
+                Os resíduos industriais específicos (incluindo Torta de Filtro e Vinhaça) estão corretamente classificados e seus fatores FDE individuais são aplicados.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Info Banner - Scientific References */}
         <div className="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 px-6 py-4 rounded-lg mb-6 shadow-sm flex items-start gap-3">
           <BookOpen className="h-5 w-5 flex-shrink-0 mt-0.5 text-indigo-600" />
@@ -594,7 +608,7 @@ export default function AdvancedAnalysisPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar - Compact Residue & Category Selector */}
           <div className="lg:col-span-3">
-            <div className="space-y-4 sticky top-6">
+            <div className="space-y-4">
               {/* Simple Residue Selector */}
               <SimpleResidueSelector
                 selectedCategory={selectedCategory}
@@ -604,7 +618,30 @@ export default function AdvancedAnalysisPage() {
                 onApply={handleApplyFilter}
               />
 
-              {/* Factor Adjustment Panel (in sidebar) - Tied to Cascade Visualization */}
+              {/* Search Filter */}
+              <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Search className="h-3.5 w-3.5" />
+                  Buscar
+                </h4>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Nome..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Spacer to align with Scenario Selector + Info card in main area */}
+              {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && viewMode === 'cascade' && (
+                <div className="h-[200px]" aria-hidden="true"></div>
+              )}
+              {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && viewMode === 'flow' && (
+                <div className="h-[180px]" aria-hidden="true"></div>
+              )}
+
+              {/* Factor Adjustment Panel (in sidebar) - Tied to Cascade Visualization - ALIGNED */}
               {(selectedResidueCodes.length > 0 || currentScenario === 'custom') && (
                 <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-md border-l-4 border-blue-500 p-4 relative">
                   {/* Connection Indicator */}
@@ -621,7 +658,7 @@ export default function AdvancedAnalysisPage() {
                       <h4 className="text-xs font-semibold text-blue-900">Ajuste Integrado</h4>
                     </div>
                     <p className="text-[10px] text-blue-700">
-                      Os ajustes aqui refletem em tempo real na Cascata de Potencial
+                      Os ajustes aqui refletem em tempo real na visualização
                     </p>
                   </div>
 
@@ -641,21 +678,6 @@ export default function AdvancedAnalysisPage() {
                   )}
                 </div>
               )}
-
-              {/* Search Filter */}
-              <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100">
-                <h4 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <Search className="h-3.5 w-3.5" />
-                  Buscar
-                </h4>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Nome..."
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
             </div>
           </div>
 
