@@ -42,8 +42,8 @@ export default function SimpleResidueSelector({
 
   // Group residues
   const residueGroups: ResidueGroup[] = (() => {
-    if (selectedCategory === 'agricultural' || selectedCategory === 'industrial') {
-      // Group by parent crop for agricultural and industrial
+    if (selectedCategory === 'agricultural') {
+      // Group by parent crop for agricultural only
       const grouped = new Map<string, typeof categoryResidues>();
       categoryResidues.forEach(residue => {
         const parent = getParentCrop(residue.code);
@@ -61,6 +61,16 @@ export default function SimpleResidueSelector({
           name: r.name
         }))
       }));
+    } else if (selectedCategory === 'industrial') {
+      // For industrial, create a flat list with single group (no grouping display)
+      return [{
+        id: 'all',
+        label: 'Resíduos Industriais',
+        residues: categoryResidues.map(r => ({
+          code: r.code,
+          name: r.name
+        }))
+      }];
     } else {
       // For livestock and urban, create a single "all" group
       return [{
@@ -78,11 +88,11 @@ export default function SimpleResidueSelector({
   const handleCategoryClick = (category: ResidueCategory) => {
     onCategoryChange(category);
     onResidueCodesChange([]);
-    if (category === 'agricultural' || category === 'industrial') {
-      // For grouped categories, start collapsed
+    if (category === 'agricultural') {
+      // For agricultural (grouped), start collapsed
       setExpandedGroups(new Set());
     } else {
-      // For livestock/urban, auto-expand the single group
+      // For livestock/urban/industrial, auto-expand the single group
       setExpandedGroups(new Set(['all']));
     }
   };
@@ -159,6 +169,46 @@ export default function SimpleResidueSelector({
           const selectedCount = groupCodes.filter(code => selectedResidueCodes.includes(code)).length;
           const allSelected = selectedCount === groupCodes.length && groupCodes.length > 0;
 
+          // For industrial, show flat list without group header
+          if (selectedCategory === 'industrial') {
+            return (
+              <div key={group.id}>
+                <div className="p-2 space-y-0.5">
+                  {group.residues.map(residue => {
+                    const isSelected = selectedResidueCodes.includes(residue.code);
+
+                    return (
+                      <label
+                        key={residue.code}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all ${
+                          isSelected ? 'bg-green-100 border border-green-300' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-green-600 border-green-600'
+                              : 'border-gray-300'
+                          }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleResidue(residue.code);
+                          }}
+                        >
+                          {isSelected && (
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          )}
+                        </div>
+
+                        <span className="text-xs text-gray-700">{residue.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div key={group.id} className="border-b border-gray-100 last:border-0">
               {/* Group Header */}
@@ -182,7 +232,7 @@ export default function SimpleResidueSelector({
                   <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
                 )}
 
-                {(selectedCategory === 'agricultural' || selectedCategory === 'industrial') && (
+                {selectedCategory === 'agricultural' && (
                   <div
                     className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
                       allSelected
