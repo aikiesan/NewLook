@@ -667,7 +667,7 @@ export default function HomePage() {
       <VideoModal
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
-        videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        videoUrl="https://youtu.be/Vn-SPmn-ChY"
         title={t('video_modal.title')}
       />
 
