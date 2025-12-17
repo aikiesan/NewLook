@@ -103,48 +103,78 @@ export default function ReferencesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Scientific References Tab */}
         {activeTab === 'scientific' && (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Sidebar - Residue Selector */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 sticky top-6">
-                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Database className="h-5 w-5 text-green-600" />
-                  Selecione um Resíduo
-                </h3>
-
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {sampleResidues.map((residue) => (
-                    <button
-                      key={residue.code}
-                      onClick={() => setSelectedResidueCode(residue.code)}
-                      className={`w-full text-left p-3 rounded-lg transition-all border ${
-                        selectedResidueCode === residue.code
-                          ? 'bg-green-50 border-green-500 shadow-sm'
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="font-medium text-sm text-gray-900 mb-1">
-                        {residue.name}
-                      </div>
-                      <div className="text-xs text-gray-500">{residue.code}</div>
-                    </button>
-                  ))}
+          <div className="space-y-6">
+            {/* Info Card - Link to Full Database */}
+            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 border-2 border-indigo-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 p-3 bg-indigo-600 rounded-lg">
+                  <Database className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Base Científica Completa Disponível
+                  </h3>
+                  <p className="text-gray-700 mb-4">
+                    Para acessar a <strong>interface completa</strong> com filtros avançados,
+                    curvas cinéticas, dados químicos, comparação de resíduos e co-digestão,
+                    visite nossa Base Científica dedicada.
+                  </p>
+                  <a
+                    href="/dashboard/scientific-database"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
+                  >
+                    <BookOpen className="h-5 w-5" />
+                    Acessar Base Científica Completa
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
             </div>
 
-            {/* References List */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <BookOpen className="h-7 w-7 text-green-600" />
-                  Referências Bibliográficas
-                </h2>
-                <ReferenceList
-                  codigoResidue={selectedResidueCode}
-                  showStatistics={true}
-                  maxHeight="calc(100vh - 300px)"
-                />
+            {/* Simplified View */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Sidebar - Residue Selector */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 sticky top-6">
+                  <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <Database className="h-5 w-5 text-green-600" />
+                    Selecione um Resíduo
+                  </h3>
+
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {sampleResidues.map((residue) => (
+                      <button
+                        key={residue.code}
+                        onClick={() => setSelectedResidueCode(residue.code)}
+                        className={`w-full text-left p-3 rounded-lg transition-all border ${
+                          selectedResidueCode === residue.code
+                            ? 'bg-green-50 border-green-500 shadow-sm'
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="font-medium text-sm text-gray-900 mb-1">
+                          {residue.name}
+                        </div>
+                        <div className="text-xs text-gray-500">{residue.code}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* References List */}
+              <div className="lg:col-span-3">
+                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <BookOpen className="h-7 w-7 text-green-600" />
+                    Referências Bibliográficas - Visualização Rápida
+                  </h2>
+                  <ReferenceList
+                    codigoResidue={selectedResidueCode}
+                    showStatistics={true}
+                    maxHeight="calc(100vh - 400px)"
+                  />
+                </div>
               </div>
             </div>
           </div>

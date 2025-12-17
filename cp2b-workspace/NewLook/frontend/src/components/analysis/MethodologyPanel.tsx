@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react'
+import { Link } from '@/navigation'
 import {
   FileText,
   ChevronDown,
@@ -284,7 +285,14 @@ export default function MethodologyPanel({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50">
+        <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2">
+          <Link
+            href="/dashboard/references"
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <BookOpen className="h-4 w-4" />
+            Ver Referências Completas
+          </Link>
           <button
             onClick={onClose}
             className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"

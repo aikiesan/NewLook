@@ -106,7 +106,7 @@ export default function DashboardPage() {
     },
     {
       title: 'Referências',
-      description: 'Bibliografia científica, fontes de dados geoespaciais e documentação técnica do projeto',
+      description: 'Bibliografia científica, fontes de dados e documentação. Cada resíduo possui análises e referências científicas diferentes.',
       icon: BookOpen,
       href: '/dashboard/references',
       color: 'gray'

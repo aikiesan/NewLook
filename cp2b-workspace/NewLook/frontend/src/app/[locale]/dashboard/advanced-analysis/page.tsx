@@ -490,6 +490,21 @@ export default function AdvancedAnalysisPage() {
           </div>
         )}
 
+        {/* Info Banner - Scientific References */}
+        <div className="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 px-6 py-4 rounded-lg mb-6 shadow-sm flex items-start gap-3">
+          <BookOpen className="h-5 w-5 flex-shrink-0 mt-0.5 text-indigo-600" />
+          <div className="flex-1">
+            <h3 className="font-semibold mb-1 text-indigo-900">Referências Científicas Disponíveis</h3>
+            <p className="text-sm text-indigo-800">
+              Cada resíduo possui análises e referências científicas diferentes que podem ser consultadas na{' '}
+              <a href="/dashboard/references" className="font-semibold underline hover:text-indigo-900">
+                página de Referências
+              </a>
+              {' '}ou clicando no botão <strong>Referências</strong> acima.
+            </p>
+          </div>
+        </div>
+
         {/* Stats Summary with FDE */}
         {categoryStats && !loadingStats && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
