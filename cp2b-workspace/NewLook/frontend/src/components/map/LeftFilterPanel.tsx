@@ -7,23 +7,35 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Minus, Plus } from 'lucide-react';
-import type { ResidueType } from './FloatingControlPanel';
+import type { ResidueType, BiomassType } from './FloatingControlPanel';
+
+export type VisualizationMode = 'choropleth' | 'heatmap';
 
 interface LeftFilterPanelProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedResidues: ResidueType[];
   onResiduesChange: (residues: ResidueType[]) => void;
+  biomassType: BiomassType;
+  onBiomassTypeChange: (type: BiomassType) => void;
+  visualizationMode?: VisualizationMode;
+  onVisualizationModeChange?: (mode: VisualizationMode) => void;
 }
 
 export default function LeftFilterPanel({
   searchQuery,
   onSearchChange,
   selectedResidues,
-  onResiduesChange
+  onResiduesChange,
+  biomassType,
+  onBiomassTypeChange,
+  visualizationMode = 'choropleth',
+  onVisualizationModeChange
 }: LeftFilterPanelProps) {
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [showResidues, setShowResidues] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(true);
+  const [showResidues, setShowResidues] = useState(false);
+  const [showVisualization, setShowVisualization] = useState(false);
+  const [showBiomassTypes, setShowBiomassTypes] = useState(false);
 
   const residueOptions = [
     { value: 'sugarcane', label: 'Cana-de-açúcar', category: 'agricultural', icon: '🌾' },
@@ -38,6 +50,13 @@ export default function LeftFilterPanel({
     { value: 'rsu', label: 'RSU', category: 'urban', icon: '🗑️' },
     { value: 'rpo', label: 'RPO', category: 'urban', icon: '♻️' },
   ] as const;
+
+  const biomassOptions = [
+    { value: 'total', label: 'Potencial Total', icon: '⚡' },
+    { value: 'agricultural', label: 'Agrícola', icon: '🌾' },
+    { value: 'livestock', label: 'Pecuária', icon: '🐄' },
+    { value: 'urban', label: 'Urbano', icon: '🏙️' }
+  ];
 
   const handleResidueToggle = (residue: ResidueType) => {
     const newResidues = selectedResidues.includes(residue)
@@ -204,6 +223,110 @@ export default function LeftFilterPanel({
                     </label>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Visualization Mode Selector */}
+          {onVisualizationModeChange && (
+            <div>
+              <button
+                onClick={() => setShowVisualization(!showVisualization)}
+                className="flex items-center justify-between w-full text-xs font-semibold text-gray-700 uppercase tracking-wide hover:text-gray-900 transition-colors mb-1.5"
+              >
+                <span className="flex items-center gap-1.5">
+                  🎨 Modo de Visualização
+                </span>
+                {showVisualization ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+              {showVisualization && (
+                <div className="space-y-1">
+                  <label
+                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
+                      visualizationMode === 'choropleth'
+                        ? 'bg-blue-100 border border-blue-300 text-blue-800'
+                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="visualizationMode"
+                      value="choropleth"
+                      checked={visualizationMode === 'choropleth'}
+                      onChange={() => onVisualizationModeChange('choropleth')}
+                      className="w-4 h-4 text-blue-600 flex-shrink-0"
+                    />
+                    <span className="text-xs font-medium">
+                      🗺️ Mapa Coroplético (Preenchimento)
+                    </span>
+                  </label>
+                  <label
+                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
+                      visualizationMode === 'heatmap'
+                        ? 'bg-orange-100 border border-orange-300 text-orange-800'
+                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="visualizationMode"
+                      value="heatmap"
+                      checked={visualizationMode === 'heatmap'}
+                      onChange={() => onVisualizationModeChange('heatmap')}
+                      className="w-4 h-4 text-orange-600 flex-shrink-0"
+                    />
+                    <span className="text-xs font-medium">
+                      🔥 Mapa de Calor (Concentração)
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Biomass Type Selector */}
+          <div>
+            <button
+              onClick={() => setShowBiomassTypes(!showBiomassTypes)}
+              className="flex items-center justify-between w-full text-xs font-semibold text-gray-700 uppercase tracking-wide hover:text-gray-900 transition-colors mb-1.5"
+            >
+              <span className="flex items-center gap-1.5">
+                ⚡ Tipo de Biomassa
+              </span>
+              {showBiomassTypes ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            {showBiomassTypes && (
+              <div className="space-y-1">
+                {biomassOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
+                      biomassType === option.value
+                        ? 'bg-green-100 border border-green-300 text-green-800'
+                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="biomassType"
+                      value={option.value}
+                      checked={biomassType === option.value}
+                      onChange={() => onBiomassTypeChange(option.value as BiomassType)}
+                      className="w-4 h-4 text-green-600 flex-shrink-0"
+                    />
+                    <span className="text-xs font-medium">
+                      {option.icon} {option.label}
+                    </span>
+                  </label>
+                ))}
               </div>
             )}
           </div>

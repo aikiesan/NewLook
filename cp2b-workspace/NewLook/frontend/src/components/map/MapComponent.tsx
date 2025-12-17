@@ -12,7 +12,7 @@ import { useGeospatialData } from '@/hooks/useGeospatialData';
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel';
 import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import type { BiomassType, ResidueType } from './FloatingControlPanel';
-import type { VisualizationMode } from './RightLayerPanel';
+import type { VisualizationMode } from './LeftFilterPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
@@ -52,6 +52,10 @@ const BiomassLayerLegend = dynamic(() => import('./BiomassLayerLegend'), {
 });
 
 const HeatmapLegend = dynamic(() => import('./HeatmapLegend'), {
+  ssr: false,
+});
+
+const ReferencesPanel = dynamic(() => import('./ReferencesPanel'), {
   ssr: false,
 });
 
@@ -427,22 +431,22 @@ export default function MapComponent({
           onSearchChange={onSearchChange || (() => {})}
           selectedResidues={selectedResidues}
           onResiduesChange={setSelectedResidues}
+          biomassType={biomassType}
+          onBiomassTypeChange={onBiomassTypeChange || (() => {})}
+          visualizationMode={visualizationMode}
+          onVisualizationModeChange={setVisualizationMode}
         />
       )}
 
       {/* Right Layer Panel */}
       {isMounted && (
         <RightLayerPanel
-          biomassType={biomassType}
-          onBiomassTypeChange={onBiomassTypeChange || (() => {})}
           opacity={opacity}
           onOpacityChange={onOpacityChange || (() => {})}
           layers={layers}
           onLayerToggle={handleLayerToggle}
           municipalityCount={displayData.features.length}
           totalMunicipalities={data.features.length}
-          visualizationMode={visualizationMode}
-          onVisualizationModeChange={setVisualizationMode}
         />
       )}
 
@@ -456,6 +460,9 @@ export default function MapComponent({
 
       {/* Biomass Layer Legend (Bottom-Left, above stats panel) */}
       {isMounted && <BiomassLayerLegend visible={showBiomassLayerLegend} />}
+
+      {/* References Panel (Data Sources) */}
+      {isMounted && <ReferencesPanel />}
     </div>
   );
 }

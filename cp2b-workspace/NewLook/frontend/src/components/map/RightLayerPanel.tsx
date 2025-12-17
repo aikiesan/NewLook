@@ -7,7 +7,6 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Layers, Minus, Plus } from 'lucide-react';
-import type { BiomassType } from './FloatingControlPanel';
 
 interface Layer {
   id: string;
@@ -16,44 +15,25 @@ interface Layer {
   icon: string;
 }
 
-export type VisualizationMode = 'choropleth' | 'heatmap';
-
 interface RightLayerPanelProps {
-  biomassType: BiomassType;
-  onBiomassTypeChange: (type: BiomassType) => void;
   opacity: number;
   onOpacityChange: (opacity: number) => void;
   layers: Layer[];
   onLayerToggle: (layerId: string, visible: boolean) => void;
   municipalityCount: number;
   totalMunicipalities: number;
-  visualizationMode?: VisualizationMode;
-  onVisualizationModeChange?: (mode: VisualizationMode) => void;
 }
 
 export default function RightLayerPanel({
-  biomassType,
-  onBiomassTypeChange,
   opacity,
   onOpacityChange,
   layers,
   onLayerToggle,
   municipalityCount,
-  totalMunicipalities,
-  visualizationMode = 'choropleth',
-  onVisualizationModeChange
+  totalMunicipalities
 }: RightLayerPanelProps) {
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showBiomassTypes, setShowBiomassTypes] = useState(false);
   const [showLayers, setShowLayers] = useState(true);
-  const [showVisualization, setShowVisualization] = useState(false);
-
-  const biomassOptions = [
-    { value: 'total', label: 'Potencial Total', icon: '⚡' },
-    { value: 'agricultural', label: 'Agrícola', icon: '🌾' },
-    { value: 'livestock', label: 'Pecuária', icon: '🐄' },
-    { value: 'urban', label: 'Urbano', icon: '🏙️' }
-  ];
 
   if (isMinimized) {
     return (
@@ -108,110 +88,6 @@ export default function RightLayerPanel({
                 ></div>
               </div>
             </div>
-          </div>
-
-          {/* Visualization Mode Selector */}
-          {onVisualizationModeChange && (
-            <div>
-              <button
-                onClick={() => setShowVisualization(!showVisualization)}
-                className="flex items-center justify-between w-full text-xs font-semibold text-gray-700 uppercase tracking-wide hover:text-gray-900 transition-colors mb-1.5"
-              >
-                <span className="flex items-center gap-1.5">
-                  🎨 Modo de Visualização
-                </span>
-                {showVisualization ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-              {showVisualization && (
-                <div className="space-y-1">
-                  <label
-                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
-                      visualizationMode === 'choropleth'
-                        ? 'bg-blue-100 border border-blue-300 text-blue-800'
-                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="visualizationMode"
-                      value="choropleth"
-                      checked={visualizationMode === 'choropleth'}
-                      onChange={() => onVisualizationModeChange('choropleth')}
-                      className="w-4 h-4 text-blue-600 flex-shrink-0"
-                    />
-                    <span className="text-xs font-medium">
-                      🗺️ Mapa Coroplético (Preenchimento)
-                    </span>
-                  </label>
-                  <label
-                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
-                      visualizationMode === 'heatmap'
-                        ? 'bg-orange-100 border border-orange-300 text-orange-800'
-                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="visualizationMode"
-                      value="heatmap"
-                      checked={visualizationMode === 'heatmap'}
-                      onChange={() => onVisualizationModeChange('heatmap')}
-                      className="w-4 h-4 text-orange-600 flex-shrink-0"
-                    />
-                    <span className="text-xs font-medium">
-                      🔥 Mapa de Calor (Concentração)
-                    </span>
-                  </label>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Biomass Type Selector */}
-          <div>
-            <button
-              onClick={() => setShowBiomassTypes(!showBiomassTypes)}
-              className="flex items-center justify-between w-full text-xs font-semibold text-gray-700 uppercase tracking-wide hover:text-gray-900 transition-colors mb-1.5"
-            >
-              <span className="flex items-center gap-1.5">
-                {biomassOptions.find(o => o.value === biomassType)?.icon} Tipo de Biomassa
-              </span>
-              {showBiomassTypes ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-            {showBiomassTypes && (
-              <div className="space-y-1">
-                {biomassOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
-                      biomassType === option.value
-                        ? 'bg-green-100 border border-green-300 text-green-800'
-                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="biomassType"
-                      value={option.value}
-                      checked={biomassType === option.value}
-                      onChange={() => onBiomassTypeChange(option.value as BiomassType)}
-                      className="w-4 h-4 text-green-600 flex-shrink-0"
-                    />
-                    <span className="text-xs font-medium">
-                      {option.icon} {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Opacity Slider */}
