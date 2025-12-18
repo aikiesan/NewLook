@@ -41,7 +41,8 @@ class Settings(BaseSettings):
         "localhost",
         "127.0.0.1",
         "0.0.0.0",
-        "newlook-production.up.railway.app",
+        "newlook-production.up.railway.app",  # Railway (legacy, can be removed after migration)
+        "*.onrender.com",  # Render (all deployments)
         "*.vercel.app",  # Vercel (all deployments)
         "*.pages.dev",  # Cloudflare Pages (all deployments)
     ]
