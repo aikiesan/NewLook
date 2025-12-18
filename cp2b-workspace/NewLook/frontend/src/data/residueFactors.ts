@@ -202,8 +202,8 @@ export const DETAILED_RESIDUES: DetailedResidue[] = [
   {
     code: 'AG_CANA_TORTA_FILTRO',
     name: 'Torta de Filtro (cana)',
-    sector: 'INDÚSTRIA',
-    category: 'industrial',
+    sector: 'AGRICULTURA',
+    category: 'agricultural',
     fc: 0.95,
     fcp: 0.67,
     fs: 0.9,
@@ -222,8 +222,8 @@ export const DETAILED_RESIDUES: DetailedResidue[] = [
   {
     code: 'AG_CANA_VINHACA',
     name: 'Vinhaça (caldo destilação etanol)',
-    sector: 'INDÚSTRIA',
-    category: 'industrial',
+    sector: 'AGRICULTURA',
+    category: 'agricultural',
     fc: 0.95,
     fcp: 0.85,
     fs: 0.9,
