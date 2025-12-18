@@ -7,7 +7,6 @@
 'use client';
 
 import React from 'react';
-import { Link } from '@/navigation';
 import type { MunicipalityProperties } from '@/types/geospatial';
 import {
   formatBiogas,
@@ -228,17 +227,14 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
         </div>
       </div>
 
-      {/* Footer - Link to References */}
+      {/* Footer - Note about References */}
       <div className="mt-3 pt-2 border-t border-gray-200">
-        <Link
-          href="/dashboard/references"
-          className="flex items-center justify-center gap-1.5 w-full px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded transition-colors"
-        >
+        <div className="flex items-center justify-center gap-1.5 w-full px-2 py-1.5 bg-indigo-50 border border-indigo-200 rounded">
           <BookOpen className="h-3 w-3 text-indigo-600" />
           <span className="text-[10px] font-medium text-indigo-700">
             Cada resíduo possui análises e referências científicas diferentes
           </span>
-        </Link>
+        </div>
       </div>
     </div>
   );
