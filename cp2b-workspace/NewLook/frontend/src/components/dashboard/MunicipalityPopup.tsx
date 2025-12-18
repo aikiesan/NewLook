@@ -26,10 +26,19 @@ interface MunicipalityPopupProps {
 }
 
 export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
-  const totalBiogas = properties.total_biogas_m3_year;
-  const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year, totalBiogas);
-  const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year, totalBiogas);
-  const urbanPercentage = calculatePercentage(properties.urban_biogas_m3_year, totalBiogas);
+  // Defensive checks for required properties
+  if (!properties || !properties.name) {
+    return (
+      <div className="w-full p-4 text-center text-gray-500">
+        <p className="text-sm">Dados não disponíveis</p>
+      </div>
+    );
+  }
+
+  const totalBiogas = properties.total_biogas_m3_year || 0;
+  const agriPercentage = calculatePercentage(properties.agricultural_biogas_m3_year || 0, totalBiogas);
+  const livestockPercentage = calculatePercentage(properties.livestock_biogas_m3_year || 0, totalBiogas);
+  const urbanPercentage = calculatePercentage(properties.urban_biogas_m3_year || 0, totalBiogas);
 
   return (
     <div className="w-full">
@@ -40,7 +49,7 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
             {properties.name}
           </h3>
           <p className="text-[10px] text-gray-500">
-            IBGE: {properties.ibge_code}
+            IBGE: {properties.ibge_code || 'N/A'}
           </p>
         </div>
         <span
@@ -76,19 +85,19 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
             <div className="flex justify-between text-[10px]">
               <span className="text-gray-600">População:</span>
               <span className="font-medium text-gray-900">
-                {formatPopulation(properties.population)}
+                {formatPopulation(properties.population || 0)}
               </span>
             </div>
             <div className="flex justify-between text-[10px]">
               <span className="text-gray-600">Área:</span>
               <span className="font-medium text-gray-900">
-                {formatArea(properties.area_km2)}
+                {formatArea(properties.area_km2 || 0)}
               </span>
             </div>
             <div className="flex justify-between text-[10px]">
               <span className="text-gray-600">Região:</span>
-              <span className="font-medium text-gray-900 truncate max-w-[120px]" title={properties.immediate_region}>
-                {properties.immediate_region}
+              <span className="font-medium text-gray-900 truncate max-w-[120px]" title={properties.immediate_region || 'N/A'}>
+                {properties.immediate_region || 'N/A'}
               </span>
             </div>
           </div>
@@ -157,63 +166,63 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
         </h4>
         <div className="flex flex-wrap gap-1.5">
           {/* Agricultural Residues */}
-          {properties.sugarcane_biogas_m3_year > 0 && (
+          {(properties.sugarcane_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
-              <span className="font-medium">Cana:</span> {formatBiogasShort(properties.sugarcane_biogas_m3_year)}
+              <span className="font-medium">Cana:</span> {formatBiogasShort(properties.sugarcane_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.soybean_biogas_m3_year > 0 && (
+          {(properties.soybean_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
-              <span className="font-medium">Soja:</span> {formatBiogasShort(properties.soybean_biogas_m3_year)}
+              <span className="font-medium">Soja:</span> {formatBiogasShort(properties.soybean_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.corn_biogas_m3_year > 0 && (
+          {(properties.corn_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
-              <span className="font-medium">Milho:</span> {formatBiogasShort(properties.corn_biogas_m3_year)}
+              <span className="font-medium">Milho:</span> {formatBiogasShort(properties.corn_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.coffee_biogas_m3_year > 0 && (
+          {(properties.coffee_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
-              <span className="font-medium">Café:</span> {formatBiogasShort(properties.coffee_biogas_m3_year)}
+              <span className="font-medium">Café:</span> {formatBiogasShort(properties.coffee_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.citrus_biogas_m3_year > 0 && (
+          {(properties.citrus_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-green-50 border border-green-200 rounded text-[9px]">
-              <span className="font-medium">Citrus:</span> {formatBiogasShort(properties.citrus_biogas_m3_year)}
+              <span className="font-medium">Citrus:</span> {formatBiogasShort(properties.citrus_biogas_m3_year || 0)}
             </div>
           )}
 
           {/* Livestock Residues */}
-          {properties.cattle_biogas_m3_year > 0 && (
+          {(properties.cattle_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
-              <span className="font-medium">Bovinos:</span> {formatBiogasShort(properties.cattle_biogas_m3_year)}
+              <span className="font-medium">Bovinos:</span> {formatBiogasShort(properties.cattle_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.swine_biogas_m3_year > 0 && (
+          {(properties.swine_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
-              <span className="font-medium">Suínos:</span> {formatBiogasShort(properties.swine_biogas_m3_year)}
+              <span className="font-medium">Suínos:</span> {formatBiogasShort(properties.swine_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.poultry_biogas_m3_year > 0 && (
+          {(properties.poultry_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
-              <span className="font-medium">Aves:</span> {formatBiogasShort(properties.poultry_biogas_m3_year)}
+              <span className="font-medium">Aves:</span> {formatBiogasShort(properties.poultry_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.aquaculture_biogas_m3_year > 0 && (
+          {(properties.aquaculture_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-yellow-50 border border-yellow-200 rounded text-[9px]">
-              <span className="font-medium">Aquicultura:</span> {formatBiogasShort(properties.aquaculture_biogas_m3_year)}
+              <span className="font-medium">Aquicultura:</span> {formatBiogasShort(properties.aquaculture_biogas_m3_year || 0)}
             </div>
           )}
 
           {/* Urban Residues */}
-          {properties.rsu_biogas_m3_year > 0 && (
+          {(properties.rsu_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[9px]">
-              <span className="font-medium">RSU:</span> {formatBiogasShort(properties.rsu_biogas_m3_year)}
+              <span className="font-medium">RSU:</span> {formatBiogasShort(properties.rsu_biogas_m3_year || 0)}
             </div>
           )}
-          {properties.rpo_biogas_m3_year > 0 && (
+          {(properties.rpo_biogas_m3_year || 0) > 0 && (
             <div className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[9px]">
-              <span className="font-medium">RPO:</span> {formatBiogasShort(properties.rpo_biogas_m3_year)}
+              <span className="font-medium">RPO:</span> {formatBiogasShort(properties.rpo_biogas_m3_year || 0)}
             </div>
           )}
         </div>
