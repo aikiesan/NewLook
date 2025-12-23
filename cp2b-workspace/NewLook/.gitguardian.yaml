@@ -1,0 +1,37 @@
+# GitGuardian Configuration
+# Excludes test files and fixtures from secret scanning to prevent false positives
+
+version: 2
+
+# Paths to exclude from scanning
+paths-ignore:
+  - "**/tests/**"
+  - "**/__tests__/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.test.py"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/*.spec.py"
+  - "**/fixtures/**"
+  - "**/conftest.py"
+  - "**/jest.setup.js"
+  - "**/setupTests.ts"
+
+# Additional configuration
+secret:
+  # Ignore test passwords and keys
+  ignored_matches:
+    - name: test-password
+      match: "SecurePass123"
+    - name: test-password
+      match: "MyP@ssw0rd"
+    - name: test-token
+      match: "test-token"
+    - name: test-id
+      match: "test-id"
+    - name: test-uuid
+      match: "550e8400-e29b-41d4-a716-446655440000"
+
+# Minimum secret confidence to report
+minimum_occurrences: 2
