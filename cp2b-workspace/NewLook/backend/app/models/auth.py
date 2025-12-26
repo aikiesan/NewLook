@@ -40,7 +40,7 @@ class UserRegistration(BaseModel):
         json_schema_extra = {
             "example": {
                 "email": "usuario@example.com",
-                "password": "SenhaSegura123",
+                "password": "YourSecurePassword123",
                 "full_name": "João Silva"
             }
         }
@@ -54,7 +54,7 @@ class UserLogin(BaseModel):
         json_schema_extra = {
             "example": {
                 "email": "usuario@example.com",
-                "password": "senhaSegura123"
+                "password": "yourSecurePassword123"
             }
         }
 
