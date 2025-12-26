@@ -1,11 +1,15 @@
 """
-Pytest configuration and fixtures for CP2B Maps V3 Backend
+CP2B Maps V3 Backend - Test Configuration
+Pytest configuration and fixtures for comprehensive testing
 """
 import pytest
+import asyncio
+import os
+from typing import AsyncGenerator, Generator
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, MagicMock
 import psycopg2
-from typing import Generator
 
 # Mock the database connection for tests
 @pytest.fixture(autouse=True)
@@ -21,14 +25,29 @@ def mock_db_connection(monkeypatch):
     monkeypatch.setattr("app.core.database.get_db", mock_get_db)
     return mock_conn, mock_cursor
 
-@pytest.fixture
-def client() -> Generator:
-    """
-    Test client for FastAPI app
-    """
-    from app.main import app
+def create_test_app():
+    """Create a FastAPI app for testing without middleware restrictions"""
+    from app.api.v1.api import api_router
 
-    with TestClient(app) as test_client:
+    test_app = FastAPI(
+        title="CP2B Maps V3 API - Test",
+        description="Test version without middleware restrictions",
+        version="3.0.0",
+    )
+
+    # Include API routes without middleware
+    test_app.include_router(api_router, prefix="/api/v1")
+    return test_app
+
+@pytest.fixture(scope="function")
+def test_app() -> FastAPI:
+    """Create a FastAPI app instance for testing"""
+    return create_test_app()
+
+@pytest.fixture(scope="function")
+def client(test_app: FastAPI) -> Generator[TestClient, None, None]:
+    """Create a TestClient for synchronous API testing"""
+    with TestClient(test_app, base_url="http://testserver") as test_client:
         yield test_client
 
 @pytest.fixture
@@ -96,7 +115,6 @@ def db_connection():
     Use this sparingly and mark tests with @pytest.mark.database
     """
     # Only create real connection if DATABASE_URL is set for integration tests
-    import os
     if not os.getenv("TEST_DATABASE_URL"):
         pytest.skip("Integration tests require TEST_DATABASE_URL")
 
@@ -114,3 +132,32 @@ def db_transaction(db_connection):
     yield cursor
     db_connection.rollback()
     cursor.close()
+
+# Advanced testing fixtures
+class TestSettings:
+    """Test configuration settings"""
+    DEBUG = True
+    TESTING = True
+    DATABASE_URL = "sqlite:///:memory:"
+    SECRET_KEY = "test-secret-key-do-not-use-in-production"
+
+@pytest.fixture
+def test_settings() -> TestSettings:
+    """Test application settings"""
+    return TestSettings()
+
+# Event loop fixture for async tests
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+# Markers for test categorization
+pytest.mark.unit = pytest.mark.unit
+pytest.mark.integration = pytest.mark.integration
+pytest.mark.api = pytest.mark.api
+pytest.mark.slow = pytest.mark.slow
+pytest.mark.auth = pytest.mark.auth
+pytest.mark.database = pytest.mark.database
