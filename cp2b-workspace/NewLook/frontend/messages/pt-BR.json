@@ -1,0 +1,237 @@
+{
+  "common": {
+    "nav": {
+      "home": "Início",
+      "map": "Mapa",
+      "dashboard": "Dashboard",
+      "about": "Sobre",
+      "references": "Referências",
+      "hub": "Hub",
+      "proximity": "Proximidade",
+      "simulation": "Simulação",
+      "technology_routes": "Rotas Tecnológicas",
+      "scientific_database": "Base Científica",
+      "advanced": "Análises"
+    },
+    "nav_descriptions": {
+      "hub": "Central de Recursos",
+      "map": "Mapa Interativo SP",
+      "simulation": "Modelo Insumo-Produto"
+    },
+    "auth": {
+      "login": "Entrar",
+      "logout": "Sair",
+      "logout_account": "Sair da conta",
+      "settings": "Configurações",
+      "user": "Usuário",
+      "admin": "Administrador",
+      "authenticated": "Autenticado"
+    },
+    "menu": {
+      "open": "Abrir menu",
+      "close": "Fechar menu"
+    },
+    "badge": {
+      "beta": "Beta"
+    },
+    "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
+  },
+  "auth": {
+    "errors": {
+      "fill_all_fields": "Por favor, preencha todos os campos",
+      "login_failed": "Falha no login. Verifique suas credenciais.",
+      "password_min_length": "A senha deve ter no mínimo 6 caracteres",
+      "passwords_no_match": "As senhas não coincidem",
+      "registration_failed": "Falha no registro. Tente novamente."
+    },
+    "login": {
+      "back_to_home": "Voltar para página inicial - CP2B Maps V3",
+      "title": "Acessar sua conta",
+      "or": "Ou",
+      "create_account": "crie uma nova conta",
+      "email_label": "Endereço de e-mail",
+      "email_placeholder": "seu@email.com",
+      "password_label": "Senha",
+      "remember_me": "Lembrar-me",
+      "forgot_password": "Esqueceu a senha?",
+      "submitting": "Entrando...",
+      "submit": "Entrar",
+      "new_to_platform": "Novo na plataforma?",
+      "create_new_account": "Criar nova conta"
+    },
+    "register": {
+      "back_to_home": "Voltar para página inicial",
+      "title": "Criar nova conta",
+      "or": "Ou",
+      "login_existing": "faça login com sua conta existente",
+      "full_name_label": "Nome completo",
+      "full_name_placeholder": "João Silva",
+      "email_label": "Endereço de e-mail",
+      "email_placeholder": "seu@email.com",
+      "password_label": "Senha",
+      "password_strength": "Força da senha",
+      "password_weak": "Fraca",
+      "password_medium": "Média",
+      "password_strong": "Forte",
+      "confirm_password_label": "Confirmar senha",
+      "agree_to": "Eu concordo com os",
+      "terms_of_service": "Termos de Serviço",
+      "and": "e",
+      "privacy_policy": "Política de Privacidade",
+      "submitting": "Criando conta...",
+      "submit": "Criar conta",
+      "already_have_account": "Já tem uma conta?",
+      "login": "Fazer login"
+    },
+    "common": {
+      "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
+    }
+  },
+  "landing": {
+    "skip_to_content": "Pular para o conteúdo principal",
+    "hero": {
+      "badge": "Projeto FAPESP 2025/08745-2 | NIPE-UNICAMP",
+      "title": "Mapeamento do Potencial de",
+      "title_highlight": "Biogás em São Paulo",
+      "subtitle": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo",
+      "cta_explore": "Explorar Mapa Interativo",
+      "cta_demo": "Ver Demonstração",
+      "showcase_badge": "Veja a plataforma em ação",
+      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma CP2B Maps V3."
+    },
+    "screenshots": {
+      "interactive_map": {
+        "alt": "Mapa interativo de São Paulo com camadas de infraestrutura e potencial de biogás",
+        "caption": "Mapa Interativo",
+        "description": "Visualização geoespacial com camadas de infraestrutura, plantas de biogás e municípios de São Paulo"
+      },
+      "data_analysis": {
+        "alt": "Dashboard de análise de dados com gráficos e estatísticas municipais",
+        "caption": "Análise de Dados",
+        "description": "Explore dados detalhados de biomassa, produção agrícola e potencial energético por município"
+      },
+      "proximity_analysis": {
+        "alt": "Análise de proximidade com raios de coleta e infraestrutura",
+        "caption": "Análise de Proximidade",
+        "description": "Simulação logística com raios de coleta e análise de proximidade a infraestrutura existente"
+      },
+      "scientific_basis": {
+        "alt": "Base científica com referências e metodologia SAF",
+        "caption": "Base Científica",
+        "description": "Acesse a metodologia SAF e referências científicas que fundamentam as análises da plataforma"
+      }
+    },
+    "stats": {
+      "municipalities": {
+        "label": "Municípios",
+        "description": "Estado de SP"
+      },
+      "modules": {
+        "label": "Módulos",
+        "description": "Análise MCDA"
+      },
+      "references": {
+        "label": "Referências",
+        "description": "Papers RAG AI"
+      },
+      "wcag": {
+        "label": "WCAG 2.1",
+        "description": "Acessibilidade"
+      }
+    },
+    "features": {
+      "heading": "O que você pode fazer com o CP2B Maps",
+      "subheading": "Ferramentas avançadas para mapeamento, análise e visualização de potencial de biogás baseadas em metodologia científica validada.",
+      "geospatial": {
+        "title": "Mapeamento Geoespacial",
+        "description": "Visualização interativa de dados de biomassa com precisão municipal e subcamadas temáticas",
+        "features": [
+          "Mapas coropléticos com escala de potencial de biogás",
+          "Integração MapBiomas com resolução 10m×10m",
+          "Análise de raio de coleta (10-50km) otimizada",
+          "Exportação GeoJSON e Shapefile para SIG"
+        ],
+        "cta": "Explorar Mapas"
+      },
+      "mcda": {
+        "title": "Análise MCDA",
+        "description": "Análise multicritério para priorização de municípios e identificação de locais ótimos para plantas",
+        "features": [
+          "8 critérios integrados: SAF, logística, infraestrutura",
+          "Pesos configuráveis por stakeholder",
+          "Ranking automatizado dos 645 municípios SP",
+          "Índice de Adequação Territorial (IAT) validado"
+        ],
+        "cta": "Ver Análises"
+      },
+      "collaborative": {
+        "title": "Plataforma Colaborativa",
+        "description": "Ambiente integrado para pesquisadores, gestores públicos e empresas do setor de biogás",
+        "features": [
+          "3 níveis de acesso: Visitante, Pesquisador, Admin",
+          "Assistente AI 'Bagacinho' com RAG de 58 papers",
+          "Base de dados atualizada SIDRA/IBGE 2018-2024",
+          "Documentação completa da Metodologia SAF"
+        ],
+        "cta": "Criar Conta"
+      }
+    },
+    "cta_section": {
+      "heading": "Pronto para explorar todos os recursos?",
+      "description": "Crie uma conta gratuita para acessar análises completas, exportar dados e colaborar com a comunidade CP2B.",
+      "button_register": "Criar Conta Gratuita",
+      "button_learn_more": "Saiba Mais"
+    },
+    "newsletter": {
+      "title": "Receba novidades sobre biogás",
+      "description": "Inscreva-se para receber atualizações sobre novos recursos, análises e insights sobre o setor de biogás em São Paulo."
+    },
+    "footer": {
+      "fapesp_project": "Processo FAPESP 2025/08745-2",
+      "about": "Sobre",
+      "copyright": "© 2025 NIPE-UNICAMP"
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "video_modal": {
+      "title": "Demonstração da Plataforma CP2B Maps",
+      "aria_label": "Assistir demonstração em vídeo da plataforma"
+    }
+  },
+  "Home": {
+    "title": "Bem-vindo",
+    "description": "Sua descrição aqui"
+  },
+  "About": {
+    "title": "Sobre Nós",
+    "description": "Saiba mais sobre nossa plataforma"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bem-vindo de volta"
+  },
+  "Login": {
+    "title": "Entrar",
+    "email": "E-mail",
+    "password": "Senha"
+  },
+  "Map": {
+    "title": "Mapa Interativo",
+    "legend": "Legenda do Mapa"
+  },
+  "Register": {
+    "title": "Criar Conta",
+    "name": "Nome Completo"
+  },
+  "Settings": {
+    "title": "Configurações",
+    "language": "Idioma"
+  },
+  "metadata": {
+    "title": "CP2B Maps V3 - Atlas de Potencial de Biogás",
+    "description": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério e ferramentas de simulação econômica.",
+    "keywords": "biogás, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP"
+  }
+}

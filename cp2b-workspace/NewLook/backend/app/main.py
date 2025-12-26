@@ -1,16 +1,25 @@
 """
 CP2B Maps V3 Backend API
 FastAPI application for geospatial biogas potential analysis
+Sprint 4: Performance optimizations, error handling, and production deployment
 """
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
-from pathlib import Path
-import os
+from datetime import datetime, timezone
+from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+from app.core.database import test_db_connection
 from app.api.v1.api import api_router
+from app.middleware.rate_limiter import rate_limit_middleware
+from app.middleware.response_compression import gzip_middleware
+from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler
+from app.services.cache_service import get_all_cache_stats
 
 # Create FastAPI app
 app = FastAPI(
@@ -21,20 +30,54 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
+# Register slowapi limiter with FastAPI app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# Sprint 4: Performance Middleware (applied in order)
+# 1. Rate limiting (prevents abuse)
+app.middleware("http")(rate_limit_middleware)
+
+# 2. CORS middleware - Allow specific CP2B Maps deployments only
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.get_all_origins(),  # Includes localhost origins
+    # Restrict to CP2B Maps specific subdomains only
+    # Vercel: new-look*.vercel.app, cp2b-maps*.vercel.app
+    # Cloudflare: cp2bmaps.pages.dev and numbered previews
+    allow_origin_regex=r"https://(new-look.*|cp2b-maps.*)\.vercel\.app|https://(cp2bmaps|\w{8}\.cp2bmaps)\.pages\.dev",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
+    allow_headers=["*"],  # Allow all headers for preflight compatibility
+    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
-# Trusted host middleware
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=settings.ALLOWED_HOSTS,
-)
+# 3. Response compression (reduces bandwidth)
+app.middleware("http")(gzip_middleware)
+
+# 4. Trusted host middleware - Prevents host header injection attacks
+# NOTE: TrustedHostMiddleware doesn't support wildcards in allowed_hosts
+# Using specific domains only. CORS middleware above handles origin validation.
+# For production, we allow:
+# - Render backend domain (update with your actual Render service name)
+# - Railway backend domain (legacy, remove after migration complete)
+# - Localhost for development
+# - Wildcard disabled to prevent security issues
+if settings.APP_ENV == "production":
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=[
+            "cp2b-maps-backend.onrender.com",  # Update with your Render service name
+            "newlook-production.up.railway.app",  # Railway (can be removed after migration)
+            "localhost",
+            "127.0.0.1",
+        ]
+    )
+else:
+    # Development: Allow all hosts
+    # In production, CORS already validates origins
+    pass
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
@@ -51,10 +94,77 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
+    """
+    Comprehensive health check endpoint with database verification.
+    Returns current timestamp and database connectivity status.
+    """
+    health_status = {
         "status": "healthy",
-        "timestamp": "2025-11-16"
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": settings.VERSION,
+        "environment": settings.APP_ENV
+    }
+
+    # Check database connectivity
+    try:
+        db_healthy = test_db_connection()
+        health_status["database"] = "connected" if db_healthy else "error"
+
+        if not db_healthy:
+            health_status["status"] = "degraded"
+            return JSONResponse(
+                status_code=200,  # Still return 200 for degraded state
+                content=health_status
+            )
+
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["database"] = "disconnected"
+        health_status["error"] = str(e)
+        return JSONResponse(
+            status_code=503,  # Service unavailable
+            content=health_status
+        )
+
+    return health_status
+
+
+@app.get("/health/ready")
+async def readiness_check():
+    """Kubernetes-style readiness probe - checks if app can serve traffic"""
+    try:
+        if test_db_connection():
+            return {"ready": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+        return JSONResponse(
+            status_code=503,
+            content={"ready": False, "reason": "database_unavailable"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={"ready": False, "reason": str(e)}
+        )
+
+
+@app.get("/health/live")
+async def liveness_check():
+    """Kubernetes-style liveness probe - checks if app process is alive"""
+    return {
+        "alive": True,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.get("/stats/cache")
+async def cache_statistics():
+    """
+    Cache performance statistics (Sprint 4)
+    Shows hit rates and cache efficiency
+    """
+    stats = get_all_cache_stats()
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "caches": stats
     }
 
 if __name__ == "__main__":

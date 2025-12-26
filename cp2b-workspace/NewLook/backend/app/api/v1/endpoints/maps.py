@@ -2,7 +2,6 @@
 Maps and geospatial data API endpoints
 """
 from fastapi import APIRouter, HTTPException
-from typing import Dict, List, Any
 
 router = APIRouter()
 

@@ -1,0 +1,801 @@
+"""
+API endpoints for residuos (residues) data.
+
+Provides access to:
+- Residue types with chemical parameters (BMP, TS, VS, C:N, CH4)
+- Scientific references linked to parameters
+- Sector and subsector organization
+- Conversion factors with literature backing
+
+Author: Claude Code
+Date: 2024-11-19
+"""
+
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+import logging
+import traceback
+
+from app.core.database import get_db
+
+router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+@router.get("/sectors")
+async def get_sectors():
+    """
+    Get all biogas sectors with summary statistics.
+
+    Returns the 4 main sectors: Agriculture, Livestock, Urban, Industrial
+    with residue counts and average parameters.
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get sectors with statistics
+            cursor.execute("""
+                SELECT
+                    s.codigo,
+                    s.nome,
+                    s.nome_en,
+                    s.emoji,
+                    s.ordem,
+                    s.descricao,
+                    COUNT(r.id) as num_residuos,
+                    ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
+                    ROUND(AVG(r.ts_medio)::numeric, 2) as avg_ts,
+                    ROUND(AVG(r.vs_medio)::numeric, 2) as avg_vs,
+                    ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
+                    ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content
+                FROM sectors s
+                LEFT JOIN residuos r ON s.codigo = r.sector_codigo
+                GROUP BY s.codigo, s.nome, s.nome_en, s.emoji, s.ordem, s.descricao
+                ORDER BY s.ordem
+            """)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries, no need for zip()
+
+            sectors = []
+            for row in rows:
+                # row is already a dict from RealDictCursor
+                sector = dict(row)  # Create a copy
+                # Convert Decimal to float for JSON serialization
+                for key in ['avg_bmp', 'avg_ts', 'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
+                    if key in sector and sector[key] is not None:
+                        try:
+                            if hasattr(sector[key], '__float__'):
+                                sector[key] = float(sector[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={sector[key]} to float: {e}")
+                            sector[key] = None
+                sectors.append(sector)
+
+            return {
+                "success": True,
+                "count": len(sectors),
+                "sectors": sectors
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching sectors: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/subsectors")
+async def get_subsectors(sector_codigo: Optional[str] = None):
+    """
+    Get subsectors, optionally filtered by sector.
+
+    Args:
+        sector_codigo: Filter by sector code (e.g., 'AG_AGRICULTURA')
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            if sector_codigo:
+                cursor.execute("""
+                    SELECT
+                        ss.codigo,
+                        ss.nome,
+                        ss.nome_en,
+                        ss.sector_codigo,
+                        ss.emoji,
+                        ss.ordem,
+                        s.nome as sector_nome,
+                        COUNT(r.id) as num_residuos
+                    FROM subsectors ss
+                    JOIN sectors s ON ss.sector_codigo = s.codigo
+                    LEFT JOIN residuos r ON ss.codigo = r.subsector_codigo
+                    WHERE ss.sector_codigo = %s
+                    GROUP BY ss.codigo, ss.nome, ss.nome_en, ss.sector_codigo,
+                             ss.emoji, ss.ordem, s.nome
+                    ORDER BY ss.ordem
+                """, (sector_codigo,))
+            else:
+                cursor.execute("""
+                    SELECT
+                        ss.codigo,
+                        ss.nome,
+                        ss.nome_en,
+                        ss.sector_codigo,
+                        ss.emoji,
+                        ss.ordem,
+                        s.nome as sector_nome,
+                        COUNT(r.id) as num_residuos
+                    FROM subsectors ss
+                    JOIN sectors s ON ss.sector_codigo = s.codigo
+                    LEFT JOIN residuos r ON ss.codigo = r.subsector_codigo
+                    GROUP BY ss.codigo, ss.nome, ss.nome_en, ss.sector_codigo,
+                             ss.emoji, ss.ordem, s.nome
+                    ORDER BY s.ordem, ss.ordem
+                """)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            subsectors = [dict(row) for row in rows]  # Create copies
+
+            return {
+                "success": True,
+                "count": len(subsectors),
+                "subsectors": subsectors
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching subsectors: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/")
+async def get_residuos(
+    sector_codigo: Optional[str] = None,
+    subsector_codigo: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = Query(default=100, le=500),
+    offset: int = Query(default=0, ge=0)
+):
+    """
+    Get all residuos with chemical parameters.
+
+    Args:
+        sector_codigo: Filter by sector (e.g., 'AG_AGRICULTURA', 'PC_PECUARIA')
+        subsector_codigo: Filter by subsector (e.g., 'AG_CANA', 'PC_BOVINOS')
+        search: Search by residue name
+        limit: Max results (default 100, max 500)
+        offset: Pagination offset
+    """
+    try:
+        logger.info(f"Fetching residuos: sector={sector_codigo}, subsector={subsector_codigo}, search={search}")
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Build query
+            query = """
+                SELECT
+                    r.id,
+                    r.codigo,
+                    r.nome,
+                    r.nome_en,
+                    r.sector_codigo,
+                    r.subsector_codigo,
+                    r.categoria_codigo,
+                    r.categoria_nome,
+                    r.bmp_min,
+                    r.bmp_medio,
+                    r.bmp_max,
+                    r.bmp_unidade,
+                    r.ts_min,
+                    r.ts_medio,
+                    r.ts_max,
+                    r.vs_min,
+                    r.vs_medio,
+                    r.vs_max,
+                    r.chemical_cn_ratio,
+                    r.chemical_ch4_content,
+                    r.fc_medio,
+                    r.fcp_medio,
+                    r.fs_medio,
+                    r.fl_medio,
+                    r.fator_pessimista,
+                    r.fator_realista,
+                    r.fator_otimista,
+                    r.generation,
+                    r.destination,
+                    r.icon,
+                    s.nome as sector_nome,
+                    s.emoji as sector_emoji,
+                    ss.nome as subsector_nome,
+                    (SELECT COUNT(*) FROM scientific_references sr WHERE sr.primary_residue = r.codigo) as reference_count,
+                    (SELECT CONCAT(authors, ' (', COALESCE(year, publication_year), ')')
+                     FROM scientific_references sr
+                     WHERE sr.primary_residue = r.codigo
+                     ORDER BY has_validated_params DESC, COALESCE(year, publication_year) DESC
+                     LIMIT 1) as main_reference
+                FROM residuos r
+                JOIN sectors s ON r.sector_codigo = s.codigo
+                LEFT JOIN subsectors ss ON r.subsector_codigo = ss.codigo
+                WHERE 1=1
+            """
+            params = []
+
+            if sector_codigo:
+                query += " AND r.sector_codigo = %s"
+                params.append(sector_codigo)
+
+            if subsector_codigo:
+                query += " AND r.subsector_codigo = %s"
+                params.append(subsector_codigo)
+
+            if search:
+                query += " AND r.nome ILIKE %s"
+                params.append(f"%{search}%")
+
+            query += " ORDER BY s.ordem, r.nome"
+            query += " LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
+
+            cursor.execute(query, params)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            residuos = []
+            for row in rows:
+                residuo = dict(row)  # Create a copy
+                # Convert any Decimal to float
+                for key, value in residuo.items():
+                    if hasattr(value, '__float__'):
+                        residuo[key] = float(value)
+                residuos.append(residuo)
+
+            # Get total count
+            count_query = "SELECT COUNT(*) FROM residuos WHERE 1=1"
+            count_params = []
+            if sector_codigo:
+                count_query += " AND sector_codigo = %s"
+                count_params.append(sector_codigo)
+            if subsector_codigo:
+                count_query += " AND subsector_codigo = %s"
+                count_params.append(subsector_codigo)
+            if search:
+                count_query += " AND nome ILIKE %s"
+                count_params.append(f"%{search}%")
+
+            cursor.execute(count_query, count_params)
+            # RealDictCursor returns a dict, get the count value
+            count_result = cursor.fetchone()
+            total = count_result['count'] if count_result else 0
+
+            return {
+                "success": True,
+                "count": len(residuos),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "residuos": residuos
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching residuos: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{residuo_id}")
+async def get_residuo(
+    residuo_id: int
+):
+    """
+    Get a specific residue by ID with all details and references.
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get residue details
+            cursor.execute("""
+                SELECT
+                    r.*,
+                    s.nome as sector_nome,
+                    s.nome_en as sector_nome_en,
+                    s.emoji as sector_emoji,
+                    ss.nome as subsector_nome
+                FROM residuos r
+                JOIN sectors s ON r.sector_codigo = s.codigo
+                LEFT JOIN subsectors ss ON r.subsector_codigo = ss.codigo
+                WHERE r.id = %s
+            """, (residuo_id,))
+
+            row = cursor.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Residue not found")
+
+            # RealDictCursor already returns a dictionary
+            residuo = dict(row)  # Create a copy
+
+            # Convert Decimal to float
+            for key, value in residuo.items():
+                if hasattr(value, '__float__'):
+                    residuo[key] = float(value)
+
+            # Get references for this residue
+            # FIXED: Query scientific_references using codigo
+            cursor.execute("""
+                SELECT
+                    sr.id,
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                WHERE sr.primary_residue = (SELECT codigo FROM residuos WHERE id = %s)
+                ORDER BY COALESCE(sr.year, sr.publication_year) DESC
+            """, (residuo_id,))
+
+            ref_rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            references = []
+            for ref_row in ref_rows:
+                ref = dict(ref_row)  # Create a copy
+                if ref.get('reported_value') and hasattr(ref['reported_value'], '__float__'):
+                    ref['reported_value'] = float(ref['reported_value'])
+                references.append(ref)
+
+            # Group references by parameter type
+            references_by_type = {}
+            for ref in references:
+                param = ref['parameter_type']
+                if param not in references_by_type:
+                    references_by_type[param] = []
+                references_by_type[param].append(ref)
+
+            residuo['references'] = references
+            residuo['references_by_type'] = references_by_type
+            residuo['total_references'] = len(references)
+
+            return {
+                "success": True,
+                "residuo": residuo
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching residuo {residuo_id}: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/references/all")
+async def get_all_references(
+    limit: int = Query(default=1000, le=5000),
+    offset: int = Query(default=0, ge=0)
+):
+    """
+    Get all scientific references across all residues.
+
+    Args:
+        limit: Max results (default 1000, max 5000)
+        offset: Pagination offset
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get all references with residue info
+            # FIXED: Query scientific_references (not residuo_references)
+            # Join on primary_residue = codigo (not residuo_id = id)
+            cursor.execute("""
+                SELECT
+                    sr.id,
+                    sr.primary_residue as residuo_codigo,
+                    r.id as residuo_id,
+                    r.nome as residuo_nome,
+                    r.sector_codigo,
+                    s.nome as sector_nome,
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                JOIN residuos r ON sr.primary_residue = r.codigo
+                JOIN sectors s ON r.sector_codigo = s.codigo
+                ORDER BY COALESCE(sr.year, sr.publication_year) DESC, sr.authors
+                LIMIT %s OFFSET %s
+            """, (limit, offset))
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            references = []
+            for row in rows:
+                ref = dict(row)  # Create a copy - RealDictCursor returns dict-like rows
+                # Bulletproof float conversion for reported_value
+                val = ref.get('reported_value')
+                if val is not None and val != '':
+                    try:
+                        ref['reported_value'] = float(val)
+                    except (ValueError, TypeError):
+                        ref['reported_value'] = None
+                else:
+                    ref['reported_value'] = None
+                references.append(ref)
+
+            # Get total count from scientific_references
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM scientific_references sr
+                JOIN residuos r ON sr.primary_residue = r.codigo
+            """)
+            count_result = cursor.fetchone()
+            total = count_result['count'] if isinstance(count_result, dict) else count_result[0]
+
+            return {
+                "success": True,
+                "count": len(references),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "references": references
+            }
+
+    except Exception as e:
+        import traceback
+        logger.error(f"Error fetching all references: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{residuo_id}/references")
+async def get_residuo_references(
+    residuo_id: int,
+    parameter_type: Optional[str] = None
+):
+    """
+    Get scientific references for a specific residue.
+
+    Args:
+        residuo_id: ID of the residue
+        parameter_type: Optional filter by parameter type (bmp, ts, vs, cn_ratio, ch4_content)
+                       If not provided, returns all references for this residue
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Verify residue exists
+            cursor.execute("SELECT nome FROM residuos WHERE id = %s", (residuo_id,))
+            residuo = cursor.fetchone()
+            if not residuo:
+                raise HTTPException(status_code=404, detail="Residue not found")
+
+            # Get references
+            # FIXED: Query scientific_references using codigo
+            query = """
+                SELECT
+                    sr.id,
+                    NULL as parameter_type,
+                    sr.title || ' - ' || COALESCE(sr.authors, 'Unknown') as citation,
+                    sr.authors,
+                    sr.title,
+                    sr.journal,
+                    COALESCE(sr.year, sr.publication_year) as year,
+                    NULL as volume,
+                    NULL as pages,
+                    sr.doi,
+                    sr.url,
+                    sr.reported_value,
+                    sr.reported_unit,
+                    sr.has_validated_params as is_primary,
+                    sr.validation_status
+                FROM scientific_references sr
+                WHERE sr.primary_residue = (SELECT codigo FROM residuos WHERE id = %s)
+            """
+            params = [residuo_id]
+
+            # Note: scientific_references doesn't have parameter_type field
+            # This filter is disabled for now
+            # if parameter_type:
+            #     query += " AND parameter_type = %s"
+            #     params.append(parameter_type)
+
+            query += " ORDER BY COALESCE(sr.year, sr.publication_year) DESC"
+
+            cursor.execute(query, params)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            references = []
+            for row in rows:
+                ref = dict(row)  # RealDictCursor already returns dict-like rows
+                # Bulletproof float conversion for reported_value
+                val = ref.get('reported_value')
+                if val is not None and val != '':
+                    try:
+                        ref['reported_value'] = float(val)
+                    except (ValueError, TypeError):
+                        ref['reported_value'] = None
+                else:
+                    ref['reported_value'] = None
+                references.append(ref)
+
+            return {
+                "success": True,
+                "residuo_name": residuo['nome'],  # RealDictCursor returns dict, not tuple
+                "count": len(references),
+                "references": references
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        logger.error(f"Error fetching references for residuo {residuo_id}: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/conversion-factors/")
+async def get_conversion_factors(category: Optional[str] = None):
+    """
+    Get biogas conversion factors with literature backing.
+
+    Args:
+        category: Filter by category (e.g., 'Pecuária', 'Culturas')
+    """
+    try:
+        logger.info(f"Fetching conversion factors, category filter: {category}")
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Query matches the exact schema from 001_create_residuos_tables.sql
+            if category:
+                cursor.execute("""
+                    SELECT
+                        id,
+                        category,
+                        subcategory,
+                        factor_value,
+                        unit,
+                        literature_reference,
+                        reference_url,
+                        real_data_validation,
+                        safety_margin_percent,
+                        final_factor,
+                        notes
+                    FROM conversion_factors
+                    WHERE category = %s
+                    ORDER BY subcategory
+                """, (category,))
+            else:
+                cursor.execute("""
+                    SELECT
+                        id,
+                        category,
+                        subcategory,
+                        factor_value,
+                        unit,
+                        literature_reference,
+                        reference_url,
+                        real_data_validation,
+                        safety_margin_percent,
+                        final_factor,
+                        notes
+                    FROM conversion_factors
+                    ORDER BY category, subcategory
+                """)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+            logger.info(f"Found {len(rows)} conversion factors")
+
+            factors = []
+            for row in rows:
+                factor = dict(row)  # Create a copy
+                # Convert Decimal to float, handle None values
+                for key in ['factor_value', 'safety_margin_percent', 'final_factor']:
+                    if key in factor and factor[key] is not None:
+                        try:
+                            if hasattr(factor[key], '__float__'):
+                                factor[key] = float(factor[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={factor[key]} to float: {e}")
+                            factor[key] = None
+                factors.append(factor)
+
+            return {
+                "success": True,
+                "count": len(factors),
+                "factors": factors
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching conversion factors: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
+
+
+@router.get("/summary/by-sector")
+async def get_summary_by_sector():
+    """
+    Get summary statistics grouped by sector.
+
+    Returns residue counts, average BMP, and total references per sector.
+    """
+    try:
+        logger.info("Fetching sector summary...")
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Query matches the exact schema from 001_create_residuos_tables.sql
+            # Use subquery to avoid duplicate rows from multiple references per residue
+            cursor.execute("""
+                SELECT
+                    s.codigo,
+                    s.nome,
+                    s.emoji,
+                    s.ordem,
+                    COUNT(r.id) as num_residuos,
+                    ROUND(AVG(r.bmp_medio)::numeric, 2) as avg_bmp,
+                    ROUND(MIN(r.bmp_medio)::numeric, 2) as min_bmp,
+                    ROUND(MAX(r.bmp_medio)::numeric, 2) as max_bmp,
+                    ROUND(AVG(r.ts_medio)::numeric, 2) as avg_ts,
+                    ROUND(AVG(r.vs_medio)::numeric, 2) as avg_vs,
+                    ROUND(AVG(r.chemical_cn_ratio)::numeric, 2) as avg_cn_ratio,
+                    ROUND(AVG(r.chemical_ch4_content)::numeric, 2) as avg_ch4_content,
+                    COALESCE(
+                        (SELECT COUNT(*) FROM scientific_references sr
+                         JOIN residuos r2 ON sr.primary_residue = r2.codigo
+                         WHERE r2.sector_codigo = s.codigo),
+                        0
+                    ) as total_references
+                FROM sectors s
+                LEFT JOIN residuos r ON s.codigo = r.sector_codigo
+                GROUP BY s.codigo, s.nome, s.emoji, s.ordem
+                ORDER BY s.ordem
+            """)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+            logger.info(f"Found {len(rows)} sectors")
+
+            summary = []
+            for row in rows:
+                item = dict(row)  # Create a copy
+                # Convert Decimal to float, handle None values
+                for key in ['avg_bmp', 'min_bmp', 'max_bmp', 'avg_ts',
+                           'avg_vs', 'avg_cn_ratio', 'avg_ch4_content']:
+                    if key in item and item[key] is not None:
+                        try:
+                            # Only convert if it's a numeric type (Decimal, int, float)
+                            if hasattr(item[key], '__float__'):
+                                item[key] = float(item[key])
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Could not convert {key}={item[key]} to float: {e}")
+                            item[key] = None
+                summary.append(item)
+
+            return {
+                "success": True,
+                "count": len(summary),
+                "summary": summary
+            }
+
+    except Exception as e:
+        logger.error(f"Error fetching sector summary: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error: {str(e)}"
+        )
+
+
+@router.get("/compare")
+async def compare_residuos(
+    ids: str = Query(..., description="Comma-separated residue IDs to compare")
+):
+    """
+    Compare multiple residues side by side.
+
+    Args:
+        ids: Comma-separated list of residue IDs (e.g., "1,5,12")
+    """
+    try:
+        # Parse IDs
+        id_list = [int(i.strip()) for i in ids.split(',')]
+        if len(id_list) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail="At least 2 residue IDs required for comparison"
+            )
+        if len(id_list) > 10:
+            raise HTTPException(
+                status_code=400,
+                detail="Maximum 10 residues can be compared at once"
+            )
+
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            # Get residues
+            placeholders = ','.join(['%s'] * len(id_list))
+            cursor.execute(f"""
+                SELECT
+                    r.id,
+                    r.nome,
+                    r.sector_codigo,
+                    r.bmp_medio,
+                    r.ts_medio,
+                    r.vs_medio,
+                    r.chemical_cn_ratio,
+                    r.chemical_ch4_content,
+                    r.fator_realista,
+                    s.nome as sector_nome,
+                    s.emoji as sector_emoji,
+                    (SELECT COUNT(*) FROM scientific_references sr WHERE sr.primary_residue = r.codigo) as reference_count
+                FROM residuos r
+                JOIN sectors s ON r.sector_codigo = s.codigo
+                WHERE r.id IN ({placeholders})
+                ORDER BY r.bmp_medio DESC
+            """, id_list)
+
+            rows = cursor.fetchall()
+            # RealDictCursor already returns dictionaries
+
+            residuos = []
+            for row in rows:
+                residuo = dict(row)  # Create a copy
+                for key, value in residuo.items():
+                    if hasattr(value, '__float__'):
+                        residuo[key] = float(value)
+                residuos.append(residuo)
+
+            if len(residuos) != len(id_list):
+                raise HTTPException(
+                    status_code=404,
+                    detail="One or more residue IDs not found"
+                )
+
+            return {
+                "success": True,
+                "count": len(residuos),
+                "comparison": residuos
+            }
+
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error comparing residuos: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))

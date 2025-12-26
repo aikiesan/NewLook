@@ -1,6 +1,14 @@
+const nextJest = require('next/jest')
+
 /** @type {import('jest').Config} */
+const createJestConfig = nextJest({
+  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
+  dir: './',
+})
+
+// Add any custom config to be passed to Jest
 const config = {
-  // Test environment
+  coverageProvider: 'v8',
   testEnvironment: 'jsdom',
 
   // Setup files
@@ -21,6 +29,8 @@ const config = {
     '!src/app/**/not-found.tsx',
     '!src/test/**',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/**/__tests__/**',
+    '!src/**/node_modules/**',
   ],
 
   coverageReporters: [
@@ -42,29 +52,6 @@ const config = {
     },
   },
 
-  // Transform files
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': [
-      'babel-jest',
-      {
-        presets: [
-          ['next/babel'],
-        ],
-      },
-    ],
-  },
-
-  // Module file extensions
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-
-  // Ignore patterns
-  testPathIgnorePatterns: [
-    '<rootDir>/.next/',
-    '<rootDir>/node_modules/',
-    '<rootDir>/dist/',
-    '<rootDir>/build/',
-  ],
-
   // Module name mapping for path aliases and static assets
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
@@ -79,12 +66,22 @@ const config = {
     '^@/app/(.*)$': '<rootDir>/src/app/$1',
   },
 
-  // Globals
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
+  // Module file extensions
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+
+  // Ignore patterns
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/dist/',
+    '<rootDir>/build/',
+  ],
+
+  // Transform ignore patterns
+  transformIgnorePatterns: [
+    '/node_modules/',
+    '^.+\\.module\\.(css|sass|scss)$',
+  ],
 
   // Verbose output
   verbose: true,
@@ -96,4 +93,5 @@ const config = {
   restoreMocks: true,
 }
 
-module.exports = config
+// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
+module.exports = createJestConfig(config)
