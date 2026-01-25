@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 60
 
+    # Request size limiting (DoS protection)
+    MAX_REQUEST_SIZE: int = 10_000_000  # 10MB maximum request body size
+
     # Logging
     LOG_LEVEL: str = "INFO"
 

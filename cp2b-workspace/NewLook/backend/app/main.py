@@ -19,6 +19,7 @@ from app.api.v1.api import api_router
 from app.middleware.rate_limiter import rate_limit_middleware
 from app.middleware.response_compression import gzip_middleware
 from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler
+from app.middleware.request_size_limit import request_size_limit_middleware
 from app.services.cache_service import get_all_cache_stats
 
 # Create FastAPI app
@@ -34,11 +35,14 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# Sprint 4: Performance Middleware (applied in order)
-# 1. Rate limiting (prevents abuse)
+# Sprint 4: Performance & Security Middleware (applied in order)
+# 1. Request size limiting (prevents DoS via large payloads)
+app.middleware("http")(request_size_limit_middleware)
+
+# 2. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 2. CORS middleware - Allow specific CP2B Maps deployments only
+# 3. CORS middleware - Allow specific CP2B Maps deployments only
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes localhost origins
@@ -53,10 +57,10 @@ app.add_middleware(
     max_age=3600,  # Cache preflight requests for 1 hour
 )
 
-# 3. Response compression (reduces bandwidth)
+# 4. Response compression (reduces bandwidth)
 app.middleware("http")(gzip_middleware)
 
-# 4. Trusted host middleware - Prevents host header injection attacks
+# 5. Trusted host middleware - Prevents host header injection attacks
 # NOTE: TrustedHostMiddleware doesn't support wildcards in allowed_hosts
 # Using specific domains only. CORS middleware above handles origin validation.
 # For production, we allow:

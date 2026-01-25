@@ -17,8 +17,15 @@ healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-# Enable serverless mode for Railway free tier
-serverless = true
+
+# Resource limits (CRITICAL for production stability)
+# Prevents container from consuming all host resources
+cpuLimit = 2.0        # 2 CPU cores maximum
+memoryLimit = 4096    # 4GB RAM maximum (in MB)
+
+# Note: For production deployment, disable serverless mode
+# and use the resource limits above for predictable performance
+# serverless = true  # ONLY for Railway free tier development
 
 [service]
 rootDirectory = "cp2b-workspace/NewLook/backend"
