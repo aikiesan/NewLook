@@ -346,7 +346,7 @@ class LeontiefCalculator67:
             output_multipliers=self.output_multipliers,
             sector_production_detail=sector_production_detail,
             calculation_method="sparse" if self.use_sparse else "dense"
-        }
+        )
 
         logger.info(f"✅ Total Production: R$ {total_production_sum:,.2f}")
         logger.info(f"✅ Production Multiplier: {total_production_sum/total_investment:.3f}×")

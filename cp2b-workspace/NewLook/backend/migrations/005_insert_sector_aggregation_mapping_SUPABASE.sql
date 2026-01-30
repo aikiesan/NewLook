@@ -8,6 +8,24 @@
 -- ============================================================
 
 -- ============================================================
+-- CREATE TABLE
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS ibge_io_sector_aggregation (
+    sector_id_67 INTEGER NOT NULL REFERENCES ibge_io_sectors_67(sector_id),
+    aggregate_sector_code VARCHAR(20) NOT NULL,
+    aggregate_sector_name VARCHAR(100) NOT NULL,
+    weight NUMERIC(5,4) DEFAULT 1.0,
+    PRIMARY KEY (sector_id_67, aggregate_sector_code)
+);
+
+-- Create index for faster queries
+CREATE INDEX IF NOT EXISTS idx_sector_aggregation_aggregate
+    ON ibge_io_sector_aggregation(aggregate_sector_code);
+
+COMMENT ON TABLE ibge_io_sector_aggregation IS 'Mapping from IBGE 67 sectors to 4 aggregate sectors (agriculture, industry, services, public) for compatibility with existing models';
+
+-- ============================================================
 -- INSERT AGGREGATION MAPPING
 -- ============================================================
 
