@@ -367,3 +367,374 @@ class ErrorDetail(BaseModel):
             }
         }
     }
+
+
+# ============================================================================
+# 67-SECTOR IBGE MODEL SCHEMAS
+# ============================================================================
+
+class ShockSimulationRequest67(BaseModel):
+    """
+    Request schema for POST /api/v1/simulation/shock-67
+
+    Example:
+        {
+            "region_code": "3501",
+            "investment_brl": 10000000,
+            "sector_id": 19,
+            "options": {
+                "include_spatial_spillover": true
+            }
+        }
+    """
+    region_code: str = Field(
+        ...,
+        description="IBGE immediate region code (e.g., '3501' for São Paulo)",
+        min_length=4,
+        max_length=10,
+        examples=["3501", "3509", "3519"]
+    )
+
+    investment_brl: float = Field(
+        ...,
+        description="Investment amount in Brazilian Reais (BRL)",
+        gt=0,
+        le=1_000_000_000_000,  # Max 1 trillion BRL
+        examples=[10_000_000, 50_000_000, 100_000_000]
+    )
+
+    sector_id: int = Field(
+        ...,
+        description="IBGE sector ID (1-67)",
+        ge=1,
+        le=67,
+        examples=[1, 19, 40]  # Agriculture, Petroleum refining, Construction
+    )
+
+    options: Optional[Dict[str, Any]] = Field(
+        default_factory=lambda: {
+            "include_spatial_spillover": True
+        },
+        description="Optional simulation parameters"
+    )
+
+    @field_validator('options')
+    @classmethod
+    def validate_options(cls, v):
+        """Validate and set defaults for options"""
+        if v is None:
+            v = {}
+
+        # Set defaults
+        v.setdefault('include_spatial_spillover', True)
+
+        return v
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "region_code": "3501",
+                    "investment_brl": 10_000_000,
+                    "sector_id": 19,  # Petroleum refining
+                    "options": {
+                        "include_spatial_spillover": True
+                    }
+                },
+                {
+                    "region_code": "3509",
+                    "investment_brl": 50_000_000,
+                    "sector_id": 1,  # Agriculture
+                    "options": {
+                        "include_spatial_spillover": False
+                    }
+                }
+            ]
+        }
+    }
+
+
+class SectorSchema67(BaseModel):
+    """IBGE 67-sector metadata"""
+    sector_id: int = Field(..., description="Sector ID (1-67)")
+    sector_code: str = Field(..., description="IBGE sector code")
+    sector_name: str = Field(..., description="Full sector name")
+    sector_name_short: Optional[str] = Field(None, description="Short sector name")
+    data_year: int = Field(2015, description="Data reference year")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "sector_id": 1,
+                "sector_code": "0191",
+                "sector_name": "Agricultura, inclusive o apoio à agricultura e a pós-colheita",
+                "sector_name_short": "Agricultura",
+                "data_year": 2015
+            }
+        }
+    }
+
+
+class SectorMultiplierSchema67(BaseModel):
+    """Sector with output multiplier"""
+    sector_id: int
+    sector_code: str
+    sector_name: str
+    output_multiplier: float = Field(..., description="Economic output multiplier")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "sector_id": 8,
+                "sector_code": "1091",
+                "sector_name": "Abate e produtos de carne, inclusive os produtos do laticínio e da pesca",
+                "output_multiplier": 2.511
+            }
+        }
+    }
+
+
+class TopAffectedSectorSchema(BaseModel):
+    """Sector affected by economic shock"""
+    sector_id: int
+    sector_code: str
+    sector_name: str
+    production_impact_brl: float
+    share_of_total_pct: float
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "sector_id": 19,
+                "sector_code": "1991",
+                "sector_name": "Refino de petróleo e coquerias",
+                "production_impact_brl": 15000000,
+                "share_of_total_pct": 45.2
+            }
+        }
+    }
+
+
+class RegionalImpactSchema67(BaseModel):
+    """Individual region impact details (67-sector model)"""
+    region_name: str
+    production_impact_brl: float
+    spillover_weight: float = Field(..., description="Spatial spillover weight")
+    production_agriculture: float
+    production_industry: float
+    production_services: float
+    production_public: float
+    impact_percentage: float = Field(..., description="Percentage of total impact")
+    production_per_capita_increase: float
+
+
+class SimulationInputSchema67(BaseModel):
+    """Simulation input parameters (67-sector)"""
+    origin_region: str
+    origin_region_name: str
+    investment_brl: float
+    primary_sector_id: int
+    primary_sector_name: str
+
+
+class SimulationResultsSchema67(BaseModel):
+    """Detailed simulation results (67-sector)"""
+    total_production_impact_brl: float
+    production_multiplier: float
+    sector_production_detail: Dict[int, float] = Field(
+        ...,
+        description="Production breakdown by 67 sectors (sector_id: production_brl)"
+    )
+    sector_production_aggregated: Dict[str, float] = Field(
+        ...,
+        description="Production aggregated to 4 sectors for compatibility"
+    )
+    top_affected_sectors: List[TopAffectedSectorSchema] = Field(
+        ...,
+        description="Top 20 most affected sectors"
+    )
+    regional_impacts: Dict[str, RegionalImpactSchema67]
+
+
+class SimulationMetadataSchema67(BaseModel):
+    """Simulation metadata (67-sector)"""
+    calculation_time_ms: float
+    data_year: int = 2015
+    model: str = "IBGE_67_sectors"
+    num_sectors: int = Field(..., description="Number of sectors in detailed output")
+    num_regions: int = Field(..., description="Number of regions with impact")
+
+
+class ShockSimulationResponse67(BaseModel):
+    """
+    Response schema for POST /api/v1/simulation/shock-67
+    """
+    simulation_id: str
+    timestamp: datetime
+    input: SimulationInputSchema67
+    results: SimulationResultsSchema67
+    metadata: SimulationMetadataSchema67
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "simulation_id": "sim67_3501_19_1738260000",
+                "timestamp": "2026-01-30T15:30:00Z",
+                "input": {
+                    "origin_region": "3501",
+                    "origin_region_name": "São Paulo",
+                    "investment_brl": 10000000,
+                    "primary_sector_id": 19,
+                    "primary_sector_name": "Refino de petróleo e coquerias"
+                },
+                "results": {
+                    "total_production_impact_brl": 24840000,
+                    "production_multiplier": 2.484,
+                    "sector_production_detail": {
+                        "1": 125000,
+                        "19": 15000000,
+                        "40": 3500000,
+                        "43": 2200000
+                    },
+                    "sector_production_aggregated": {
+                        "agriculture": 500000,
+                        "industry": 18000000,
+                        "services": 5500000,
+                        "public": 840000
+                    },
+                    "top_affected_sectors": [
+                        {
+                            "sector_id": 19,
+                            "sector_code": "1991",
+                            "sector_name": "Refino de petróleo e coquerias",
+                            "production_impact_brl": 15000000,
+                            "share_of_total_pct": 60.4
+                        }
+                    ],
+                    "regional_impacts": {
+                        "3501": {
+                            "region_name": "São Paulo",
+                            "production_impact_brl": 17388000,
+                            "spillover_weight": 0.70,
+                            "production_agriculture": 350000,
+                            "production_industry": 12600000,
+                            "production_services": 3850000,
+                            "production_public": 588000,
+                            "impact_percentage": 70.0,
+                            "production_per_capita_increase": 1.41
+                        }
+                    }
+                },
+                "metadata": {
+                    "calculation_time_ms": 78.5,
+                    "data_year": 2015,
+                    "model": "IBGE_67_sectors",
+                    "num_sectors": 45,
+                    "num_regions": 53
+                }
+            }
+        }
+    }
+
+
+class SectorsListResponse67(BaseModel):
+    """
+    Response schema for GET /api/v1/simulation/sectors-67
+    """
+    sectors: List[SectorSchema67]
+    total_sectors: int = Field(67, description="Total number of sectors")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "sectors": [
+                    {
+                        "sector_id": 1,
+                        "sector_code": "0191",
+                        "sector_name": "Agricultura, inclusive o apoio à agricultura e a pós-colheita",
+                        "sector_name_short": "Agricultura",
+                        "data_year": 2015
+                    }
+                ],
+                "total_sectors": 67
+            }
+        }
+    }
+
+
+class MultipliersResponse67(BaseModel):
+    """
+    Response schema for GET /api/v1/simulation/multipliers-67
+    """
+    multipliers: List[SectorMultiplierSchema67] = Field(
+        ...,
+        description="Economic multipliers for all 67 sectors"
+    )
+    top_multipliers: List[SectorMultiplierSchema67] = Field(
+        ...,
+        description="Top 20 sectors by multiplier"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "multipliers": [
+                    {
+                        "sector_id": 8,
+                        "sector_code": "1091",
+                        "sector_name": "Abate e produtos de carne",
+                        "output_multiplier": 2.511
+                    }
+                ],
+                "top_multipliers": [
+                    {
+                        "sector_id": 8,
+                        "sector_code": "1091",
+                        "sector_name": "Abate e produtos de carne",
+                        "output_multiplier": 2.511
+                    },
+                    {
+                        "sector_id": 19,
+                        "sector_code": "1991",
+                        "sector_name": "Refino de petróleo e coquerias",
+                        "output_multiplier": 2.484
+                    }
+                ]
+            }
+        }
+    }
+
+
+class SectorAggregationMappingResponse(BaseModel):
+    """
+    Response schema for GET /api/v1/simulation/sector-mapping-67
+    """
+    mapping: Dict[int, str] = Field(
+        ...,
+        description="Mapping from 67 sectors to 4 aggregate sectors"
+    )
+    summary: Dict[str, int] = Field(
+        ...,
+        description="Count of sectors per aggregate category"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "mapping": {
+                    "1": "agriculture",
+                    "2": "agriculture",
+                    "3": "agriculture",
+                    "4": "industry",
+                    "40": "services",
+                    "62": "public"
+                },
+                "summary": {
+                    "agriculture": 3,
+                    "industry": 36,
+                    "services": 22,
+                    "public": 6
+                }
+            }
+        }
+    }

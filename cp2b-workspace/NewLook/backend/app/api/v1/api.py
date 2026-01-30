@@ -3,7 +3,7 @@ Main API router for CP2B Maps V3
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity, residuos, statistics, economic_simulation, scientific
+from app.api.v1.endpoints import municipalities, analysis, auth, maps, geospatial, mock_geospatial, infrastructure, mapbiomas, proximity, residuos, statistics, economic_simulation, economic_simulation_67, scientific
 from app.routers import technology_routes
 
 api_router = APIRouter()
@@ -87,11 +87,18 @@ api_router.include_router(
     tags=["scientific", "kinetics", "database"]
 )
 
-# Economic Simulation endpoints (Leontief Input-Output Analysis)
+# Economic Simulation endpoints (Leontief Input-Output Analysis - 4 sectors)
 api_router.include_router(
     economic_simulation.router,
     prefix="/simulation",
     tags=["economic-simulation", "leontief", "input-output"]
+)
+
+# Economic Simulation endpoints (IBGE 67-sector model)
+api_router.include_router(
+    economic_simulation_67.router,
+    prefix="/simulation",
+    tags=["economic-simulation-67", "ibge", "input-output"]
 )
 
 # Technology Routes endpoints (Educational pathway builder)
