@@ -81,11 +81,8 @@ class EconomicDataService67:
                     sector_id,
                     sector_code,
                     sector_name,
-                    sector_name_short,
-                    sector_description,
                     data_year,
-                    data_source,
-                    created_at
+                    data_source
                 FROM ibge_io_sectors_67
                 ORDER BY sector_id
             """)
@@ -130,8 +127,6 @@ class EconomicDataService67:
                     sector_id,
                     sector_code,
                     sector_name,
-                    sector_name_short,
-                    sector_description,
                     data_year,
                     data_source
                 FROM ibge_io_sectors_67
