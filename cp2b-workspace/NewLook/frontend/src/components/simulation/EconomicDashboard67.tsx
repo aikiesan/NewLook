@@ -16,7 +16,71 @@ import type {
 import { leontiefClient67 } from '@/lib/api/leontiefClient67'
 import SectorSelector67 from './SectorSelector67'
 import SimulationResults67 from './SimulationResults67'
-import EconomicSimulationMap from '@/components/map/EconomicSimulationMap'
+import dynamic from 'next/dynamic'
+
+// Dynamically import map components
+const MapContainer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.MapContainer),
+  { ssr: false }
+)
+const TileLayer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.TileLayer),
+  { ssr: false }
+)
+const RegionMarkersLayer = dynamic(
+  () => import('@/components/map/RegionMarkersLayer'),
+  { ssr: false }
+)
+const RegionChoroplethLayer = dynamic(
+  () => import('@/components/map/RegionChoroplethLayer'),
+  { ssr: false }
+)
+
+/**
+ * Transform 67-sector simulation result to format expected by map components
+ */
+function transformResultForMap(result67: ShockSimulationResponse67 | null) {
+  if (!result67 || !result67.spatial_distribution) {
+    return null
+  }
+
+  // Transform to match the 4-sector format expected by map
+  return {
+    simulation_id: result67.metadata.simulation_id,
+    timestamp: result67.metadata.timestamp,
+    input: {
+      origin_region: result67.inputs.region_code,
+      origin_region_name: result67.inputs.region_name,
+      investment_brl: result67.inputs.investment_brl,
+      primary_sector: result67.inputs.sector_name,
+    },
+    results: {
+      total_vab_impact_brl: result67.summary.total_economic_output_brl,
+      economic_multiplier: result67.direct_impacts.output_multiplier,
+      tax_revenue_brl: 0, // Not provided by 67-sector model
+      jobs_created: 0, // Not provided by 67-sector model
+      vab_by_sector: {
+        agriculture: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'agriculture')?.total_output_brl || 0,
+        industry: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'industry')?.total_output_brl || 0,
+        services: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'services')?.total_output_brl || 0,
+        public: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'public')?.total_output_brl || 0,
+      },
+      regional_impacts: result67.spatial_distribution.regional_impacts.reduce((acc: Record<string, any>, impact) => {
+        acc[impact.region_code] = {
+          region_name: impact.region_name,
+          vab_impact_brl: impact.vab_impact_brl,
+          spillover_weight: impact.spillover_weight,
+          impact_intensity: impact.impact_intensity,
+        }
+        return acc
+      }, {}),
+    },
+    metadata: {
+      calculation_time_ms: 0,
+      data_year: result67.metadata.data_year,
+    },
+  }
+}
 
 export default function EconomicDashboard67({
   initialRegionCode = 'RGI_3501',
@@ -281,16 +345,19 @@ export default function EconomicDashboard67({
 
                     {/* Investment Amount */}
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="investment-amount-67" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Valor do Investimento (R$)
                       </label>
                       <input
+                        id="investment-amount-67"
+                        name="investment-amount"
                         type="number"
                         value={formState.investmentBRL}
                         onChange={(e) => handleInvestmentChange(parseFloat(e.target.value))}
                         min={0}
                         step={1000000}
                         disabled={isSimulating}
+                        aria-label="Valor do investimento em reais"
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                                  bg-white dark:bg-slate-800 text-gray-900 dark:text-white
                                  focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
@@ -303,8 +370,10 @@ export default function EconomicDashboard67({
 
                     {/* Spatial Spillover Toggle */}
                     <div className="mb-6">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label htmlFor="spatial-spillover-67" className="flex items-center gap-2 cursor-pointer">
                         <input
+                          id="spatial-spillover-67"
+                          name="spatial-spillover"
                           type="checkbox"
                           checked={formState.includeSpatialSpillover}
                           onChange={(e) =>
@@ -314,6 +383,7 @@ export default function EconomicDashboard67({
                             }))
                           }
                           disabled={isSimulating}
+                          aria-label="Incluir distribuição espacial usando modelo de gravidade"
                           className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded
                                    focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800
                                    focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -422,17 +492,53 @@ export default function EconomicDashboard67({
             )}
 
             {/* Map Integration (if spatial spillover enabled and results available) */}
-            {simulationResult && formState.includeSpatialSpillover && (
+            {simulationResult && formState.includeSpatialSpillover && simulationResult.spatial_distribution && (
               <div className="mt-6">
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Visualização Geoespacial
-                  </h3>
-                  <EconomicSimulationMap
-                    selectedRegion={formState.regionCode}
-                    onRegionSelect={handleRegionSelect}
-                    simulationResult={simulationResult}
-                  />
+                <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="p-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                      Distribuição Espacial de Impactos
+                    </h3>
+                    <p className="text-sm text-emerald-100 mt-1">
+                      {simulationResult.spatial_distribution.total_regions_affected} regiões afetadas • Spillover: {leontiefClient67.formatPercentage(simulationResult.spatial_distribution.spillover_percentage)}
+                    </p>
+                  </div>
+
+                  <div className="h-[600px] relative">
+                    <MapContainer
+                      center={[-15.7939, -47.8828]} // Brazil center
+                      zoom={4}
+                      style={{ height: '100%', width: '100%' }}
+                      zoomControl={true}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+
+                      {/* Use transformed data for map layers */}
+                      <RegionChoroplethLayer
+                        selectedRegion={formState.regionCode}
+                        simulationResult={transformResultForMap(simulationResult)}
+                        onRegionClick={(regionCode) => {
+                          console.log('Region clicked:', regionCode)
+                          // Could show region details in a modal/panel
+                        }}
+                      />
+
+                      <RegionMarkersLayer
+                        selectedRegion={formState.regionCode}
+                        onRegionSelect={(regionCode) => {
+                          console.log('Region selected:', regionCode)
+                          // Could update form state or show details
+                        }}
+                        simulationResult={transformResultForMap(simulationResult)}
+                      />
+                    </MapContainer>
+                  </div>
                 </div>
               </div>
             )}

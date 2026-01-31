@@ -93,9 +93,11 @@ export default function SectorSelector67({
 
       <select
         id="sector-selector-67"
+        name="sector-67"
         value={value || ''}
         onChange={handleChange}
         disabled={disabled}
+        aria-label="Selecione o setor econômico IBGE para simulação"
         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                    bg-white dark:bg-slate-800 text-gray-900 dark:text-white
                    focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
