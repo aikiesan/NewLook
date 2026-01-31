@@ -46,46 +46,59 @@ const RegionChoroplethLayer = dynamic(
 
 /**
  * Transform 67-sector simulation result to format expected by map components
+ * With comprehensive null checks to prevent crashes
  */
 function transformResultForMap(result67: ShockSimulationResponse67 | null) {
-  if (!result67 || !result67.spatial_distribution) {
+  if (!result67) {
     return null
   }
 
-  return {
-    simulation_id: result67.metadata.simulation_id,
-    timestamp: result67.metadata.timestamp,
-    input: {
-      origin_region: result67.inputs.region_code,
-      origin_region_name: result67.inputs.region_name,
-      investment_brl: result67.inputs.investment_brl,
-      primary_sector: result67.inputs.sector_name,
-    },
-    results: {
-      total_vab_impact_brl: result67.summary.total_economic_output_brl,
-      economic_multiplier: result67.direct_impacts.output_multiplier,
-      tax_revenue_brl: 0,
-      jobs_created: 0,
-      vab_by_sector: {
-        agriculture: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'agriculture')?.total_output_brl || 0,
-        industry: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'industry')?.total_output_brl || 0,
-        services: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'services')?.total_output_brl || 0,
-        public: result67.sector_impacts.aggregate_breakdown.find(a => a.aggregate_sector_code === 'public')?.total_output_brl || 0,
+  // Don't transform if spatial_distribution is missing
+  if (!result67.spatial_distribution?.regional_impacts) {
+    return null
+  }
+
+  try {
+    return {
+      simulation_id: result67.metadata?.simulation_id || '',
+      timestamp: result67.metadata?.timestamp || new Date().toISOString(),
+      input: {
+        origin_region: result67.inputs?.region_code || '',
+        origin_region_name: result67.inputs?.region_name || '',
+        investment_brl: result67.inputs?.investment_brl || 0,
+        primary_sector: result67.inputs?.sector_name || '',
       },
-      regional_impacts: result67.spatial_distribution.regional_impacts.reduce((acc: Record<string, any>, impact) => {
-        acc[impact.region_code] = {
-          region_name: impact.region_name,
-          vab_impact_brl: impact.vab_impact_brl,
-          spillover_weight: impact.spillover_weight,
-          impact_intensity: impact.impact_intensity,
-        }
-        return acc
-      }, {}),
-    },
-    metadata: {
-      calculation_time_ms: 0,
-      data_year: result67.metadata.data_year,
-    },
+      results: {
+        total_vab_impact_brl: result67.summary?.total_economic_output_brl || 0,
+        economic_multiplier: result67.direct_impacts?.output_multiplier || 1,
+        tax_revenue_brl: 0,
+        jobs_created: 0,
+        vab_by_sector: {
+          agriculture: result67.sector_impacts?.aggregate_breakdown?.find(a => a.aggregate_sector_code === 'agriculture')?.total_output_brl || 0,
+          industry: result67.sector_impacts?.aggregate_breakdown?.find(a => a.aggregate_sector_code === 'industry')?.total_output_brl || 0,
+          services: result67.sector_impacts?.aggregate_breakdown?.find(a => a.aggregate_sector_code === 'services')?.total_output_brl || 0,
+          public: result67.sector_impacts?.aggregate_breakdown?.find(a => a.aggregate_sector_code === 'public')?.total_output_brl || 0,
+        },
+        regional_impacts: (result67.spatial_distribution?.regional_impacts || []).reduce((acc: Record<string, any>, impact) => {
+          if (impact && impact.region_code) {
+            acc[impact.region_code] = {
+              region_name: impact.region_name || '',
+              vab_impact_brl: impact.vab_impact_brl || 0,
+              spillover_weight: impact.spillover_weight || 0,
+              impact_intensity: impact.impact_intensity || 'low',
+            }
+          }
+          return acc
+        }, {}),
+      },
+      metadata: {
+        calculation_time_ms: 0,
+        data_year: result67.metadata?.data_year || 2015,
+      },
+    }
+  } catch (error) {
+    console.error('Error transforming result for map:', error)
+    return null
   }
 }
 
@@ -434,14 +447,14 @@ export default function EconomicDashboard67() {
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Produto Total</p>
                   <p className="text-base font-bold text-emerald-700 dark:text-emerald-400">
-                    {formatCurrency(simulationResult.summary.total_economic_output_brl)}
+                    {formatCurrency(simulationResult.summary?.total_economic_output_brl || 0)}
                   </p>
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Multiplicador</p>
                   <p className="text-base font-bold text-blue-700 dark:text-blue-400">
-                    {simulationResult.direct_impacts.output_multiplier.toFixed(2)}×
+                    {(simulationResult.direct_impacts?.output_multiplier || 1).toFixed(2)}×
                   </p>
                 </div>
               </div>
@@ -490,18 +503,18 @@ export default function EconomicDashboard67() {
               <div className="mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Investimento Inicial</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(simulationResult.inputs.investment_brl)}
+                  {formatCurrency(simulationResult.inputs?.investment_brl || 0)}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Região: {simulationResult.inputs.region_name}
+                  Região: {simulationResult.inputs?.region_name || 'N/A'}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Setor: {simulationResult.inputs.sector_name}
+                  Setor: {simulationResult.inputs?.sector_name || 'N/A'}
                 </p>
               </div>
 
               {/* Spatial Distribution Summary */}
-              {simulationResult.spatial_distribution && (
+              {simulationResult.spatial_distribution?.total_regions_affected && (
                 <div className="mb-4 p-3 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
                   <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
                     📍 Spillover Espacial
@@ -511,7 +524,7 @@ export default function EconomicDashboard67() {
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {simulationResult.spatial_distribution.total_regions_affected}
                     </span>{' '}
-                    regiões ({leontiefClient67.formatPercentage(simulationResult.spatial_distribution.spillover_percentage)} spillover)
+                    regiões ({leontiefClient67.formatPercentage(simulationResult.spatial_distribution?.spillover_percentage || 0)} spillover)
                   </p>
                 </div>
               )}
