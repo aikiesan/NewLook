@@ -82,7 +82,8 @@ function EconomicSimulationContent() {
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // Mode toggle: 4-sector (simple) vs 67-sector (detailed)
-  const [mode, setMode] = useState<'4-sector' | '67-sector'>('4-sector')
+  // DEFAULT: 67-sector detailed mode
+  const [mode, setMode] = useState<'4-sector' | '67-sector'>('67-sector')
 
   // Simulation state
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
@@ -263,31 +264,25 @@ function EconomicSimulationContent() {
         <UnifiedHeader variant="authenticated" />
 
         {/* Mode Toggle Bar */}
-        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Info className="h-4 w-4" />
-              <span>Modo de Simulação: <strong className="text-emerald-600 dark:text-emerald-400">67 Setores IBGE (Detalhado)</strong></span>
+            <div className="flex items-center gap-2 text-sm">
+              <TrendingUp className="h-4 w-4" />
+              <span><strong>67 Setores IBGE</strong> • Análise Detalhada Insumo-Produto</span>
             </div>
             <button
               onClick={() => setMode('4-sector')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300
-                       bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600
-                       rounded-lg transition-colors flex items-center gap-2"
+              className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-white hover:bg-emerald-50
+                       rounded-lg transition-colors flex items-center gap-1"
             >
-              <ChevronLeft className="h-4 w-4" />
-              Voltar para Modo Simples (4 Setores)
+              Modo Simples (4 Setores)
             </button>
           </div>
         </div>
 
         {/* 67-Sector Dashboard */}
-        <div className="flex-1 overflow-auto">
-          <EconomicDashboard67
-            initialRegionCode={selectedRegion || 'RGI_3501'}
-            mode="67-sector"
-            onModeChange={(newMode) => setMode(newMode)}
-          />
+        <div className="flex-1 overflow-hidden">
+          <EconomicDashboard67 />
         </div>
       </div>
     )
@@ -300,20 +295,18 @@ function EconomicSimulationContent() {
       <UnifiedHeader variant="authenticated" />
 
       {/* Mode Toggle Bar */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+      <div className="bg-blue-600 text-white px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm">
             <Info className="h-4 w-4" />
-            <span>Modo de Simulação: <strong className="text-blue-600 dark:text-blue-400">4 Setores Agregados (Simples)</strong></span>
+            <span><strong>4 Setores Agregados</strong> • Modo Simplificado</span>
           </div>
           <button
             onClick={() => setMode('67-sector')}
-            className="px-4 py-2 text-sm font-medium text-white
-                     bg-emerald-600 hover:bg-emerald-700
-                     rounded-lg transition-colors flex items-center gap-2"
+            className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-white hover:bg-emerald-50
+                     rounded-lg transition-colors flex items-center gap-1"
           >
-            Modo Detalhado (67 Setores IBGE)
-            <ChevronRight className="h-4 w-4" />
+            Modo Detalhado (67 Setores) ✨
           </button>
         </div>
       </div>
