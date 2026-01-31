@@ -4,6 +4,10 @@
  * Economic Shock Simulation Page for CP2B Maps V3
  * Full-page map showing 133 Brazil intermediary regions with floating simulation panels
  * Leontief Input-Output Analysis with spatial spillover effects
+ *
+ * Supports two modes:
+ * - 4-sector simple mode (default)
+ * - 67-sector IBGE detailed mode
  */
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter } from '@/navigation'
@@ -21,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
+import EconomicDashboard67 from '@/components/simulation/EconomicDashboard67'
 
 // Dynamically import Leaflet components
 const MapContainer = dynamic(
@@ -75,6 +80,9 @@ interface SimulationResult {
 function EconomicSimulationContent() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
+
+  // Mode toggle: 4-sector (simple) vs 67-sector (detailed)
+  const [mode, setMode] = useState<'4-sector' | '67-sector'>('4-sector')
 
   // Simulation state
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
@@ -247,10 +255,68 @@ function EconomicSimulationContent() {
     )
   }
 
+  // If 67-sector mode, use the new component
+  if (mode === '67-sector') {
+    return (
+      <div className="h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors">
+        {/* Unified Navigation Header with Mode Toggle */}
+        <UnifiedHeader variant="authenticated" />
+
+        {/* Mode Toggle Bar */}
+        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <Info className="h-4 w-4" />
+              <span>Modo de Simulação: <strong className="text-emerald-600 dark:text-emerald-400">67 Setores IBGE (Detalhado)</strong></span>
+            </div>
+            <button
+              onClick={() => setMode('4-sector')}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300
+                       bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600
+                       rounded-lg transition-colors flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Voltar para Modo Simples (4 Setores)
+            </button>
+          </div>
+        </div>
+
+        {/* 67-Sector Dashboard */}
+        <div className="flex-1 overflow-auto">
+          <EconomicDashboard67
+            initialRegionCode={selectedRegion || 'RGI_3501'}
+            mode="67-sector"
+            onModeChange={(newMode) => setMode(newMode)}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Default: 4-sector mode with existing UI
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors">
       {/* Unified Navigation Header */}
       <UnifiedHeader variant="authenticated" />
+
+      {/* Mode Toggle Bar */}
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <Info className="h-4 w-4" />
+            <span>Modo de Simulação: <strong className="text-blue-600 dark:text-blue-400">4 Setores Agregados (Simples)</strong></span>
+          </div>
+          <button
+            onClick={() => setMode('67-sector')}
+            className="px-4 py-2 text-sm font-medium text-white
+                     bg-emerald-600 hover:bg-emerald-700
+                     rounded-lg transition-colors flex items-center gap-2"
+          >
+            Modo Detalhado (67 Setores IBGE)
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Full-Page Map with Floating Panels */}
       <main className="flex-1 relative">
@@ -332,19 +398,22 @@ function EconomicSimulationContent() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="investment-percent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Percentual do VAB Regional: {investmentPercent}%
                   </label>
                   <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                     Valor estimado: {formatCurrency(selectedRegionVAB * (investmentPercent / 100))}
                   </div>
                   <input
+                    id="investment-percent"
+                    name="investment-percent"
                     type="range"
                     min="0"
                     max="50"
                     step="0.5"
                     value={investmentPercent}
                     onChange={(e) => setInvestmentPercent(Number(e.target.value))}
+                    aria-label="Percentual do investimento em relação ao VAB regional"
                     className="w-full h-2 bg-emerald-200 dark:bg-emerald-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                   />
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -354,12 +423,15 @@ function EconomicSimulationContent() {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="sector-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Setor Econômico
                   </label>
                   <select
+                    id="sector-select"
+                    name="sector"
                     value={sector}
                     onChange={(e) => setSector(e.target.value)}
+                    aria-label="Selecione o setor econômico para simulação"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 text-sm"
                   >
                     <option value="agriculture">🌾 Agricultura (Mult: 1.94×)</option>
