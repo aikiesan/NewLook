@@ -447,40 +447,44 @@ export default function EconomicDashboard67() {
               </div>
 
               {/* Top 10 Affected Sectors */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Top 10 Setores Mais Afetados
-                </h3>
-                <div className="space-y-2 text-sm">
-                  {simulationResult.sector_impacts.top_20_affected_sectors.slice(0, 10).map((sector, index) => (
-                    <div key={sector.sector_id} className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400 truncate">
-                        {index + 1}. {sector.sector_name}
-                      </span>
-                      <span className="font-semibold text-gray-900 dark:text-white ml-2 whitespace-nowrap">
-                        {formatCurrency(sector.output_impact_brl)}
-                      </span>
-                    </div>
-                  ))}
+              {simulationResult.sector_impacts?.top_20_affected_sectors && simulationResult.sector_impacts.top_20_affected_sectors.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Top 10 Setores Mais Afetados
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    {simulationResult.sector_impacts.top_20_affected_sectors.slice(0, 10).map((sector, index) => (
+                      <div key={sector.sector_id} className="flex justify-between items-center">
+                        <span className="text-gray-600 dark:text-gray-400 truncate">
+                          {index + 1}. {sector.sector_name}
+                        </span>
+                        <span className="font-semibold text-gray-900 dark:text-white ml-2 whitespace-nowrap">
+                          {formatCurrency(sector.output_impact_brl)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Sectoral Breakdown */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Distribuição por Categoria
-                </h3>
-                <div className="space-y-2 text-sm">
-                  {simulationResult.sector_impacts.aggregate_breakdown.map((agg) => (
-                    <div key={agg.aggregate_sector_code} className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">{agg.aggregate_sector_name}</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(agg.total_output_brl)}
-                      </span>
-                    </div>
-                  ))}
+              {simulationResult.sector_impacts?.aggregate_breakdown && simulationResult.sector_impacts.aggregate_breakdown.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Distribuição por Categoria
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    {simulationResult.sector_impacts.aggregate_breakdown.map((agg) => (
+                      <div key={agg.aggregate_sector_code} className="flex justify-between items-center">
+                        <span className="text-gray-600 dark:text-gray-400">{agg.aggregate_sector_name}</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {formatCurrency(agg.total_output_brl)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Investment Input Info */}
               <div className="mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">

@@ -561,6 +561,15 @@ input[type="range"] {
   appearance: none;
   background: transparent;
   cursor: pointer;
+  width: 100%;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="range"]::-webkit-slider-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #10b981, #34d399);
+  border: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -569,22 +578,36 @@ input[type="range"]::-webkit-slider-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #3B82F6;
+  background: #059669;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  margin-top: -6px; /* Center thumb on track */
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
+  background: #047857;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #10b981, #34d399);
+  border: none;
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #3B82F6;
+  background: #059669;
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -593,7 +616,21 @@ input[type="range"]::-moz-range-thumb {
 
 input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.2);
+  background: #047857;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb:active {
+  transform: scale(1.1);
+}
+
+/* Dark mode adjustments */
+.dark input[type="range"]::-webkit-slider-track {
+  background: linear-gradient(to right, #047857, #10b981);
+}
+
+.dark input[type="range"]::-moz-range-track {
+  background: linear-gradient(to right, #047857, #10b981);
 }
 
 /* Smooth color transitions for choropleth */
