@@ -301,7 +301,6 @@ async def get_sector_mapping_67(
 
 @router.post(
     "/shock-67",
-    response_model=ShockSimulationResponse67,
     status_code=status.HTTP_200_OK,
     summary="Execute 67-sector economic shock simulation",
     description="""
@@ -382,9 +381,8 @@ async def execute_shock_simulation_67(
             include_spatial_spillover=request.options.get('include_spatial_spillover', True)
         )
 
-        # Convert to response schema
+        # Convert to response dict (matches frontend TypeScript interface)
         response_dict = result.to_dict()
-        response = ShockSimulationResponse67(**response_dict)
 
         logger.info("="*70)
         logger.info("✅ SIMULATION COMPLETE")
@@ -394,7 +392,7 @@ async def execute_shock_simulation_67(
         logger.info(f"  Calculation Time: {result.calculation_time_ms:.2f}ms")
         logger.info("="*70)
 
-        return response
+        return response_dict
 
     except ValueError as e:
         logger.error(f"❌ Validation error: {e}")

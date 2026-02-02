@@ -50,6 +50,7 @@ class SimulationResult67:
         origin_region_name: str,
         investment_brl: float,
         primary_sector_id: int,
+        primary_sector_code: str,
         primary_sector_name: str,
         total_production_impact: float,
         production_multiplier: float,
@@ -58,13 +59,15 @@ class SimulationResult67:
         regional_impacts: Dict[str, Dict[str, float]],
         top_affected_sectors: List[Dict[str, Any]],
         calculation_time_ms: float,
-        timestamp: datetime
+        timestamp: datetime,
+        include_spatial_spillover: bool = True
     ):
         self.simulation_id = simulation_id
         self.origin_region_code = origin_region_code
         self.origin_region_name = origin_region_name
         self.investment_brl = investment_brl
         self.primary_sector_id = primary_sector_id
+        self.primary_sector_code = primary_sector_code
         self.primary_sector_name = primary_sector_name
         self.total_production_impact = total_production_impact
         self.production_multiplier = production_multiplier
@@ -74,35 +77,120 @@ class SimulationResult67:
         self.top_affected_sectors = top_affected_sectors
         self.calculation_time_ms = calculation_time_ms
         self.timestamp = timestamp
+        self.include_spatial_spillover = include_spatial_spillover
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization"""
+        """Convert to dictionary for JSON serialization matching frontend TypeScript interface"""
+        # Calculate aggregate breakdown for sector_impacts
+        aggregate_breakdown = []
+        sector_labels = {
+            'agriculture': 'Agricultura e Pecuária',
+            'industry': 'Indústria',
+            'services': 'Serviços',
+            'public': 'Administração Pública'
+        }
+
+        total_agg = sum(self.sector_production_aggregated.values())
+        for code, value in self.sector_production_aggregated.items():
+            aggregate_breakdown.append({
+                "aggregate_sector_code": code,
+                "aggregate_sector_name": sector_labels.get(code, code.capitalize()),
+                "total_output_brl": value,
+                "percentage_of_total": (value / total_agg * 100) if total_agg > 0 else 0,
+                "sector_count": 0  # This would require mapping info
+            })
+
+        # Transform top_affected_sectors to match frontend interface
+        top_20_sectors = []
+        for sector in self.top_affected_sectors[:20]:
+            top_20_sectors.append({
+                "sector_id": sector["sector_id"],
+                "sector_code": sector["sector_code"],
+                "sector_name": sector["sector_name"],
+                "output_impact_brl": sector["production_impact_brl"],
+                "percentage_of_total": sector["share_of_total_pct"]
+            })
+
+        # Transform regional_impacts for spatial_distribution
+        regional_impacts_list = []
+        max_impact_region = ""
+        max_impact_value = 0
+
+        for region_code, impact in self.regional_impacts.items():
+            regional_impacts_list.append({
+                "region_code": region_code,
+                "region_name": impact["region_name"],
+                "vab_impact_brl": impact["production_impact_brl"],
+                "spillover_weight": impact["spillover_weight"],
+                "distance_km": 0,  # Not available in current data
+                "impact_intensity": self._calculate_impact_intensity(impact["impact_percentage"])
+            })
+
+            if impact["production_impact_brl"] > max_impact_value:
+                max_impact_value = impact["production_impact_brl"]
+                max_impact_region = region_code
+
+        # Calculate spillover percentage (impact outside origin region)
+        origin_impact = self.regional_impacts.get(self.origin_region_code, {}).get("production_impact_brl", 0)
+        spillover_percentage = ((self.total_production_impact - origin_impact) / self.total_production_impact * 100) if self.total_production_impact > 0 else 0
+
+        # Calculate direct vs indirect output
+        direct_output = self.investment_brl
+        indirect_output = self.total_production_impact - direct_output
+
         return {
-            "simulation_id": self.simulation_id,
-            "timestamp": self.timestamp.isoformat(),
-            "input": {
-                "origin_region": self.origin_region_code,
-                "origin_region_name": self.origin_region_name,
-                "investment_brl": self.investment_brl,
-                "primary_sector_id": self.primary_sector_id,
-                "primary_sector_name": self.primary_sector_name
-            },
-            "results": {
-                "total_production_impact_brl": self.total_production_impact,
-                "production_multiplier": self.production_multiplier,
-                "sector_production_detail": self.sector_production_detail,
-                "sector_production_aggregated": self.sector_production_aggregated,
-                "top_affected_sectors": self.top_affected_sectors,
-                "regional_impacts": self.regional_impacts
-            },
             "metadata": {
-                "calculation_time_ms": self.calculation_time_ms,
-                "data_year": 2015,
-                "model": "IBGE_67_sectors",
-                "num_sectors": len(self.sector_production_detail),
-                "num_regions": len(self.regional_impacts)
+                "simulation_id": self.simulation_id,
+                "timestamp": self.timestamp.isoformat(),
+                "model_version": "IBGE_67_sectors_v1",
+                "data_year": 2015
+            },
+            "inputs": {
+                "region_code": self.origin_region_code,
+                "region_name": self.origin_region_name,
+                "investment_brl": self.investment_brl,
+                "sector_id": self.primary_sector_id,
+                "sector_code": self.primary_sector_code,
+                "sector_name": self.primary_sector_name,
+                "include_spatial_spillover": self.include_spatial_spillover
+            },
+            "direct_impacts": {
+                "initial_investment_brl": self.investment_brl,
+                "output_multiplier": self.production_multiplier,
+                "total_production_brl": self.total_production_impact,
+                "multiplier_effect_brl": indirect_output
+            },
+            "sector_impacts": {
+                "top_20_affected_sectors": top_20_sectors,
+                "aggregate_breakdown": aggregate_breakdown,
+                "total_sectors_affected": len(self.sector_production_detail)
+            },
+            "spatial_distribution": {
+                "regional_impacts": regional_impacts_list,
+                "total_regions_affected": len(self.regional_impacts),
+                "max_impact_region": max_impact_region,
+                "spillover_percentage": spillover_percentage
+            },
+            "summary": {
+                "total_economic_output_brl": self.total_production_impact,
+                "direct_output_brl": direct_output,
+                "indirect_output_brl": indirect_output,
+                "roi_multiplier": self.production_multiplier
             }
         }
+
+    def _calculate_impact_intensity(self, percentage: float) -> str:
+        """Calculate impact intensity based on percentage"""
+        if percentage >= 50:
+            return "very_high"
+        elif percentage >= 20:
+            return "high"
+        elif percentage >= 5:
+            return "medium"
+        elif percentage >= 1:
+            return "low"
+        else:
+            return "very_low"
 
 
 class EconomicSimulationOrchestrator67:
@@ -377,6 +465,7 @@ class EconomicSimulationOrchestrator67:
             origin_region_name=origin_region['nm_rgi'],
             investment_brl=investment_brl,
             primary_sector_id=sector_id,
+            primary_sector_code=sector_info['sector_code'],
             primary_sector_name=sector_info['sector_name'],
             total_production_impact=leontief_result.total_production_sum,
             production_multiplier=leontief_result.output_multipliers[sector_id],
@@ -385,7 +474,8 @@ class EconomicSimulationOrchestrator67:
             regional_impacts=regional_impacts,
             top_affected_sectors=top_affected_sectors,
             calculation_time_ms=calculation_time_ms,
-            timestamp=start_time
+            timestamp=start_time,
+            include_spatial_spillover=include_spatial_spillover
         )
 
         logger.info("="*70)

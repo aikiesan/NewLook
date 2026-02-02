@@ -310,9 +310,9 @@ export default function EconomicDashboard67() {
                 {selectedRegion && (
                   <>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Região Selecionada
-                      </label>
+                      </div>
                       <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
                         <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
                           {selectedRegionName || selectedRegion}
@@ -324,7 +324,7 @@ export default function EconomicDashboard67() {
                     </div>
 
                     <div className="mb-4">
-                      <label htmlFor="sector-selector-67-main" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="sector-selector-67" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Setor Econômico (67 Setores IBGE)
                       </label>
                       <SectorSelector67
