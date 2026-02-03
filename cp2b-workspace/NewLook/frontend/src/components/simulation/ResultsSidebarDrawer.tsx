@@ -33,7 +33,18 @@ export default function ResultsSidebarDrawer({
 
   if (!result || !isOpen) return null
 
-  const { metadata, inputs, direct_impacts, sector_impacts, spatial_distribution, summary } = result
+  // Debug log to see what we're receiving
+  console.log('ResultsSidebarDrawer received result:', JSON.stringify(result, null, 2))
+
+  // Defensive destructuring with fallbacks
+  const {
+    metadata = {},
+    inputs = {},
+    direct_impacts = {},
+    sector_impacts = {},
+    spatial_distribution = null,
+    summary = {}
+  } = result || {}
 
   // Safe accessor functions with defaults
   const getTotalOutput = () => summary?.total_economic_output_brl || 0
@@ -42,19 +53,23 @@ export default function ResultsSidebarDrawer({
   const getIndirectOutput = () => summary?.indirect_output_brl || 0
   const getInvestment = () => inputs?.investment_brl || 0
 
-  // Prepare treemap data from top 20 sectors
-  const treemapData = (sector_impacts?.top_20_affected_sectors || []).slice(0, 15).map((sector) => ({
-    name: sector.sector_name.length > 40 ? sector.sector_name.substring(0, 37) + '...' : sector.sector_name,
-    fullName: sector.sector_name,
-    size: sector.output_impact_brl || 0,
-    percentage: sector.percentage_of_total || 0,
-  }))
+  // Prepare treemap data from top 20 sectors with comprehensive null checks
+  const treemapData = (sector_impacts?.top_20_affected_sectors || [])
+    .slice(0, 15)
+    .filter(sector => sector && sector.sector_name && sector.output_impact_brl) // Filter out invalid entries
+    .map((sector) => ({
+      name: sector.sector_name.length > 40 ? sector.sector_name.substring(0, 37) + '...' : sector.sector_name,
+      fullName: sector.sector_name,
+      size: sector.output_impact_brl || 0,
+      percentage: sector.percentage_of_total || 0,
+    }))
 
   // Custom treemap content
   const CustomTreemapContent = (props: any) => {
     const { x, y, width, height, name, percentage } = props
 
-    if (width < 60 || height < 40) return null
+    // Skip rendering if dimensions too small or data invalid
+    if (width < 60 || height < 40 || !name || percentage === undefined || percentage === null) return null
 
     return (
       <g>
@@ -87,7 +102,7 @@ export default function ResultsSidebarDrawer({
           fill="#fff"
           fontSize={10}
         >
-          {percentage.toFixed(1)}%
+          {(percentage || 0).toFixed(1)}%
         </text>
       </g>
     )
@@ -119,7 +134,7 @@ export default function ResultsSidebarDrawer({
               Resultados da Simulação
             </h2>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-              Modelo IBGE {metadata.data_year} • 67 Setores
+              Modelo IBGE {metadata?.data_year || 2015} • 67 Setores
             </p>
           </div>
           <button
@@ -175,13 +190,13 @@ export default function ResultsSidebarDrawer({
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Região:</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {inputs.region_name}
+                      {inputs?.region_name || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Setor:</span>
                     <span className="font-medium text-gray-900 dark:text-white text-right">
-                      {inputs.sector_name}
+                      {inputs?.sector_name || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
