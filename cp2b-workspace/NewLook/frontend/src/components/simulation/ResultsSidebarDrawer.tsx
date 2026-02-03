@@ -35,6 +35,10 @@ export default function ResultsSidebarDrawer({
 
   // Debug log to see what we're receiving
   console.log('ResultsSidebarDrawer received result:', JSON.stringify(result, null, 2))
+  console.log('ResultsSidebarDrawer - Keys in result:', Object.keys(result))
+  console.log('ResultsSidebarDrawer - Has metadata?', 'metadata' in result)
+  console.log('ResultsSidebarDrawer - Has inputs?', 'inputs' in result)
+  console.log('ResultsSidebarDrawer - Has sector_impacts?', 'sector_impacts' in result)
 
   // Defensive destructuring with fallbacks
   const {
@@ -45,6 +49,9 @@ export default function ResultsSidebarDrawer({
     spatial_distribution = null,
     summary = {}
   } = result || {}
+
+  console.log('After destructuring - sector_impacts:', sector_impacts)
+  console.log('After destructuring - top_20_affected_sectors length:', sector_impacts?.top_20_affected_sectors?.length || 0)
 
   // Safe accessor functions with defaults
   const getTotalOutput = () => summary?.total_economic_output_brl || 0
@@ -112,7 +119,7 @@ export default function ResultsSidebarDrawer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+        className="fixed inset-0 bg-black/30 z-[9998] lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -121,7 +128,7 @@ export default function ResultsSidebarDrawer({
       <div
         className={`
           fixed top-0 right-0 h-full w-full sm:w-[480px] lg:w-[560px]
-          bg-white dark:bg-slate-900 shadow-2xl z-50
+          bg-white dark:bg-slate-900 shadow-2xl z-[9999]
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           overflow-hidden flex flex-col
@@ -176,10 +183,20 @@ export default function ResultsSidebarDrawer({
         </div>
 
         {/* Tab Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-slate-900">
+          {/* Debug indicator */}
+          <div className="text-xs text-gray-400 mb-2">
+            Tab: {activeTab} | Data keys: {Object.keys(result).length}
+          </div>
+
           {/* OVERVIEW TAB */}
-          {activeTab === 'overview' && (
+          {activeTab === 'overview' ? (
             <>
+              {/* Debug: Always visible test element */}
+              <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 text-xs">
+                ✓ Overview tab is rendering
+              </div>
+
               {/* Input Summary */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
@@ -339,10 +356,17 @@ export default function ResultsSidebarDrawer({
                 </div>
               )}
             </>
-          )}
+          ) : null}
 
           {/* SECTORS TAB */}
-          {activeTab === 'sectors' && (
+          {activeTab === 'sectors' ? (
+            <>
+              {/* Debug: Always visible test element */}
+              <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 text-xs">
+                ✓ Sectors tab is rendering
+              </div>
+
+
             <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
                 Top 20 Setores Mais Afetados
@@ -381,11 +405,19 @@ export default function ResultsSidebarDrawer({
                 Total de {sector_impacts?.total_sectors_affected || 0} setores afetados
               </p>
             </div>
-          )}
+            </>
+          ) : null}
 
           {/* REGIONS TAB */}
-          {activeTab === 'regions' && spatial_distribution && (
+          {activeTab === 'regions' ? (
             <>
+              {/* Debug: Always visible test element */}
+              <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 text-xs">
+                ✓ Regions tab is rendering | Has spatial_distribution: {spatial_distribution ? 'Yes' : 'No'}
+              </div>
+
+              {spatial_distribution ? (
+              <>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-gray-50 dark:bg-slate-700 rounded p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Regiões</p>
@@ -441,8 +473,14 @@ export default function ResultsSidebarDrawer({
                     })}
                 </div>
               </div>
+              </>
+            ) : (
+              <div className="text-center text-gray-500 dark:text-gray-400 p-4">
+                Distribuição espacial não disponível
+              </div>
+            )}
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </>
