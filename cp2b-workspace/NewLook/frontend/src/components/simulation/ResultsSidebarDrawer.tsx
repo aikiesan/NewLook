@@ -112,7 +112,7 @@ export default function ResultsSidebarDrawer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+        className="fixed inset-0 bg-black/30 z-[9998] lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -121,7 +121,7 @@ export default function ResultsSidebarDrawer({
       <div
         className={`
           fixed top-0 right-0 h-full w-full sm:w-[480px] lg:w-[560px]
-          bg-white dark:bg-slate-900 shadow-2xl z-50
+          bg-white dark:bg-slate-900 shadow-2xl z-[9999]
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           overflow-hidden flex flex-col
