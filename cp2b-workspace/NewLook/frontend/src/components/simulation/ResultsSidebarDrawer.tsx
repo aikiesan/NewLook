@@ -35,12 +35,19 @@ export default function ResultsSidebarDrawer({
 
   const { metadata, inputs, direct_impacts, sector_impacts, spatial_distribution, summary } = result
 
+  // Safe accessor functions with defaults
+  const getTotalOutput = () => summary?.total_economic_output_brl || 0
+  const getMultiplier = () => direct_impacts?.output_multiplier || 1
+  const getJobsCreated = () => summary?.jobs_created || 0
+  const getIndirectOutput = () => summary?.indirect_output_brl || 0
+  const getInvestment = () => inputs?.investment_brl || 0
+
   // Prepare treemap data from top 20 sectors
-  const treemapData = sector_impacts.top_20_affected_sectors.slice(0, 15).map((sector) => ({
+  const treemapData = (sector_impacts?.top_20_affected_sectors || []).slice(0, 15).map((sector) => ({
     name: sector.sector_name.length > 40 ? sector.sector_name.substring(0, 37) + '...' : sector.sector_name,
     fullName: sector.sector_name,
-    size: sector.output_impact_brl,
-    percentage: sector.percentage_of_total,
+    size: sector.output_impact_brl || 0,
+    percentage: sector.percentage_of_total || 0,
   }))
 
   // Custom treemap content
@@ -180,7 +187,7 @@ export default function ResultsSidebarDrawer({
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Investimento:</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(inputs.investment_brl)}
+                      {formatCurrency(getInvestment())}
                     </span>
                   </div>
                 </div>
@@ -195,7 +202,7 @@ export default function ResultsSidebarDrawer({
                     <p className="text-xs text-gray-600 dark:text-gray-400">Produto Total</p>
                   </div>
                   <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatCurrency(summary.total_economic_output_brl, true)}
+                    {formatCurrency(getTotalOutput(), true)}
                   </p>
                 </div>
 
@@ -206,7 +213,7 @@ export default function ResultsSidebarDrawer({
                     <p className="text-xs text-gray-600 dark:text-gray-400">Multiplicador</p>
                   </div>
                   <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    {direct_impacts.output_multiplier.toFixed(2)}×
+                    {getMultiplier().toFixed(2)}×
                   </p>
                 </div>
 
@@ -217,7 +224,7 @@ export default function ResultsSidebarDrawer({
                     <p className="text-xs text-gray-600 dark:text-gray-400">Empregos Criados</p>
                   </div>
                   <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                    {summary.jobs_created.toLocaleString('pt-BR')}
+                    {getJobsCreated().toLocaleString('pt-BR')}
                   </p>
                 </div>
 
@@ -228,90 +235,94 @@ export default function ResultsSidebarDrawer({
                     <p className="text-xs text-gray-600 dark:text-gray-400">Efeito Indireto</p>
                   </div>
                   <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
-                    {formatCurrency(summary.indirect_output_brl, true)}
+                    {formatCurrency(getIndirectOutput(), true)}
                   </p>
                 </div>
               </div>
 
               {/* Treemap Visualization */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  Top 15 Setores Afetados (Treemap)
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <Treemap
-                    data={treemapData}
-                    dataKey="size"
-                    aspectRatio={4 / 3}
-                    stroke="#fff"
-                    fill="#10b981"
-                    content={<CustomTreemapContent />}
-                  >
-                    <RechartsTooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload[0]) {
-                          const data = payload[0].payload
-                          return (
-                            <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-                              <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">
-                                {data.fullName}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Impacto: {formatCurrency(data.size)}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Participação: {data.percentage.toFixed(2)}%
-                              </p>
-                            </div>
-                          )
-                        }
-                        return null
-                      }}
-                    />
-                  </Treemap>
-                </ResponsiveContainer>
-              </div>
+              {treemapData.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Top 15 Setores Afetados (Treemap)
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <Treemap
+                      data={treemapData}
+                      dataKey="size"
+                      aspectRatio={4 / 3}
+                      stroke="#fff"
+                      fill="#10b981"
+                      content={<CustomTreemapContent />}
+                    >
+                      <RechartsTooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload[0]) {
+                            const data = payload[0].payload
+                            return (
+                              <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                                <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">
+                                  {data.fullName}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Impacto: {formatCurrency(data.size || 0)}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Participação: {(data.percentage || 0).toFixed(2)}%
+                                </p>
+                              </div>
+                            )
+                          }
+                          return null
+                        }}
+                      />
+                    </Treemap>
+                  </ResponsiveContainer>
+                </div>
+              )}
 
               {/* Aggregate Breakdown */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  Distribuição por Categoria
-                </h3>
-                <div className="space-y-3">
-                  {sector_impacts.aggregate_breakdown.map((agg) => {
-                    const color = AGGREGATE_SECTOR_COLORS[agg.aggregate_sector_code]
-                    const percentage = agg.percentage_of_total / 100
+              {sector_impacts?.aggregate_breakdown && sector_impacts.aggregate_breakdown.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Distribuição por Categoria
+                  </h3>
+                  <div className="space-y-3">
+                    {sector_impacts.aggregate_breakdown.map((agg) => {
+                      const color = AGGREGATE_SECTOR_COLORS[agg.aggregate_sector_code] || '#gray'
+                      const percentage = (agg.percentage_of_total || 0) / 100
 
-                    return (
-                      <div key={agg.aggregate_sector_code}>
-                        <div className="flex items-center justify-between text-sm mb-1">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: color }}
-                            />
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {agg.aggregate_sector_name}
+                      return (
+                        <div key={agg.aggregate_sector_code}>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: color }}
+                              />
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {agg.aggregate_sector_name}
+                              </span>
+                            </div>
+                            <span className="font-semibold text-gray-900 dark:text-white">
+                              {formatCurrency(agg.total_output_brl || 0, true)}
                             </span>
                           </div>
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            {formatCurrency(agg.total_output_brl, true)}
-                          </span>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div
+                              className="h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${percentage * 100}%`,
+                                backgroundColor: color,
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${percentage * 100}%`,
-                              backgroundColor: color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
 
@@ -322,7 +333,7 @@ export default function ResultsSidebarDrawer({
                 Top 20 Setores Mais Afetados
               </h3>
               <div className="space-y-2">
-                {sector_impacts.top_20_affected_sectors.map((sector, index) => (
+                {(sector_impacts?.top_20_affected_sectors || []).map((sector, index) => (
                   <div
                     key={sector.sector_id}
                     className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
@@ -342,17 +353,17 @@ export default function ResultsSidebarDrawer({
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(sector.output_impact_brl, true)}
+                        {formatCurrency(sector.output_impact_brl || 0, true)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatPercentage(sector.percentage_of_total / 100)}
+                        {formatPercentage((sector.percentage_of_total || 0) / 100)}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
-                Total de {sector_impacts.total_sectors_affected} setores afetados
+                Total de {sector_impacts?.total_sectors_affected || 0} setores afetados
               </p>
             </div>
           )}
@@ -364,13 +375,13 @@ export default function ResultsSidebarDrawer({
                 <div className="bg-gray-50 dark:bg-slate-700 rounded p-3">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Regiões</p>
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
-                    {spatial_distribution.total_regions_affected}
+                    {spatial_distribution.total_regions_affected || 0}
                   </p>
                 </div>
                 <div className="bg-gray-50 dark:bg-slate-700 rounded p-3 col-span-2">
                   <p className="text-xs text-gray-600 dark:text-gray-400">Spillover</p>
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
-                    {formatPercentage(spatial_distribution.spillover_percentage / 100)}
+                    {formatPercentage((spatial_distribution.spillover_percentage || 0) / 100)}
                   </p>
                 </div>
               </div>
@@ -380,12 +391,12 @@ export default function ResultsSidebarDrawer({
                   Distribuição Regional
                 </h3>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {spatial_distribution.regional_impacts
+                  {(spatial_distribution.regional_impacts || [])
                     .slice()
-                    .sort((a, b) => b.vab_impact_brl - a.vab_impact_brl)
+                    .sort((a, b) => (b.vab_impact_brl || 0) - (a.vab_impact_brl || 0))
                     .slice(0, 20)
                     .map((region) => {
-                      const color = leontiefClient67.getImpactIntensityColor(region.impact_intensity)
+                      const color = leontiefClient67.getImpactIntensityColor(region.impact_intensity || 'low')
 
                       return (
                         <button
@@ -399,15 +410,15 @@ export default function ResultsSidebarDrawer({
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {region.region_name}
+                              {region.region_name || 'N/A'}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Peso: {formatPercentage(region.spillover_weight)}
+                              Peso: {formatPercentage(region.spillover_weight || 0)}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {formatCurrency(region.vab_impact_brl, true)}
+                              {formatCurrency(region.vab_impact_brl || 0, true)}
                             </p>
                           </div>
                         </button>
