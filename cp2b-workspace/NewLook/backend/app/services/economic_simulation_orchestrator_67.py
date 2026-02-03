@@ -117,13 +117,20 @@ class SimulationResult67:
         max_impact_value = 0
 
         for region_code, impact in self.regional_impacts.items():
+            # Calculate regional sector breakdown (top 3 sectors for this region)
+            regional_sector_impacts = self._calculate_regional_sector_impacts(
+                region_code,
+                impact["spillover_weight"]
+            )
+
             regional_impacts_list.append({
                 "region_code": region_code,
                 "region_name": impact["region_name"],
                 "vab_impact_brl": impact["production_impact_brl"],
                 "spillover_weight": impact["spillover_weight"],
                 "distance_km": 0,  # Not available in current data
-                "impact_intensity": self._calculate_impact_intensity(impact["impact_percentage"])
+                "impact_intensity": self._calculate_impact_intensity(impact["impact_percentage"]),
+                "top_sectors": regional_sector_impacts[:3]  # Top 3 sectors for tooltip
             })
 
             if impact["production_impact_brl"] > max_impact_value:
@@ -137,6 +144,10 @@ class SimulationResult67:
         # Calculate direct vs indirect output
         direct_output = self.investment_brl
         indirect_output = self.total_production_impact - direct_output
+
+        # Calculate jobs created (employment multiplier: ~12 jobs per R$ 1M production)
+        employment_multiplier = 12.0  # Average jobs per R$ 1M
+        jobs_created = int((self.total_production_impact / 1_000_000) * employment_multiplier)
 
         return {
             "metadata": {
@@ -175,7 +186,8 @@ class SimulationResult67:
                 "total_economic_output_brl": self.total_production_impact,
                 "direct_output_brl": direct_output,
                 "indirect_output_brl": indirect_output,
-                "roi_multiplier": self.production_multiplier
+                "roi_multiplier": self.production_multiplier,
+                "jobs_created": jobs_created
             }
         }
 
@@ -191,6 +203,39 @@ class SimulationResult67:
             return "low"
         else:
             return "very_low"
+
+    def _calculate_regional_sector_impacts(self, region_code: str, spillover_weight: float) -> List[Dict[str, Any]]:
+        """
+        Calculate top affected sectors for a specific region
+
+        Distributes the national 67-sector production across this region
+        based on its spillover weight, then returns top sectors.
+        """
+        regional_sectors = []
+
+        # Distribute each sector's production to this region proportionally
+        for sector_id, national_production in self.sector_production_detail.items():
+            regional_production = national_production * spillover_weight
+
+            # Only include sectors with meaningful impact (> R$ 1000)
+            if regional_production > 1000:
+                # Find sector info from top_affected_sectors
+                sector_info = next(
+                    (s for s in self.top_affected_sectors if s["sector_id"] == sector_id),
+                    None
+                )
+
+                if sector_info:
+                    regional_sectors.append({
+                        "sector_id": sector_id,
+                        "sector_name": sector_info["sector_name"],
+                        "sector_code": sector_info["sector_code"],
+                        "production_brl": regional_production
+                    })
+
+        # Sort by production value (descending) and return top sectors
+        regional_sectors.sort(key=lambda x: x["production_brl"], reverse=True)
+        return regional_sectors
 
 
 class EconomicSimulationOrchestrator67:

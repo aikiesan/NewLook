@@ -222,7 +222,33 @@ export default function RegionChoroplethLayer({
                   weightNum >= 10 ? 'Médio impacto' :
                   weightNum >= 2 ? 'Baixo impacto' : 'Impacto mínimo (região distante)'}
             </div>
-          </div>
+        `
+
+        // Add top 3 affected sectors for this region
+        if (impact.top_sectors && impact.top_sectors.length > 0) {
+          popupContent += `
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #059669;">
+              <div style="font-size: 11px; font-weight: 600; color: #065f46; margin-bottom: 4px;">
+                🏭 Top 3 Setores Afetados:
+              </div>
+          `
+
+          impact.top_sectors.slice(0, 3).forEach((sector: any, idx: number) => {
+            const sectorImpactM = (sector.production_brl / 1e6).toFixed(2)
+            popupContent += `
+              <div style="font-size: 11px; color: #047857; margin-bottom: 2px; padding-left: 8px;">
+                ${idx + 1}. ${sector.sector_name.substring(0, 35)}${sector.sector_name.length > 35 ? '...' : ''}
+                <div style="font-size: 10px; color: #6b7280; padding-left: 12px;">
+                  R$ ${sectorImpactM}M
+                </div>
+              </div>
+            `
+          })
+
+          popupContent += `</div>`
+        }
+
+        popupContent += `</div>
         `
       } else {
         // Invalid data - show debug info
