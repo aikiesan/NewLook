@@ -35,6 +35,10 @@ export default function ResultsSidebarDrawer({
 
   // Debug log to see what we're receiving
   console.log('ResultsSidebarDrawer received result:', JSON.stringify(result, null, 2))
+  console.log('ResultsSidebarDrawer - Keys in result:', Object.keys(result))
+  console.log('ResultsSidebarDrawer - Has metadata?', 'metadata' in result)
+  console.log('ResultsSidebarDrawer - Has inputs?', 'inputs' in result)
+  console.log('ResultsSidebarDrawer - Has sector_impacts?', 'sector_impacts' in result)
 
   // Defensive destructuring with fallbacks
   const {
@@ -45,6 +49,9 @@ export default function ResultsSidebarDrawer({
     spatial_distribution = null,
     summary = {}
   } = result || {}
+
+  console.log('After destructuring - sector_impacts:', sector_impacts)
+  console.log('After destructuring - top_20_affected_sectors length:', sector_impacts?.top_20_affected_sectors?.length || 0)
 
   // Safe accessor functions with defaults
   const getTotalOutput = () => summary?.total_economic_output_brl || 0
@@ -176,7 +183,12 @@ export default function ResultsSidebarDrawer({
         </div>
 
         {/* Tab Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-slate-900">
+          {/* Debug indicator */}
+          <div className="text-xs text-gray-400 mb-2">
+            Tab: {activeTab} | Data keys: {Object.keys(result).length}
+          </div>
+
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <>
