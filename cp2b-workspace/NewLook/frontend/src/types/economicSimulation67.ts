@@ -59,6 +59,13 @@ export interface AggregateSectorImpact {
   sector_count: number
 }
 
+export interface RegionalSectorImpact {
+  sector_id: number
+  sector_name: string
+  sector_code: string
+  production_brl: number
+}
+
 export interface RegionalImpact {
   region_code: string
   region_name: string
@@ -66,6 +73,7 @@ export interface RegionalImpact {
   spillover_weight: number
   distance_km: number
   impact_intensity: 'very_low' | 'low' | 'medium' | 'high' | 'very_high'
+  top_sectors?: RegionalSectorImpact[]
 }
 
 export interface ShockSimulationResponse67 {
@@ -106,6 +114,7 @@ export interface ShockSimulationResponse67 {
     direct_output_brl: number
     indirect_output_brl: number
     roi_multiplier: number
+    jobs_created: number
   }
 }
 

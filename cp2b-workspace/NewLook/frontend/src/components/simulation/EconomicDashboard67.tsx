@@ -25,6 +25,7 @@ import type {
 } from '@/types/economicSimulation67'
 import { leontiefClient67 } from '@/lib/api/leontiefClient67'
 import SectorSelector67 from './SectorSelector67'
+import ResultsSidebarDrawer from './ResultsSidebarDrawer'
 
 // Dynamically import map components
 const MapContainer = dynamic(
@@ -422,143 +423,13 @@ export default function EconomicDashboard67() {
           </button>
         )}
 
-        {/* Floating Results Panel */}
-        {resultsVisible && simulationResult && (
-          <div className="absolute top-4 right-4 w-96 max-h-[calc(100vh-32px)] bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-[1000] overflow-hidden flex flex-col">
-            {/* Panel Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-5 w-5" />
-                <h2 className="font-semibold">Resultados</h2>
-              </div>
-              <button
-                onClick={() => setResultsVisible(false)}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
-                aria-label="Fechar resultados"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Panel Content - Scrollable */}
-            <div className="p-4 overflow-y-auto flex-1">
-              {/* Total Impact Cards */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Produto Total</p>
-                  <p className="text-base font-bold text-emerald-700 dark:text-emerald-400">
-                    {formatCurrency(simulationResult.summary?.total_economic_output_brl || 0)}
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Multiplicador</p>
-                  <p className="text-base font-bold text-blue-700 dark:text-blue-400">
-                    {(simulationResult.direct_impacts?.output_multiplier || 1).toFixed(2)}×
-                  </p>
-                </div>
-              </div>
-
-              {/* Top 10 Affected Sectors */}
-              {simulationResult.sector_impacts?.top_20_affected_sectors && simulationResult.sector_impacts.top_20_affected_sectors.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Top 10 Setores Mais Afetados
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    {simulationResult.sector_impacts.top_20_affected_sectors.slice(0, 10).map((sector, index) => (
-                      <div key={sector.sector_id} className="flex justify-between items-center">
-                        <span className="text-gray-600 dark:text-gray-400 truncate">
-                          {index + 1}. {sector.sector_name}
-                        </span>
-                        <span className="font-semibold text-gray-900 dark:text-white ml-2 whitespace-nowrap">
-                          {formatCurrency(sector.output_impact_brl)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Sectoral Breakdown */}
-              {simulationResult.sector_impacts?.aggregate_breakdown && simulationResult.sector_impacts.aggregate_breakdown.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Distribuição por Categoria
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    {simulationResult.sector_impacts.aggregate_breakdown.map((agg) => (
-                      <div key={agg.aggregate_sector_code} className="flex justify-between items-center">
-                        <span className="text-gray-600 dark:text-gray-400">{agg.aggregate_sector_name}</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(agg.total_output_brl)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Investment Input Info */}
-              <div className="mb-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💰 Investimento Inicial</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(simulationResult.inputs?.investment_brl || 0)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Região: {simulationResult.inputs?.region_name || 'N/A'}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Setor: {simulationResult.inputs?.sector_name || 'N/A'}
-                </p>
-              </div>
-
-              {/* Spatial Distribution Summary */}
-              {simulationResult.spatial_distribution?.total_regions_affected && (
-                <div className="mb-4 p-3 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
-                    📍 Spillover Espacial
-                  </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Impacto distribuído em{' '}
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      {simulationResult.spatial_distribution.total_regions_affected}
-                    </span>{' '}
-                    regiões ({leontiefClient67.formatPercentage(simulationResult.spatial_distribution?.spillover_percentage || 0)} spillover)
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <button
-                  onClick={handleNewSimulation}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Nova Simulação
-                </button>
-
-                <button
-                  onClick={() => {
-                    const dataStr = JSON.stringify(simulationResult, null, 2)
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-                    const url = URL.createObjectURL(dataBlob)
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = `simulation_67sectors_${Date.now()}.json`
-                    link.click()
-                    URL.revokeObjectURL(url)
-                  }}
-                  className="w-full bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar Resultados (JSON)
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Results Sidebar Drawer */}
+        <ResultsSidebarDrawer
+          result={simulationResult}
+          isOpen={resultsVisible}
+          onClose={() => setResultsVisible(false)}
+          onRegionClick={handleRegionClick}
+        />
       </div>
     </div>
   )
