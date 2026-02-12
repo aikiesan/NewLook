@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Right Layer Panel
+ * PILAR-2b V3 - Right Layer Panel
  * Layer toggles and municipality data display
  */
 

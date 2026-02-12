@@ -195,7 +195,7 @@ const DataProvenance: React.FC<DataProvenanceProps> = ({
             Citação sugerida:
           </div>
           <div className="text-xs text-blue-800 dark:text-blue-200 font-mono">
-            CP2B Maps (2025). Fator de Disponibilidade Efetivo - {residueName}.
+            PILAR-2b (2025). Fator de Disponibilidade Efetivo - {residueName}.
             Baseado em: {sources.map(s => s.organization).join(', ')}.
             Disponível em: https://cp2bmaps.org
           </div>

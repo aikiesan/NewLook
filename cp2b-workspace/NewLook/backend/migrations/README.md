@@ -1,4 +1,4 @@
-# Database Migrations - CP2B Maps V3
+# Database Migrations - PILAR-2b V3
 
 This directory contains database migration scripts for schema changes and performance optimizations.
 

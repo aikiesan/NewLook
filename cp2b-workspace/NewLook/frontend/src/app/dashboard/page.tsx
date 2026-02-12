@@ -128,7 +128,7 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4">
               <BarChart3 className="h-8 w-8 text-cp2b-primary" />
               <h1 className="text-2xl font-bold text-gray-900">
-                Dashboard CP2B Maps V3
+                Dashboard PILAR-2b V3
               </h1>
             </div>
             <button

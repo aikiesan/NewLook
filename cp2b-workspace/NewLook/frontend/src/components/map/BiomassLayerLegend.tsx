@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Biomass Plants Layer Legend
+ * PILAR-2b V3 - Biomass Plants Layer Legend
  * Floating legend showing different biomass plant types and data sources
  */
 

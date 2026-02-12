@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Dashboard Advanced Analysis Page for CP2B Maps V3
+ * Dashboard Advanced Analysis Page for PILAR-2b V3
  * Enhanced with DBFZ-inspired features: correction factors, cascade, Sankey, scenarios
  * Based on FDE (Fator de Disponibilidade Efetiva) methodology
  */

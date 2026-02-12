@@ -1,3 +1,3 @@
 """
-Middleware module for CP2B Maps V3 Backend
+Middleware module for PILAR-2b V3 Backend
 """

@@ -1,4 +1,4 @@
-# 🚀 CP2B Maps V3 - Deployment Checklist
+# 🚀 PILAR-2b V3 - Deployment Checklist
 
 **Purpose**: Step-by-step guide for deploying Sprint 4 to production  
 **Target Platforms**: Railway (Backend), Vercel (Frontend)  

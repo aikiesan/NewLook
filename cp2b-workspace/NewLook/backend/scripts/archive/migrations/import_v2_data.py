@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Data Migration Script
+PILAR-2b V3 - Data Migration Script
 Migrate data from V2 SQLite database to PostgreSQL + PostGIS
 
 Run this script after executing 001_initial_schema.sql in Supabase
@@ -39,7 +39,7 @@ V2_DATABASE_PATH = V2_DATA_DIR / "data" / "database" / "cp2b_maps.db"
 V2_REFERENCES_PATH = V2_DATA_DIR / "data" / "panorama_scientific_papers.json"
 
 class DataMigrator:
-    """Migrate CP2B Maps V2 data to PostgreSQL"""
+    """Migrate PILAR-2b V2 data to PostgreSQL"""
 
     def __init__(self, postgres_conn_string: str):
         """
@@ -340,7 +340,7 @@ class DataMigrator:
     def run_full_migration(self):
         """Run complete migration process"""
         print("=" * 80)
-        print("CP2B Maps V3 - Data Migration")
+        print("PILAR-2b V3 - Data Migration")
         print("Migrating from SQLite (V2) to PostgreSQL + PostGIS (V3)")
         print("=" * 80)
 
@@ -367,7 +367,7 @@ class DataMigrator:
 
 def main():
     """Main migration script"""
-    print("\nCP2B Maps V3 - Data Migration Tool")
+    print("\nPILAR-2b V3 - Data Migration Tool")
     print("-" * 80)
 
     # Load environment variables

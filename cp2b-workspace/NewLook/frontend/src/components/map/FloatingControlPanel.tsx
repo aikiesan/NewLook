@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Floating Control Panel (DBFZ-inspired)
+ * PILAR-2b V3 - Floating Control Panel (DBFZ-inspired)
  * Top-left floating panel with biomass type, search, opacity, and layers
  */
 
@@ -101,7 +101,7 @@ export default function FloatingControlPanel({
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1E5128] to-[#2C6B3A] px-3 py-2 flex items-center justify-between">
           <h3 className="text-white text-sm font-semibold">
-            CP2B Biogas Atlas
+            PILAR-2b
           </h3>
           <button
             onClick={() => setIsMinimized(true)}

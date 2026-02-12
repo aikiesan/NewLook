@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Left Filter Panel
+ * PILAR-2b V3 - Left Filter Panel
  * Search bar and residue filter controls
  */
 

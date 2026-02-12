@@ -1,4 +1,4 @@
-# Changelog - CP2B Maps V3
+# Changelog - PILAR-2b V3
 
 Todas mudanças notáveis serão documentadas aqui.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/).

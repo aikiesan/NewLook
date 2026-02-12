@@ -1,4 +1,4 @@
-# CP2B Maps V3 - Project Improvement Roadmap
+# PILAR-2b V3 - Project Improvement Roadmap
 **Date**: December 7, 2025
 **Version**: 3.0.1
 **Status**: Production Ready ✅
@@ -253,7 +253,7 @@ jobs:
 ```python
 # backend/app/main.py
 app = FastAPI(
-    title="CP2B Maps API",
+    title="PILAR-2b API",
     description="Biogas Potential Analysis Platform API",
     version="3.0.1",
     docs_url="/docs",

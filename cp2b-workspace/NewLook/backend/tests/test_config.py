@@ -96,7 +96,7 @@ class TestSettings:
 
         settings = Settings()
 
-        assert settings.APP_NAME == "CP2B Maps V3 API"
+        assert settings.APP_NAME == "PILAR-2b V3 API"
         assert settings.APP_ENV == "development"
         assert settings.DEBUG is True
         assert settings.PORT == 8000

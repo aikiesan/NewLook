@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Frontend API Cache
+ * PILAR-2b V3 - Frontend API Cache
  * Caches API responses in localStorage with TTL support
  * Reduces backend load and improves UX with instant responses
  */

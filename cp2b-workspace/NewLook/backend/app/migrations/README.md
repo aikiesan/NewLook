@@ -1,4 +1,4 @@
-# CP2B Maps V3 - Database Migration Guide
+# PILAR-2b V3 - Database Migration Guide
 
 Complete guide for migrating V2 data to PostgreSQL + PostGIS in Supabase.
 
@@ -138,7 +138,7 @@ python -m app.migrations.import_v2_data
 
 **Expected output:**
 ```
-CP2B Maps V3 - Data Migration
+PILAR-2b V3 - Data Migration
 ================================================================================
 
 📊 Migrating municipalities data...

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Optimized Geospatial Data Hooks
+ * PILAR-2b V3 - Optimized Geospatial Data Hooks
  * React Query hooks for efficient data fetching and caching
  */
 

@@ -1,5 +1,5 @@
 /**
- * Error types for CP2B Maps V3
+ * Error types for PILAR-2b V3
  * Provides type-safe error handling throughout the application
  */
 

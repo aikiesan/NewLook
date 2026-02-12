@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Map Legend Component (DBFZ-inspired)
+ * PILAR-2b V3 - Map Legend Component (DBFZ-inspired)
  * Displays YlGnBu color scale legend with data ranges
  */
 

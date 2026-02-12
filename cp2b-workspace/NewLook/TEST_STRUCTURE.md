@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the comprehensive test structure for the CP2B Maps V3 project, covering both backend (Python/Pytest) and frontend (TypeScript/Jest) testing.
+This document describes the comprehensive test structure for the PILAR-2b V3 project, covering both backend (Python/Pytest) and frontend (TypeScript/Jest) testing.
 
 ## Test Coverage Goals
 

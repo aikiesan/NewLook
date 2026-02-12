@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend API
+PILAR-2b V3 Backend API
 FastAPI application for geospatial biogas potential analysis
 Sprint 4: Performance optimizations, error handling, and production deployment
 """
@@ -24,7 +24,7 @@ from app.services.cache_service import get_all_cache_stats
 
 # Create FastAPI app
 app = FastAPI(
-    title="CP2B Maps V3 API",
+    title="PILAR-2b V3 API",
     description="Backend API for biogas potential analysis platform",
     version="3.0.0",
     docs_url="/docs",
@@ -42,11 +42,11 @@ app.middleware("http")(request_size_limit_middleware)
 # 2. Rate limiting (prevents abuse)
 app.middleware("http")(rate_limit_middleware)
 
-# 3. CORS middleware - Allow specific CP2B Maps deployments only
+# 3. CORS middleware - Allow specific PILAR-2b deployments only
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_all_origins(),  # Includes localhost origins
-    # Restrict to CP2B Maps specific subdomains only
+    # Restrict to PILAR-2b specific subdomains only
     # Vercel: new-look*.vercel.app, cp2b-maps*.vercel.app
     # Cloudflare: cp2bmaps.pages.dev and numbered previews
     allow_origin_regex=r"https://(new-look.*|cp2b-maps.*)\.vercel\.app|https://(cp2bmaps|\w{8}\.cp2bmaps)\.pages\.dev",
@@ -90,7 +90,7 @@ app.include_router(api_router, prefix="/api/v1")
 async def root():
     """Root endpoint with API information"""
     return {
-        "message": "CP2B Maps V3 API",
+        "message": "PILAR-2b V3 API",
         "version": "3.0.0",
         "docs": "/docs",
         "status": "running"

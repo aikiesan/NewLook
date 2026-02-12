@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - API Request Queue
+ * PILAR-2b V3 - API Request Queue
  * Manages API requests with rate limiting, retries, and priority
  * Prevents 429 errors by throttling requests
  */

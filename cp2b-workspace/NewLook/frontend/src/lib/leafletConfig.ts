@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Leaflet Configuration for Next.js
+ * PILAR-2b V3 - Leaflet Configuration for Next.js
  * Fixes default marker icon paths in Next.js
  */
 

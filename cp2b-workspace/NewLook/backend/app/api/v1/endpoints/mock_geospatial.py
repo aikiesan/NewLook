@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Mock Geospatial API Endpoints
+PILAR-2b V3 - Mock Geospatial API Endpoints
 Serves sample data (16 municipalities) for dashboard development
 """
 
@@ -234,7 +234,7 @@ async def health_check():
         return {
             "status": "healthy",
             "sample_municipalities": geojson['metadata']['total_municipalities'],
-            "data_source": "CP2B Maps V2 (Sample)"
+            "data_source": "PILAR-2b V2 (Sample)"
         }
     except Exception as e:
         return {

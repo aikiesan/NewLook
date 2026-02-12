@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - References API Service
+ * PILAR-2b V3 - References API Service
  * API calls for unified references and FDE factor references from Supabase
  */
 

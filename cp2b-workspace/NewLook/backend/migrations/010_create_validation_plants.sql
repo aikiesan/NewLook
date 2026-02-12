@@ -1,5 +1,5 @@
 -- =====================================================================
--- CP2B Maps V3 - Validation Plants Table
+-- PILAR-2b V3 - Validation Plants Table
 -- Migration: 010_create_validation_plants.sql
 -- Purpose: Store operational biogas plant data for model validation
 -- Author: CP2B Project Team

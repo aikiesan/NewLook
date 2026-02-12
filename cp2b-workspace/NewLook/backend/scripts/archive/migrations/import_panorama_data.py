@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Migration script to import data from Panorama_CP2B project into CP2B Maps V3.
+Migration script to import data from Panorama_CP2B project into PILAR-2b V3.
 
 This script imports:
 - Residuos (residues) with chemical parameters

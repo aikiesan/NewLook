@@ -27,7 +27,7 @@ from app.core.config import settings
 def verify_database_connection():
     """Verify Supabase connection and table structure"""
     print("=" * 60)
-    print("CP2B Maps V3 - Database Verification")
+    print("PILAR-2b V3 - Database Verification")
     print("=" * 60)
     print()
     

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Analysis TypeScript Types
+ * PILAR-2b V3 - Analysis TypeScript Types
  * Type definitions for correction factors, cascade analysis, and scenario planning
  * Based on FDE (Fator de Disponibilidade Efetiva) methodology
  */

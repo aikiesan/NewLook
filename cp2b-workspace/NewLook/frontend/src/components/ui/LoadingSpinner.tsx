@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Loading Spinner Component
+ * PILAR-2b V3 - Loading Spinner Component
  */
 
 import React from 'react';

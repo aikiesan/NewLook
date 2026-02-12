@@ -1,4 +1,4 @@
--- CP2B Maps V3 - Initial Database Schema
+-- PILAR-2b V3 - Initial Database Schema
 -- PostgreSQL + PostGIS for geospatial biogas analysis
 -- Run this script in Supabase SQL Editor
 

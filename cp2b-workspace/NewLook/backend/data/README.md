@@ -1,4 +1,4 @@
-# CP2B Maps V3 - Geospatial Data Directory
+# PILAR-2b V3 - Geospatial Data Directory
 
 This directory contains shapefiles and rasters for infrastructure layers.
 

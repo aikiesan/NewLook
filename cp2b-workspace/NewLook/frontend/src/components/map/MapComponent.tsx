@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Main Map Component
+ * PILAR-2b V3 - Main Map Component
  * Full-page React Leaflet map with floating panels (DBFZ-inspired)
  */
 

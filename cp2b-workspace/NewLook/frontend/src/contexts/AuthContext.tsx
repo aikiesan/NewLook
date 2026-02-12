@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Authentication Context Provider for CP2B Maps V3
+ * Authentication Context Provider for PILAR-2b V3
  * Manages global authentication state and provides auth methods
  */
 import React, { createContext, useContext, useState, useEffect } from 'react'

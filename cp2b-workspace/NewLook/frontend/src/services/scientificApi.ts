@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Scientific Database API Service
+ * PILAR-2b V3 - Scientific Database API Service
  * API calls for kinetics, chemical data, and scientific references
  */
 

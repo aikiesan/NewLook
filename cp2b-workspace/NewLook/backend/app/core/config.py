@@ -1,5 +1,5 @@
 """
-Configuration settings for CP2B Maps V3 Backend
+Configuration settings for PILAR-2b V3 Backend
 """
 from pydantic_settings import BaseSettings
 from pydantic import field_validator, ValidationError
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
 
     # App settings
-    APP_NAME: str = "CP2B Maps V3 API"
+    APP_NAME: str = "PILAR-2b V3 API"
     VERSION: str = "3.0.1"
     APP_ENV: str = "development"  # development, staging, production
     DEBUG: bool = False  # Default to False for security - can be overridden by env var

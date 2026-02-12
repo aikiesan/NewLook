@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Heatmap Legend Component
+ * PILAR-2b V3 - Heatmap Legend Component
  * Displays heatmap color scale legend with data ranges
  */
 

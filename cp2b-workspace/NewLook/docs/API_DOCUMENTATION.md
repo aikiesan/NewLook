@@ -1,4 +1,4 @@
-# 📡 CP2B Maps V3 - API Documentation
+# 📡 PILAR-2b V3 - API Documentation
 
 **Base URL**: `https://newlook-production.up.railway.app`  
 **Version**: 3.0.0  

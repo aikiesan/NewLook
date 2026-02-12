@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 Frontend - Test Utilities
+ * PILAR-2b V3 Frontend - Test Utilities
  * Shared utilities and custom render functions for testing
  */
 import React from 'react'

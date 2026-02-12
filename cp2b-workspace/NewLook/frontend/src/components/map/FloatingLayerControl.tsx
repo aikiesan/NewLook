@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Floating Layer Control (DBFZ-style)
+ * PILAR-2b V3 - Floating Layer Control (DBFZ-style)
  * Draggable layer control panel over the map
  */
 

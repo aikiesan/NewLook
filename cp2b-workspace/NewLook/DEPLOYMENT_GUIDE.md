@@ -1,4 +1,4 @@
-# CP2B Maps V3 - Deployment Guide
+# PILAR-2b V3 - Deployment Guide
 
 ## 🚀 Deployment Status
 

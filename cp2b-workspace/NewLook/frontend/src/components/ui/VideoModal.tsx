@@ -23,7 +23,7 @@ export default function VideoModal({
   isOpen,
   onClose,
   videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  title = 'Demo da Plataforma CP2B Maps'
+  title = 'Demo da Plataforma PILAR-2b'
 }: VideoModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)

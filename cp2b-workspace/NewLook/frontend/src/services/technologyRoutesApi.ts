@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Technology Routes API Service
+ * PILAR-2b V3 - Technology Routes API Service
  * Educational tool for visualizing biogas technology pathways
  * Calculation-free, reference-based learning platform
  *

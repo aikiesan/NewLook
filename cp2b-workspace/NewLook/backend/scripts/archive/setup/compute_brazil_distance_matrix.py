@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CP2B Maps V3 - Brazil Distance Matrix Pre-computation
+PILAR-2b V3 - Brazil Distance Matrix Pre-computation
 Calculates all 133x133 = 17,689 distances between intermediary regions
 
 This script pre-computes distances to optimize spillover calculations
@@ -233,7 +233,7 @@ def generate_sql_insert_script(distance_matrix: pd.DataFrame, output_sql: str):
     with open(output_sql, 'w', encoding='utf-8') as f:
         # Header
         f.write("-- ============================================================================\n")
-        f.write("-- CP2B Maps V3 - Brazil Distance Matrix Data\n")
+        f.write("-- PILAR-2b V3 - Brazil Distance Matrix Data\n")
         f.write("-- Auto-generated distance data for all 133 intermediary regions\n")
         f.write(f"-- Total records: {len(distance_matrix):,}\n")
         f.write(f"-- Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")

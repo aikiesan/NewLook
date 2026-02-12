@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Scientific References & Biokinetics TypeScript Types
+ * PILAR-2b V3 - Scientific References & Biokinetics TypeScript Types
  * Type definitions for kinetic parameters, chemical data, and scientific references
  * Based on DBFZ three-fraction kinetic model and PanoramaCP2B data
  */

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Map Utility Functions
+ * PILAR-2b V3 - Map Utility Functions
  * Color scales, formatting, and helper functions for map visualization
  */
 

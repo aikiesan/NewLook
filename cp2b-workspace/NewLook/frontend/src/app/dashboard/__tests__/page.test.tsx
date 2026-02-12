@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 Frontend - Dashboard Page Tests
+ * PILAR-2b V3 Frontend - Dashboard Page Tests
  * Comprehensive tests for the dashboard component
  */
 import React from 'react'
@@ -40,7 +40,7 @@ describe('DashboardPage', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Dashboard CP2B Maps V3')).toBeInTheDocument()
+        expect(screen.getByText('Dashboard PILAR-2b V3')).toBeInTheDocument()
       })
 
       expect(screen.getByText('Exportar Dados')).toBeInTheDocument()
@@ -281,7 +281,7 @@ describe('DashboardPage', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Dashboard CP2B Maps V3')).toBeInTheDocument()
+        expect(screen.getByText('Dashboard PILAR-2b V3')).toBeInTheDocument()
       })
     })
 
@@ -359,7 +359,7 @@ describe('DashboardPage', () => {
 
       await waitFor(() => {
         const h1 = screen.getByRole('heading', { level: 1 })
-        expect(h1).toHaveTextContent('Dashboard CP2B Maps V3')
+        expect(h1).toHaveTextContent('Dashboard PILAR-2b V3')
 
         const h2 = screen.getByRole('heading', { level: 2 })
         expect(h2).toHaveTextContent('Municípios de São Paulo')

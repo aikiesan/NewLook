@@ -1,5 +1,5 @@
 /**
- * Proximity Analysis API service for CP2B Maps V3
+ * Proximity Analysis API service for PILAR-2b V3
  * Handles spatial analysis with MapBiomas integration
  * Sprint 4: Added retry logic, timeout handling, and better error messages
  * Enhanced: Added frontend caching and request queue integration

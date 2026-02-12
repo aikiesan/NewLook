@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - TanStack Query Configuration
+ * PILAR-2b V3 - TanStack Query Configuration
  * Optimized caching and data synchronization for geospatial data
  */
 

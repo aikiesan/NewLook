@@ -8,15 +8,13 @@
       "references": "Referências",
       "hub": "Hub",
       "proximity": "Proximidade",
-      "simulation": "Simulação",
       "technology_routes": "Rotas Tecnológicas",
       "scientific_database": "Base Científica",
       "advanced": "Análises"
     },
     "nav_descriptions": {
       "hub": "Central de Recursos",
-      "map": "Mapa Interativo SP",
-      "simulation": "Modelo Insumo-Produto"
+      "map": "Mapa Interativo SP"
     },
     "auth": {
       "login": "Entrar",
@@ -34,7 +32,7 @@
     "badge": {
       "beta": "Beta"
     },
-    "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
+    "copyright": "© 2025 PILAR-2b V3. Plataforma de Análise de Biogás."
   },
   "auth": {
     "errors": {
@@ -45,7 +43,7 @@
       "registration_failed": "Falha no registro. Tente novamente."
     },
     "login": {
-      "back_to_home": "Voltar para página inicial - CP2B Maps V3",
+      "back_to_home": "Voltar para página inicial - PILAR-2b V3",
       "title": "Acessar sua conta",
       "or": "Ou",
       "create_account": "crie uma nova conta",
@@ -84,7 +82,7 @@
       "login": "Fazer login"
     },
     "common": {
-      "copyright": "© 2025 CP2B Maps V3. Plataforma de Análise de Biogás."
+      "copyright": "© 2025 PILAR-2b V3. Plataforma de Análise de Biogás."
     }
   },
   "landing": {
@@ -97,7 +95,7 @@
       "cta_explore": "Explorar Mapa Interativo",
       "cta_demo": "Ver Demonstração",
       "showcase_badge": "Veja a plataforma em ação",
-      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma CP2B Maps V3."
+      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma PILAR-2b V3."
     },
     "screenshots": {
       "interactive_map": {
@@ -140,7 +138,7 @@
       }
     },
     "features": {
-      "heading": "O que você pode fazer com o CP2B Maps",
+      "heading": "O que você pode fazer com o PILAR-2b",
       "subheading": "Ferramentas avançadas para mapeamento, análise e visualização de potencial de biogás baseadas em metodologia científica validada.",
       "geospatial": {
         "title": "Mapeamento Geoespacial",
@@ -178,7 +176,7 @@
     },
     "cta_section": {
       "heading": "Pronto para explorar todos os recursos?",
-      "description": "Crie uma conta gratuita para acessar análises completas, exportar dados e colaborar com a comunidade CP2B.",
+      "description": "Crie uma conta gratuita para acessar análises completas, exportar dados e colaborar com a comunidade PILAR-2b.",
       "button_register": "Criar Conta Gratuita",
       "button_learn_more": "Saiba Mais"
     },
@@ -196,7 +194,7 @@
       "next": "Próximo"
     },
     "video_modal": {
-      "title": "Demonstração da Plataforma CP2B Maps",
+      "title": "Demonstração da Plataforma PILAR-2b",
       "aria_label": "Assistir demonstração em vídeo da plataforma"
     }
   },
@@ -230,7 +228,7 @@
     "language": "Idioma"
   },
   "metadata": {
-    "title": "CP2B Maps V3 - Atlas de Potencial de Biogás",
+    "title": "PILAR-2b V3 - Atlas de Potencial de Biogás",
     "description": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério e ferramentas de simulação econômica.",
     "keywords": "biogás, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP"
   }

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Compact Statistics Panel (DBFZ-inspired)
+ * PILAR-2b V3 - Compact Statistics Panel (DBFZ-inspired)
  * Minimalist, efficient statistics display
  */
 

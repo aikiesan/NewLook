@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Scientific References Modal
+ * PILAR-2b V3 - Scientific References Modal
  * Displays all scientific references and data sources used in analysis
  */
 

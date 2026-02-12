@@ -1,6 +1,6 @@
-# Contributing to CP2B Maps V3
+# Contributing to PILAR-2b V3
 
-Thank you for your interest in contributing to CP2B Maps! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to PILAR-2b! This document provides guidelines and instructions for contributing to the project.
 
 ---
 

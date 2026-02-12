@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Map Loading Skeleton
+ * PILAR-2b V3 - Map Loading Skeleton
  * Beautiful progressive loading UI for map component
  */
 

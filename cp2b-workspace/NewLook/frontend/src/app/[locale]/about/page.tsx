@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * About Page - CP2B Maps V3
+ * About Page - PILAR-2b V3
  * Comprehensive information about the Centro Paulista de Estudos em Biogás e Bioprodutos
  * Public version matching the dashboard Sobre page content
  */
@@ -58,7 +58,7 @@ export default function AboutPage() {
     },
     {
       date: 'Março 2025',
-      title: 'Desenvolvimento da Plataforma CP2B Maps V3',
+      title: 'Desenvolvimento da Plataforma PILAR-2b V3',
       description: 'Início do desenvolvimento da plataforma web moderna para análise de potencial de biogás.',
       status: 'in-progress',
       details: [
@@ -750,7 +750,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">CP2B Maps</h3>
+              <h3 className="font-bold text-lg mb-4">PILAR-2b</h3>
               <p className="text-gray-400 text-sm">
                 Centro Paulista de Estudos em Biogás e Bioprodutos - Plataforma de análise
                 de potencial de biogás do Estado de São Paulo.
@@ -781,7 +781,7 @@ export default function AboutPage() {
 
           <div className="border-t border-gray-800 pt-8">
             <p className="text-center text-sm text-gray-500">
-              © 2025 CP2B Maps V3 - Centro Paulista de Estudos em Biogás e Bioprodutos.
+              © 2025 PILAR-2b V3 - Centro Paulista de Estudos em Biogás e Bioprodutos.
               NIPE/UNICAMP. Desenvolvido com tecnologia moderna para o futuro sustentável.
             </p>
           </div>
