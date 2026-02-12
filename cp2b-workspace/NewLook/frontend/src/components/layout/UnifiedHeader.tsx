@@ -47,7 +47,6 @@ const publicNavConfig: NavItemConfig[] = [
   { href: '/', labelKey: 'home', icon: <Home className="h-4 w-4" /> },
   { href: '/map', labelKey: 'map', icon: <Map className="h-4 w-4" /> },
   { href: '/dashboard', labelKey: 'dashboard', icon: <BarChart3 className="h-4 w-4" /> },
-  { href: '/dashboard/references', labelKey: 'references', icon: <BookOpen className="h-4 w-4" /> },
   { href: 'https://nipe.unicamp.br/cp2b/', labelKey: 'about', icon: <Info className="h-4 w-4" /> },
 ]
 
@@ -58,8 +57,6 @@ const authenticatedNavConfig: NavItemConfig[] = [
   { href: '/dashboard/scientific-database', labelKey: 'scientific_database', icon: <BookOpen className="h-4 w-4" /> },
   { href: '/dashboard/technology-routes', labelKey: 'technology_routes', icon: <Workflow className="h-4 w-4" /> },
   { href: '/dashboard/proximity', labelKey: 'proximity', icon: <Target className="h-4 w-4" /> },
-  { href: '/dashboard/simulation', labelKey: 'simulation', icon: <TrendingUp className="h-4 w-4" />, descriptionKey: 'simulation' },
-  { href: '/dashboard/references', labelKey: 'references', icon: <BookOpen className="h-4 w-4" /> },
 ]
 
 export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) {
