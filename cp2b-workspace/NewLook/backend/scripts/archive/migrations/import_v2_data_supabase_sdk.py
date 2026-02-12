@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Data Migration Script (Using Supabase SDK)
+PILAR-2b V3 - Data Migration Script (Using Supabase SDK)
 Migrate data from V2 SQLite database to Supabase using REST API
 
 This version uses the Supabase Python SDK instead of direct PostgreSQL connection
@@ -35,7 +35,7 @@ V2_REFERENCES_PATH = V2_DATA_DIR / "data" / "panorama_scientific_papers.json"
 
 
 class SupabaseMigrator:
-    """Migrate CP2B Maps V2 data to Supabase using SDK"""
+    """Migrate PILAR-2b V2 data to Supabase using SDK"""
 
     def __init__(self, supabase_url: str, supabase_key: str):
         """
@@ -269,7 +269,7 @@ class SupabaseMigrator:
     def run_full_migration(self):
         """Run complete migration process"""
         print("=" * 80)
-        print("CP2B Maps V3 - Data Migration (Supabase SDK)")
+        print("PILAR-2b V3 - Data Migration (Supabase SDK)")
         print("Migrating from SQLite (V2) to Supabase")
         print("=" * 80)
 
@@ -296,7 +296,7 @@ class SupabaseMigrator:
 
 def main():
     """Main migration script"""
-    print("\nCP2B Maps V3 - Data Migration Tool (Supabase SDK)")
+    print("\nPILAR-2b V3 - Data Migration Tool (Supabase SDK)")
     print("-" * 80)
 
     # Load environment variables

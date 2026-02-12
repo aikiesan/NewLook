@@ -1,5 +1,5 @@
 """
-Authentication service for CP2B Maps V3
+Authentication service for PILAR-2b V3
 Handles user registration, login, logout, and profile management using Supabase
 """
 from typing import Dict

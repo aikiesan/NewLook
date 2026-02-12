@@ -362,4 +362,4 @@ Improvement: 70-80% prediction accuracy
 
 ---
 
-*This methodology ensures realistic and scientifically-sound biogas potential assessments for the CP2B Maps platform.*
+*This methodology ensures realistic and scientifically-sound biogas potential assessments for the PILAR-2b platform.*

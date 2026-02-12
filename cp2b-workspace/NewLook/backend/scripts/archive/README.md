@@ -1,4 +1,4 @@
-# Archived Scripts - CP2B Maps V3
+# Archived Scripts - PILAR-2b V3
 
 This directory contains scripts that were used during the initial setup and development of the project but are no longer needed for regular operations.
 
@@ -10,7 +10,7 @@ This directory contains scripts that were used during the initial setup and deve
 ## 📁 Directory Structure
 
 ### `migrations/`
-One-time data migration scripts that transferred data from CP2B Maps V2 to V3.
+One-time data migration scripts that transferred data from PILAR-2b V2 to V3.
 
 **Files:**
 - `import_panorama_data.py` - Imported Panorama Biogas data

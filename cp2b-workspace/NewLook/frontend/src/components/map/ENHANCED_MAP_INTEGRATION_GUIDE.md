@@ -1,6 +1,6 @@
 # Enhanced Map Visualization - Integration Guide
 
-This guide explains how to integrate the professional map visualization enhancements into your CP2B Maps application.
+This guide explains how to integrate the professional map visualization enhancements into your PILAR-2b application.
 
 ## New Components Created
 

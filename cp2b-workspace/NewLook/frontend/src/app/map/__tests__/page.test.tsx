@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 Frontend - Map Page Tests
+ * PILAR-2b V3 Frontend - Map Page Tests
  * Comprehensive tests for the interactive map component (core feature)
  */
 import React from 'react'

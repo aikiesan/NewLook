@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - MapBiomas Layer Component
+ * PILAR-2b V3 - MapBiomas Layer Component
  * Renders MapBiomas agricultural land use tiles on the map
  */
 

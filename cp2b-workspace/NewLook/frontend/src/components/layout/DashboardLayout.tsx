@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - Dashboard Layout Component
+ * PILAR-2b V3 - Dashboard Layout Component
  * DBFZ-inspired layout with full-width map and floating panels
  */
 

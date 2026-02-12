@@ -1,5 +1,5 @@
 """
-Rate Limiting Middleware for CP2B Maps V3
+Rate Limiting Middleware for PILAR-2b V3
 Prevents spam and abuse - max 10 analyses per user per minute
 Sprint 4: Task 4.1 - Performance Optimization
 """

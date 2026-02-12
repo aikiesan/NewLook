@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Shapefile Loader Utility
+PILAR-2b V3 - Shapefile Loader Utility
 Loads and converts shapefiles to GeoJSON format
 """
 

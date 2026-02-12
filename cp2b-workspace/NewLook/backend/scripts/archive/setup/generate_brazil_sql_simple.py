@@ -74,7 +74,7 @@ def generate_sample_data_sql():
 
     with open(output_sql, 'w', encoding='utf-8') as f:
         f.write("-- ============================================================================\n")
-        f.write("-- CP2B Maps V3 - Brazil Sample Economic Data\n")
+        f.write("-- PILAR-2b V3 - Brazil Sample Economic Data\n")
         f.write("-- Auto-generated sample data for 133 intermediary regions\n")
         f.write("-- ============================================================================\n\n")
 

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Error Boundary Component
+ * PILAR-2b V3 - Error Boundary Component
  */
 
 'use client';

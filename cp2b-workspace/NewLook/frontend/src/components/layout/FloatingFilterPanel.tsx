@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - Floating Filter Panel
+ * PILAR-2b V3 - Floating Filter Panel
  * DBFZ-inspired floating panel for filters and controls
  * Can be toggled on/off and dragged (future feature)
  */

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Municipality Layer Component
+ * PILAR-2b V3 - Municipality Layer Component
  * Renders municipalities as choropleth polygons with YlGnBu color scale
  */
 

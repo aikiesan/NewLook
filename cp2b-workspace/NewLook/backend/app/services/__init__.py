@@ -1,5 +1,5 @@
 """
-Services module for CP2B Maps V3 Backend
+Services module for PILAR-2b V3 Backend
 """
 
 from app.services.proximity_service import ProximityService

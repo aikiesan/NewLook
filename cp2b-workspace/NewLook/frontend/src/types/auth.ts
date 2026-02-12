@@ -1,5 +1,5 @@
 /**
- * Authentication types for CP2B Maps V3
+ * Authentication types for PILAR-2b V3
  */
 
 export type UserRole = 'visitante' | 'autenticado' | 'admin'

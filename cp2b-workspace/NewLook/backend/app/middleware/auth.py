@@ -1,5 +1,5 @@
 """
-Authentication middleware for CP2B Maps V3
+Authentication middleware for PILAR-2b V3
 Provides dependency injection for protected routes
 """
 from fastapi import Depends, HTTPException, status

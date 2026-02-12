@@ -1,5 +1,5 @@
 -- ============================================================================
--- CP2B Maps V3 - Performance Optimization Migration
+-- PILAR-2b V3 - Performance Optimization Migration
 -- Issue #10 & #11: Add indexes for common query patterns
 -- ============================================================================
 -- Author: CP2B Development Team

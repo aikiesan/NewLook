@@ -91,7 +91,7 @@ def generate_distance_matrix_sql():
 
     with open(output_sql, 'w', encoding='utf-8') as f:
         f.write("-- ============================================================================\n")
-        f.write("-- CP2B Maps V3 - Brazil Distance Matrix\n")
+        f.write("-- PILAR-2b V3 - Brazil Distance Matrix\n")
         f.write("-- Pre-computed distances for all 133 intermediary regions\n")
         f.write(f"-- Total records: {len(distances):,}\n")
         f.write("-- ============================================================================\n\n")

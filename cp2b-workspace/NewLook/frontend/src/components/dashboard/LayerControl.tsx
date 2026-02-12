@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Layer Control Component
+ * PILAR-2b V3 - Layer Control Component
  * Toggle visibility of different map layers
  */
 

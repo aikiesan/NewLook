@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Shapefile Loader
+PILAR-2b V3 - Shapefile Loader
 Load geospatial shapefiles into PostGIS database
 
 This script uses GDAL/OGR to import shapefiles with proper spatial transformations
@@ -286,7 +286,7 @@ class ShapefileLoader:
     def run_full_load(self):
         """Run complete shapefile loading process"""
         print("=" * 80)
-        print("CP2B Maps V3 - Shapefile Loader")
+        print("PILAR-2b V3 - Shapefile Loader")
         print("Loading geospatial data into PostGIS")
         print("=" * 80)
 
@@ -322,7 +322,7 @@ class ShapefileLoader:
 
 def main():
     """Main loader script"""
-    print("\nCP2B Maps V3 - Shapefile Loader")
+    print("\nPILAR-2b V3 - Shapefile Loader")
     print("-" * 80)
 
     # Get PostgreSQL connection string

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CP2B Maps V3 - Brazil Intermediary Regions Optimization Script
+PILAR-2b V3 - Brazil Intermediary Regions Optimization Script
 Optimizes BR_RG_Intermediarias_2024 shapefile for economic simulation
 
 Based on Prototipo_Choque_Marcelo optimization approach
@@ -44,7 +44,7 @@ def optimize_br_intermediary_regions(
     """
 
     print("="*80)
-    print("CP2B MAPS V3 - BRAZIL INTERMEDIARY REGIONS OPTIMIZATION")
+    print("PILAR-2b V3 - BRAZIL INTERMEDIARY REGIONS OPTIMIZATION")
     print("="*80)
 
     start_time = time.time()

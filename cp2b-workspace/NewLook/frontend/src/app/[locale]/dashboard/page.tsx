@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Protected Dashboard Landing Page for CP2B Maps V3
+ * Protected Dashboard Landing Page for PILAR-2b V3
  * User hub with feature overview, guides, and quick access to tools
  *
  * Protected by authentication - shows feature explanations and navigation
@@ -13,7 +13,6 @@ import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import {
   Map,
   Gauge,
-  Calculator,
   BookOpen,
   Users,
   Settings,
@@ -67,13 +66,6 @@ export default function DashboardPage() {
       href: '/dashboard/proximity',
       color: 'blue',
       badge: 'Novo'
-    },
-    {
-      title: 'Modelo Insumo-Produto',
-      description: 'Simulação de choque econômico com análise de efeitos diretos, indiretos e induzidos na economia regional',
-      icon: Calculator,
-      href: '/dashboard/simulation',
-      color: 'purple'
     },
     {
       title: 'Rotas Tecnológicas',
@@ -130,7 +122,7 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Bem-vindo ao CP2B Biogas Atlas
+              Bem-vindo ao PILAR-2b
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Plataforma completa para análise de potencial de biogás no estado de São Paulo
@@ -187,21 +179,8 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
-                  <span className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs">3</span>
-                  Modelo Insumo-Produto
-                </h3>
-                <ul className="list-disc pl-8 space-y-1">
-                  <li>Simule <strong>choques econômicos</strong> de investimentos em biogás</li>
-                  <li>Analise efeitos <strong>diretos, indiretos e induzidos</strong> na economia</li>
-                  <li>Compare cenários para <strong>regiões intermediárias</strong> de SP</li>
-                  <li>Visualize impactos em setores da economia regional</li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
                 <h3 className="font-bold text-orange-700 dark:text-orange-400 flex items-center gap-2">
-                  <span className="flex-shrink-0 w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs">4</span>
+                  <span className="flex-shrink-0 w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs">3</span>
                   Rotas Tecnológicas e Base Científica
                 </h3>
                 <ul className="list-disc pl-8 space-y-1">
@@ -277,11 +256,11 @@ export default function DashboardPage() {
           {/* About Project */}
           <div className="mt-12 bg-white dark:bg-slate-800 rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Sobre o Projeto CP2B Maps
+              Sobre o Projeto PILAR-2b
             </h2>
             <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
               <p>
-                O CP2B Biogas Atlas é uma plataforma desenvolvida para apoiar a tomada de decisão em projetos de biogás e biometano no estado de São Paulo.
+                O PILAR-2b é uma plataforma desenvolvida para apoiar a tomada de decisão em projetos de biogás e biometano no estado de São Paulo.
                 Utilizando dados geoespaciais, científicos e econômicos, a ferramenta permite:
               </p>
               <ul className="list-disc pl-5 mt-3 space-y-1">

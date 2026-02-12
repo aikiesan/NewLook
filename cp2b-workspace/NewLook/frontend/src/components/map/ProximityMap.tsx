@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Proximity Analysis Map Component
+ * PILAR-2b V3 - Proximity Analysis Map Component
  * Interactive map for selecting points and visualizing analysis results
  * Enhanced: Better error handling, zoom controls, and municipality visualization
  */

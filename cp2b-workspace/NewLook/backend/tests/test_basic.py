@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend - Basic Tests
+PILAR-2b V3 Backend - Basic Tests
 Simple tests to verify the test infrastructure is working
 """
 import pytest
@@ -9,7 +9,7 @@ def test_import_app():
     """Test that the app can be imported"""
     from app.main import app
     assert app is not None
-    assert app.title == "CP2B Maps V3 API"
+    assert app.title == "PILAR-2b V3 API"
 
 def test_basic_test_framework():
     """Test that pytest is working"""
@@ -28,5 +28,5 @@ def test_app_instance():
     # Check app properties
     assert hasattr(app, 'title')
     assert hasattr(app, 'version')
-    assert app.title == "CP2B Maps V3 API"
+    assert app.title == "PILAR-2b V3 API"
     assert app.version == "3.0.0"

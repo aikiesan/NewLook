@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend - Fixed Municipality API Tests
+PILAR-2b V3 Backend - Fixed Municipality API Tests
 API tests with proper host configuration for testing
 """
 import pytest
@@ -12,7 +12,7 @@ def create_test_app():
     from app.api.v1.api import api_router
 
     test_app = FastAPI(
-        title="CP2B Maps V3 API - Test",
+        title="PILAR-2b V3 API - Test",
         description="Test version without middleware restrictions",
         version="3.0.0",
     )

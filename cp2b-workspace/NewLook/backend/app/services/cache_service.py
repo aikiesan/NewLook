@@ -1,5 +1,5 @@
 """
-In-Memory Cache Service for CP2B Maps V3
+In-Memory Cache Service for PILAR-2b V3
 Caches repeated proximity analyses and MapBiomas queries
 Sprint 4: Task 4.1 - Performance Optimization
 

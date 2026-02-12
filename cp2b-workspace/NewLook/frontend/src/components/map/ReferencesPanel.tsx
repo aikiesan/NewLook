@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Comprehensive Data Sources References Panel
+ * PILAR-2b V3 - Comprehensive Data Sources References Panel
  * Floating panel with all data sources organized by category
  */
 

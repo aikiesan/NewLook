@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - MapBiomas Raster Service
+PILAR-2b V3 - MapBiomas Raster Service
 Land use analysis from MapBiomas raster data within analysis buffers
 """
 

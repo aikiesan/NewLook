@@ -1,5 +1,5 @@
 /**
- * Production-safe logging utility for CP2B Maps V3
+ * Production-safe logging utility for PILAR-2b V3
  *
  * Logs to console in development, suppresses in production
  * Prepares for error tracking integration (Sentry, etc.)

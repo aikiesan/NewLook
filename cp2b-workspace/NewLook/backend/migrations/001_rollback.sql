@@ -1,5 +1,5 @@
 -- ============================================================================
--- CP2B Maps V3 - Rollback Performance Optimization Migration
+-- PILAR-2b V3 - Rollback Performance Optimization Migration
 -- Rollback for: 001_add_performance_indexes.sql
 -- ============================================================================
 

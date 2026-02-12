@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - References Page
+ * PILAR-2b V3 - References Page
  * Bibliography and data sources for the project
  * PUBLIC PAGE - No authentication required
  */
@@ -51,7 +51,7 @@ export default function ReferencesPage() {
                 Referências e Fontes de Dados
               </h1>
               <p className="text-lg text-white/90 max-w-2xl">
-                Bibliografia científica e fontes de dados geoespaciais utilizadas no projeto CP2B Maps
+                Bibliografia científica e fontes de dados geoespaciais utilizadas no projeto PILAR-2b
               </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function ReferencesPage() {
           <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
               <Database className="h-7 w-7 text-green-600" />
-              Fontes de Dados do CP2B Maps
+              Fontes de Dados do PILAR-2b
             </h2>
 
             <div className="space-y-8">
@@ -434,7 +434,7 @@ export default function ReferencesPage() {
         <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Sobre as Referências do CP2B Maps
+            Sobre as Referências do PILAR-2b
           </h3>
           <ul className="text-sm text-blue-800 space-y-2">
             <li>

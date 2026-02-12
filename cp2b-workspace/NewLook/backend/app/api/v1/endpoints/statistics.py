@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Statistics API Endpoint
+PILAR-2b V3 - Statistics API Endpoint
 Provides summary statistics for municipalities and biogas potential
 """
 

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Geospatial TypeScript Types
+ * PILAR-2b V3 - Geospatial TypeScript Types
  * Type definitions for municipality data and GeoJSON structures
  */
 

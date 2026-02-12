@@ -1,6 +1,6 @@
-# 🌱 CP2B Maps V3 - BioRoute Feature Comprehensive Analysis & Upgrade Plan
+# 🌱 PILAR-2b V3 - BioRoute Feature Comprehensive Analysis & Upgrade Plan
 
-**Project**: CP2B Maps V3 - Biogas Technology Pathways
+**Project**: PILAR-2b V3 - Biogas Technology Pathways
 **Feature**: Rotas Tecnológicas (Technology Routes) - BioRoute Visual Builder
 **Date**: December 4, 2025
 **Status**: Enhancement & Integration Planning
@@ -9,7 +9,7 @@
 
 ## 📋 EXECUTIVE SUMMARY
 
-This document provides a comprehensive analysis of the CP2B Maps V3 platform's residues, technologies, and visual design system to upgrade the **BioRoute** (Rotas Tecnológicas) feature into a powerful visual building block system for creating biogas technology pathways.
+This document provides a comprehensive analysis of the PILAR-2b V3 platform's residues, technologies, and visual design system to upgrade the **BioRoute** (Rotas Tecnológicas) feature into a powerful visual building block system for creating biogas technology pathways.
 
 ### Key Findings:
 - ✅ **38 Validated Residues** across 4 sectors (Agriculture, Livestock, Industrial, Urban)
@@ -968,7 +968,7 @@ function ResidueNode({ data, selected }: NodeProps<ResidueNodeData>) {
 ### Layout Overview:
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│  🌱 CP2B Maps V3 - Rotas Tecnológicas (Technology Routes)                 │
+│  🌱 PILAR-2b V3 - Rotas Tecnológicas (Technology Routes)                 │
 ├──────────────┬─────────────────────────────────────────┬───────────────────┤
 │              │                                         │                   │
 │  RESÍDUOS    │           CANVAS INTERATIVO             │  TECNOLOGIAS      │
@@ -1257,7 +1257,7 @@ restartPolicyMaxRetries = 10
 
 ## 🎉 CONCLUSION
 
-The **CP2B Maps V3 BioRoute** feature has a solid foundation with 26 predefined technologies and a React Flow canvas. By integrating the **38 validated residues** from your comprehensive database, you'll create a powerful visual tool that enables users to:
+The **PILAR-2b V3 BioRoute** feature has a solid foundation with 26 predefined technologies and a React Flow canvas. By integrating the **38 validated residues** from your comprehensive database, you'll create a powerful visual tool that enables users to:
 
 1. **Explore realistic biogas scenarios** based on actual São Paulo biomass availability
 2. **Design technology pathways** with smart validation and recommendations

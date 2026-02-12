@@ -1,13 +1,15 @@
-# 🌱 CP2B Maps V3 - Biogas Potential Analysis Platform
+# 🌱 PILAR-2b - Plataforma Inteligente de Localização e Aproveitamento de Resíduos
 
 [![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/aikiesan/CP2B_Maps_V3)
-[![Sprint](https://img.shields.io/badge/sprint-4_complete-green.svg)](./docs/SPRINT4_IMPLEMENTATION_SUMMARY.md)
-[![License](https://img.shields.io/badge/license-Research-yellow.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](https://opensource.org/)
 
-Professional platform for analyzing **biogas potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
+**PILAR-2b** (_Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogás e Bioprodutos_) is an open-source platform for analyzing **biogas and bioproduct potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
 
-**Research Project**: FAPESP 2025/08745-2  
-**Production URL**: https://cp2bmaps.pages.dev  
+The name PILAR-2b emphasizes the dual conversion pathway: **Biogas to Bioproducts** (de biogás para bioprodutos), highlighting the energy conversion flow that is central to sustainable waste valorization.
+
+**Research Project**: FAPESP 2025/08745-2
+**Production URL**: https://cp2bmaps.pages.dev
 **API Docs**: https://newlook-production.up.railway.app/docs
 
 ---
@@ -31,10 +33,11 @@ Professional platform for analyzing **biogas potential** from agricultural, live
 - **58 scientific references** from research database
 - Natural language queries about biogas production
 
-### 📈 MCDA Analysis (Coming Soon)
-- **Multi-criteria decision analysis** for site selection
-- **Economic feasibility** calculator
-- **Environmental impact** assessment
+### 🔬 Scientific Database
+- **Biochemical parameters** for 50+ residue types
+- **BMP, VS, TS** data from peer-reviewed literature
+- **Technology routes** comparison tool
+- **58 scientific references** curated database
 
 ---
 
@@ -319,11 +322,27 @@ See: [docs/DEPLOYMENT_CHECKLIST.md](./docs/DEPLOYMENT_CHECKLIST.md)
 
 ## 🤝 Contributing
 
-This is a research project under active development. For questions or collaboration:
+**PILAR-2b** is an open-source project and we welcome contributions from the community!
 
-1. Read [CONTRIBUTING.md](../../CONTRIBUTING.md) (if available)
-2. Check [DEVELOPMENT_PLAN.md](../../DEVELOPMENT_PLAN.md) for roadmap
-3. Open an issue or pull request
+### How to Contribute
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Areas for Contribution
+
+- 🐛 Bug fixes and issue resolution
+- 📊 New data sources and residue types
+- 🗺️ Additional geospatial analysis features
+- 📚 Documentation improvements
+- 🌍 Internationalization (i18n) support
+- 🧪 Test coverage expansion
+- 🎨 UI/UX enhancements
+
+For questions or collaboration, please open an issue or contact the maintainers.
 
 ---
 
@@ -341,8 +360,7 @@ This is a research project under active development. For questions or collaborat
 ### 🚧 In Progress
 - [ ] MCDA analysis module
 - [ ] Bagacinho AI assistant (RAG + Gemini)
-- [ ] Scientific references library (58 papers)
-- [ ] Economic feasibility calculator
+- [ ] Enhanced scientific references library
 
 ### 📋 Planned
 - [ ] Historical MapBiomas data (2020-2023)
@@ -354,8 +372,19 @@ This is a research project under active development. For questions or collaborat
 
 ## 📄 License
 
-This is a research project funded by FAPESP (Grant 2025/08745-2).  
-See [LICENSE](./LICENSE) for details.
+**PILAR-2b** is open-source software released under the **MIT License**.
+
+This project was developed as part of research funded by FAPESP (Grant 2025/08745-2) and is freely available for use, modification, and distribution.
+
+See [LICENSE](./LICENSE) for full details.
+
+### Why Open Source?
+
+We believe in making research and technology accessible to everyone. By open-sourcing PILAR-2b, we hope to:
+- Enable other researchers and institutions to build upon this work
+- Foster collaboration in sustainable energy and waste valorization
+- Support public good initiatives in biogas and bioproducts development
+- Promote transparency in environmental research tools
 
 ---
 

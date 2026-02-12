@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend - Main Application Tests
+PILAR-2b V3 Backend - Main Application Tests
 Tests for FastAPI application configuration, middleware, and core endpoints
 """
 import pytest
@@ -13,7 +13,7 @@ class TestMainApplication:
 
     def test_app_creation(self, test_app):
         """Test that FastAPI app is created properly"""
-        assert test_app.title == "CP2B Maps V3 API"
+        assert test_app.title == "PILAR-2b V3 API"
         assert test_app.version == "3.0.0"
         assert test_app.docs_url == "/docs"
         assert test_app.redoc_url == "/redoc"
@@ -30,7 +30,7 @@ class TestMainApplication:
         for field in expected_fields:
             assert field in data
 
-        assert data["message"] == "CP2B Maps V3 API"
+        assert data["message"] == "PILAR-2b V3 API"
         assert data["version"] == "3.0.0"
         assert data["docs"] == "/docs"
         assert data["status"] == "running"
@@ -74,7 +74,7 @@ class TestMainApplication:
         assert "paths" in schema
 
         # Verify basic schema structure
-        assert schema["info"]["title"] == "CP2B Maps V3 API"
+        assert schema["info"]["title"] == "PILAR-2b V3 API"
         assert schema["info"]["version"] == "3.0.0"
 
     def test_nonexistent_endpoint(self, client: TestClient):

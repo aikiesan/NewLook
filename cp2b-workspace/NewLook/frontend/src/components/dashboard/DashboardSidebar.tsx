@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Dashboard Sidebar (V2 Style)
+ * PILAR-2b V3 - Dashboard Sidebar (V2 Style)
  * Organized sidebar with Statistics, Filters, and Visualization controls
  */
 

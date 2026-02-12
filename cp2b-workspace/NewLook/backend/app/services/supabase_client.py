@@ -1,5 +1,5 @@
 """
-Supabase client initialization for CP2B Maps V3
+Supabase client initialization for PILAR-2b V3
 Thread-safe singleton pattern with double-check locking
 """
 from supabase import create_client, Client

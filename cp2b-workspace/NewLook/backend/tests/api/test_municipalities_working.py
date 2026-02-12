@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend - Working Municipality API Tests
+PILAR-2b V3 Backend - Working Municipality API Tests
 Simplified tests that work with current sample data implementation
 """
 import pytest

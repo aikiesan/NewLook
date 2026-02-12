@@ -1,7 +1,7 @@
 import { test as base, expect, Page, Locator } from '@playwright/test'
 
 /**
- * CP2B Maps V3 - E2E Test Fixtures
+ * PILAR-2b V3 - E2E Test Fixtures
  *
  * Custom fixtures extending Playwright's base test for:
  * - Authenticated user context
@@ -19,7 +19,7 @@ export const TEST_USER = {
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 /**
- * Custom fixtures for CP2B Maps tests
+ * Custom fixtures for PILAR-2b tests
  */
 export interface CustomFixtures {
   // Utility functions

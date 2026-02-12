@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Municipality Popup Component
+ * PILAR-2b V3 - Municipality Popup Component
  * Displays all municipality information in an interactive map popup
  * No separate detail pages needed - all info is shown here
  */

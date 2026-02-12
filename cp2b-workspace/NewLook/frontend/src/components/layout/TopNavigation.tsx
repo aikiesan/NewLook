@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - Top Navigation Component
+ * PILAR-2b V3 - Top Navigation Component
  * DBFZ-inspired horizontal navigation bar
  * WCAG 2.1 AA compliant
  */
@@ -94,14 +94,14 @@ export default function TopNavigation() {
             <Link
               href="/"
               className="flex items-center space-x-2 group"
-              aria-label="CP2B Maps V3 - Home"
+              aria-label="PILAR-2b V3 - Home"
             >
               <Leaf
                 className="h-8 w-8 text-white group-hover:scale-110 transition-transform"
                 aria-hidden="true"
               />
               <div className="hidden sm:block">
-                <span className="text-xl font-bold text-white">CP2B Maps</span>
+                <span className="text-xl font-bold text-white">PILAR-2b</span>
                 <span className="text-xs text-green-200 block -mt-1">V3</span>
               </div>
             </Link>

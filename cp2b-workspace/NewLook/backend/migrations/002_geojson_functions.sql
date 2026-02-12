@@ -1,4 +1,4 @@
--- CP2B Maps V3 - GeoJSON Functions for Supabase
+-- PILAR-2b V3 - GeoJSON Functions for Supabase
 -- Run this in Supabase SQL Editor to enable direct GeoJSON fetching
 
 -- ============================================================================

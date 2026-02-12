@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Client-Only Map Wrapper
+ * PILAR-2b V3 - Client-Only Map Wrapper
  * Ensures Map Component only renders on client side to avoid SSR/hydration issues
  */
 

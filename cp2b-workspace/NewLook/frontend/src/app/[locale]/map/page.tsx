@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Public Interactive Map
+ * PILAR-2b V3 - Public Interactive Map
  * Accessible to all visitors - showcases biogas potential data
  * Same functionality as dashboard but without authentication requirement
  */

@@ -1,3 +1,3 @@
 """
-Pydantic models for CP2B Maps V3 Backend
+Pydantic models for PILAR-2b V3 Backend
 """

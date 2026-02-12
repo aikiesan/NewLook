@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Infrastructure Layer Component (Optimized)
+ * PILAR-2b V3 - Infrastructure Layer Component (Optimized)
  * Renders infrastructure GeoJSON layers with React Query caching
  */
 

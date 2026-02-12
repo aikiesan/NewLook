@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Advanced Filter Panel
+ * PILAR-2b V3 - Advanced Filter Panel
  * Multi-criteria filtering for municipalities
  */
 

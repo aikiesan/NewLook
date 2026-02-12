@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 Backend - Municipality Logic Unit Tests
+PILAR-2b V3 Backend - Municipality Logic Unit Tests
 Direct testing of municipality endpoint logic without server dependencies
 """
 import pytest

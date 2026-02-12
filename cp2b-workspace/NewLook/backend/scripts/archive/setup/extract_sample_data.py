@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Sample Data Extraction Script
+PILAR-2b V3 - Sample Data Extraction Script
 Extract 16 representative municipalities from V2 database for dashboard development
 """
 
@@ -173,7 +173,7 @@ def create_geojson(municipalities: List[Dict[str, Any]]) -> Dict[str, Any]:
         "metadata": {
             "total_municipalities": len(features),
             "region": "Araraquara",
-            "source": "CP2B Maps V2",
+            "source": "PILAR-2b V2",
             "note": "Sample data for V3 dashboard development"
         }
     }
@@ -214,7 +214,7 @@ def calculate_statistics(municipalities: List[Dict[str, Any]]) -> Dict[str, Any]
 
 def main():
     """Main extraction process"""
-    print("\nCP2B Maps V3 - Sample Data Extraction")
+    print("\nPILAR-2b V3 - Sample Data Extraction")
     print("=" * 80)
 
     try:

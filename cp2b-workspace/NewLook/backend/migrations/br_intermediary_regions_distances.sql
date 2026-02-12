@@ -1,5 +1,5 @@
 -- ============================================================================
--- CP2B Maps V3 - Brazil Distance Matrix
+-- PILAR-2b V3 - Brazil Distance Matrix
 -- Pre-computed distances for all 133 intermediary regions
 -- Total records: 17,689
 -- ============================================================================

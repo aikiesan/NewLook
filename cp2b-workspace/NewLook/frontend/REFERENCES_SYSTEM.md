@@ -1,4 +1,4 @@
-# 📚 Sistema de Referências Bibliográficas - CP2B Maps V3
+# 📚 Sistema de Referências Bibliográficas - PILAR-2b V3
 
 ## Visão Geral
 

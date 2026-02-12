@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright E2E Test Configuration for CP2B Maps V3
+ * Playwright E2E Test Configuration for PILAR-2b V3
  *
  * @see https://playwright.dev/docs/test-configuration
  *

@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Infrastructure Endpoints
+PILAR-2b V3 - Infrastructure Endpoints
 Provides GeoJSON data for infrastructure layers from real shapefiles
 """
 

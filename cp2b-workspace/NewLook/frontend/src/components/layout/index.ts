@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Layout Components
+ * PILAR-2b V3 - Layout Components
  * Export all layout components for easy imports
  */
 

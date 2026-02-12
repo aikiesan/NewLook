@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 Frontend - Home Page Tests
+ * PILAR-2b V3 Frontend - Home Page Tests
  * Tests for the main landing page component
  */
 import React from 'react'
@@ -24,8 +24,8 @@ describe('HomePage', () => {
   })
 
   describe('Header Navigation', () => {
-    it('renders the CP2B Maps V3 logo and title', () => {
-      const titles = screen.getAllByText('CP2B Maps V3')
+    it('renders the PILAR-2b V3 logo and title', () => {
+      const titles = screen.getAllByText('PILAR-2b V3')
       expect(titles).toHaveLength(2) // One in header, one in footer
       expect(screen.getByText('Beta')).toBeInTheDocument()
     })
@@ -148,7 +148,7 @@ describe('HomePage', () => {
     })
 
     it('renders copyright notice', () => {
-      expect(screen.getByText(/© 2025 CP2B Maps V3/)).toBeInTheDocument()
+      expect(screen.getByText(/© 2025 PILAR-2b V3/)).toBeInTheDocument()
     })
   })
 
@@ -233,14 +233,14 @@ describe('HomePage', () => {
 
   describe('Error Handling', () => {
     it('renders without crashing', () => {
-      const titles = screen.getAllByText('CP2B Maps V3')
+      const titles = screen.getAllByText('PILAR-2b V3')
       expect(titles.length).toBeGreaterThan(0)
     })
 
     it('handles missing props gracefully', () => {
       // Component should render without any required props
       const { unmount } = render(<HomePage />)
-      const titles = screen.getAllByText('CP2B Maps V3')
+      const titles = screen.getAllByText('PILAR-2b V3')
       expect(titles.length).toBeGreaterThan(0)
       unmount()
     })

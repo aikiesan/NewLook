@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - Settings Page
+ * PILAR-2b V3 - Settings Page
  * User preferences and account settings
  * Fully functional with notifications, appearance, and security settings
  */

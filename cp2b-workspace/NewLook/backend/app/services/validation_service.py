@@ -1,5 +1,5 @@
 """
-Input Validation Service for CP2B Maps V3
+Input Validation Service for PILAR-2b V3
 Sprint 4: Task 4.2 - Error Handling & Edge Cases
 
 Handles:

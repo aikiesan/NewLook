@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Proximity Analysis API Endpoint
+PILAR-2b V3 - Proximity Analysis API Endpoint
 Comprehensive spatial analysis for biogas potential assessment
 """
 

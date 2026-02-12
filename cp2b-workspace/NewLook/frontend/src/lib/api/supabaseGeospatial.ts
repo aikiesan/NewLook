@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Supabase Geospatial Client
+ * PILAR-2b V3 - Supabase Geospatial Client
  * Direct Supabase client for fetching geospatial data
  */
 

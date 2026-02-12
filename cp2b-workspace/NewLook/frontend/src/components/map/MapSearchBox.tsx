@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Map Search Box Component
+ * PILAR-2b V3 - Map Search Box Component
  * Search and zoom to municipalities
  * Note: This component must be used inside MapContainer (needs useMap hook)
  */

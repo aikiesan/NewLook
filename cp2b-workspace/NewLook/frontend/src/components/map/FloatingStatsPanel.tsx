@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Floating Stats Micro-Panel (DBFZ-inspired)
+ * PILAR-2b V3 - Floating Stats Micro-Panel (DBFZ-inspired)
  * Bottom-left compact statistics panel
  */
 

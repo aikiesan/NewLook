@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Dashboard Proximity Analysis Page for CP2B Maps V3
+ * Dashboard Proximity Analysis Page for PILAR-2b V3
  * Spatial analysis with capture radius and land use integration (MapBiomas)
  * Fully functional implementation using backend API
  */

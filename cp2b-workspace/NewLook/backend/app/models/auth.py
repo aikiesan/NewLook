@@ -1,5 +1,5 @@
 """
-Authentication models for CP2B Maps V3
+Authentication models for PILAR-2b V3
 Pydantic models for request/response validation
 """
 from pydantic import BaseModel, EmailStr, Field, field_validator

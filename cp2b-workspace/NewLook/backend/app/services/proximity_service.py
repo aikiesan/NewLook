@@ -1,5 +1,5 @@
 """
-CP2B Maps V3 - Proximity Analysis Service
+PILAR-2b V3 - Proximity Analysis Service
 PostGIS-based spatial analysis for biogas potential assessment
 """
 

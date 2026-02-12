@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - QueryClient Provider (Updated with Error Boundary)
+ * PILAR-2b V3 - QueryClient Provider (Updated with Error Boundary)
  * Wraps the app with TanStack Query for optimized data fetching and caching
  */
 

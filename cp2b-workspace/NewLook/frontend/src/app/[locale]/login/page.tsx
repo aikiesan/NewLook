@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Login Page for CP2B Maps V3
+ * Login Page for PILAR-2b V3
  * WCAG 2.1 AA Compliant
  */
 import { useState, useEffect } from 'react'
@@ -78,7 +78,7 @@ export default function LoginPage() {
           >
             <Image
               src="/images/logotipo-full-black.png"
-              alt="CP2B Maps Logo"
+              alt="PILAR-2b Logo"
               width={200}
               height={55}
               className="brightness-0 invert"

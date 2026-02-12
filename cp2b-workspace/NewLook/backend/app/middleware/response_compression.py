@@ -1,5 +1,5 @@
 """
-Response Compression Middleware for CP2B Maps V3
+Response Compression Middleware for PILAR-2b V3
 Compress API responses with gzip for faster transmission
 Sprint 4: Task 4.1 - Performance Optimization
 """

@@ -1,5 +1,5 @@
 /**
- * Analysis API service for CP2B Maps V3
+ * Analysis API service for PILAR-2b V3
  * Handles all API calls related to biogas analysis
  */
 

@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Residuos API Service
+ * PILAR-2b V3 - Residuos API Service
  * API calls for residues with chemical parameters and scientific references
  * Source: Panorama_CP2B validated data with 189 scientific references
  */

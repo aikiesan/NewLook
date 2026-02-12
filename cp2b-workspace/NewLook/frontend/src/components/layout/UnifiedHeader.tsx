@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * CP2B Maps V3 - Unified Header Component
+ * PILAR-2b V3 - Unified Header Component
  * Single header component with public/authenticated variants
  * WCAG 2.1 AA compliant with i18n support
  */
@@ -149,7 +149,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
             <Link
               href="/"
               className="flex items-center gap-3 group"
-              aria-label="CP2B Maps V3 - Home"
+              aria-label="PILAR-2b V3 - Home"
             >
               <Image
                 src={currentStyles.logo}

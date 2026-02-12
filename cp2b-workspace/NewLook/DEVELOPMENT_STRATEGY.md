@@ -1,4 +1,4 @@
-# Development Strategy - CP2B Maps V3
+# Development Strategy - PILAR-2b V3
 **Date:** December 24, 2025
 **Current Status:** Phase 2.1 Complete, Ready for Review
 

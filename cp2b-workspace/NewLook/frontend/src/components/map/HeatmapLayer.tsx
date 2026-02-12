@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Heatmap Layer Component
+ * PILAR-2b V3 - Heatmap Layer Component
  * Displays residue concentration as circular gradient markers
  */
 

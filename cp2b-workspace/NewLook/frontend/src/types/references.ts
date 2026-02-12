@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Unified References Types
+ * PILAR-2b V3 - Unified References Types
  * Type definitions for referencias_unificadas and FDE factor references
  * Based on Supabase database structure
  */

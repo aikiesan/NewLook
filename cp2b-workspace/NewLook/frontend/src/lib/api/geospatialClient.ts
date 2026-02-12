@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - Geospatial API Client
+ * PILAR-2b V3 - Geospatial API Client
  * Centralized API client for geospatial data fetching
  */
 

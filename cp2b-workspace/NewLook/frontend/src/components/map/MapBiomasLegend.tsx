@@ -1,5 +1,5 @@
 /**
- * CP2B Maps V3 - MapBiomas Legend Component
+ * PILAR-2b V3 - MapBiomas Legend Component
  * Displays legend for MapBiomas agricultural land use classes
  */
 
