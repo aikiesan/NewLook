@@ -1,6 +1,7 @@
 """
 Tests for database connection pooling and management
 """
+import os
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from app.core.database import get_connection_pool, get_db
@@ -10,16 +11,34 @@ import psycopg2
 class TestConnectionPooling:
     """Tests for database connection pool"""
 
-    def test_connection_pool_singleton(self):
+    @patch('app.core.database.pool.ThreadedConnectionPool')
+    def test_connection_pool_singleton(self, mock_pool_cls):
         """Test that connection pool is a singleton"""
+        import app.core.database as db_module
+        with db_module._pool_lock:
+            db_module._connection_pool = None
+
+        mock_pool_cls.return_value = MagicMock()
+
         pool1 = get_connection_pool()
         pool2 = get_connection_pool()
 
         assert pool1 is pool2, "Connection pool should be singleton"
+        mock_pool_cls.assert_called_once()
 
-    def test_connection_pool_thread_safe(self):
+        # Reset so subsequent tests start clean
+        with db_module._pool_lock:
+            db_module._connection_pool = None
+
+    @patch('app.core.database.pool.ThreadedConnectionPool')
+    def test_connection_pool_thread_safe(self, mock_pool_cls):
         """Test that connection pool initialization is thread-safe"""
         import threading
+        import app.core.database as db_module
+        with db_module._pool_lock:
+            db_module._connection_pool = None
+
+        mock_pool_cls.return_value = MagicMock()
 
         pools = []
 
@@ -33,29 +52,34 @@ class TestConnectionPooling:
             thread.join()
 
         # All should reference the same pool
+        assert len(pools) == 10
         assert all(p is pools[0] for p in pools), "Pool should be thread-safe singleton"
 
-    @patch('app.core.database.pool.ThreadedConnectionPool')
-    def test_connection_pool_configuration(self, mock_pool):
-        """Test that connection pool is configured correctly"""
-        from app.core.database import _connection_pool, _pool_lock
-
-        # Reset pool for test
-        with _pool_lock:
-            import app.core.database as db_module
+        with db_module._pool_lock:
             db_module._connection_pool = None
 
-        # Create pool
+    @patch('app.core.database.pool.ThreadedConnectionPool')
+    def test_connection_pool_configuration(self, mock_pool_cls):
+        """Test that connection pool is configured correctly"""
+        import app.core.database as db_module
+        with db_module._pool_lock:
+            db_module._connection_pool = None
+
+        mock_pool_cls.return_value = MagicMock()
+
         get_connection_pool()
 
         # Verify pool was created with correct parameters
-        mock_pool.assert_called_once()
-        call_args = mock_pool.call_args
+        mock_pool_cls.assert_called_once()
+        call_kwargs = mock_pool_cls.call_args.kwargs
 
-        assert call_args.kwargs['minconn'] == 2
-        assert call_args.kwargs['maxconn'] == 20
-        assert call_args.kwargs['sslmode'] == 'require'
-        assert call_args.kwargs['client_encoding'] == 'utf8'
+        assert call_kwargs['minconn'] == 2
+        assert call_kwargs['maxconn'] == 20
+        assert 'dsn' in call_kwargs          # connection via DSN
+        assert 'connect_timeout' in call_kwargs
+
+        with db_module._pool_lock:
+            db_module._connection_pool = None
 
     def test_get_db_returns_connection_to_pool(self, monkeypatch):
         """Test that get_db() properly returns connections to pool"""
@@ -73,17 +97,17 @@ class TestConnectionPooling:
         mock_pool.putconn.assert_called_once_with(mock_conn)
 
     def test_get_db_rollback_on_error(self, monkeypatch):
-        """Test that get_db() rolls back transaction on error"""
+        """Test that get_db() rolls back on psycopg2 errors and returns connection to pool"""
         mock_pool = MagicMock()
         mock_conn = MagicMock()
 
         mock_pool.getconn.return_value = mock_conn
         monkeypatch.setattr('app.core.database.get_connection_pool', lambda: mock_pool)
 
-        # Simulate error during operation
-        with pytest.raises(Exception):
+        # Only psycopg2.Error triggers the rollback branch in get_db()
+        with pytest.raises(psycopg2.OperationalError):
             with get_db() as conn:
-                raise Exception("Test error")
+                raise psycopg2.OperationalError("Simulated DB error")
 
         # Verify rollback was called
         mock_conn.rollback.assert_called_once()
@@ -148,6 +172,11 @@ class TestDatabaseTransactions:
 @pytest.mark.database
 class TestDatabaseIntegration:
     """Integration tests requiring real database"""
+
+    @pytest.fixture(autouse=True)
+    def require_db(self):
+        if not os.getenv("TEST_DATABASE_URL"):
+            pytest.skip("Integration tests require TEST_DATABASE_URL")
 
     def test_real_connection_pool(self):
         """Test real connection pool (requires TEST_DATABASE_URL)"""

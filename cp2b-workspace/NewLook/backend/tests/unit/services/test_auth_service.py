@@ -66,7 +66,7 @@ class TestAuthService:
         return {
             "id": "user-123",
             "full_name": "Test User",
-            "role": "user",
+            "role": "autenticado",  # must be one of: visitante, autenticado, admin
             "created_at": "2024-01-01T00:00:00+00:00",
             "updated_at": "2024-01-01T00:00:00+00:00",
         }
@@ -107,7 +107,7 @@ class TestAuthService:
         assert result.token_type == "bearer"
         assert result.user.email == "test@example.com"
         assert result.user.full_name == "Test User"
-        assert result.user.role == "user"
+        assert result.user.role == "autenticado"
 
         # Verify Supabase calls
         mock_supabase.auth.sign_up.assert_called_once()
@@ -311,7 +311,7 @@ class TestAuthService:
         assert result.id == "user-123"
         assert result.email == "test@example.com"
         assert result.full_name == "Test User"
-        assert result.role == "user"
+        assert result.role == "autenticado"
 
         mock_supabase.auth.get_user.assert_called_once_with("test-token")
 
