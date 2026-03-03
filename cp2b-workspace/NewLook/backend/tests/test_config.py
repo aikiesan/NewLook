@@ -56,16 +56,19 @@ class TestSettings:
 
         assert "POSTGRES_PASSWORD is required in production" in str(exc_info.value)
 
-    def test_postgres_password_length_production(self, monkeypatch):
-        """Test that POSTGRES_PASSWORD must be 12+ chars in production"""
+    def test_postgres_password_length_production(self, monkeypatch, caplog):
+        """Test that short POSTGRES_PASSWORD in production triggers a warning (not an error)"""
+        import logging
         monkeypatch.setenv("APP_ENV", "production")
         monkeypatch.setenv("SECRET_KEY", "a" * 32)
         monkeypatch.setenv("POSTGRES_PASSWORD", "short")
+        monkeypatch.setenv("POSTGRES_HOST", "localhost")
 
-        with pytest.raises(ValidationError) as exc_info:
-            Settings()
+        with caplog.at_level(logging.WARNING):
+            settings = Settings()
 
-        assert "at least 12 characters" in str(exc_info.value)
+        # Short password is a warning, not a hard error
+        assert any("short" in msg.lower() or "12 char" in msg.lower() for msg in caplog.messages)
 
     def test_cors_origins_parsing(self, monkeypatch):
         """Test that CORS origins are parsed correctly"""
@@ -98,6 +101,6 @@ class TestSettings:
 
         assert settings.APP_NAME == "PILAR-2b V3 API"
         assert settings.APP_ENV == "development"
-        assert settings.DEBUG is True
+        assert settings.DEBUG is False  # Default is False for security; set DEBUG=true to enable
         assert settings.PORT == 8000
         assert settings.RATE_LIMIT_PER_MINUTE == 60

@@ -5,6 +5,7 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 import threading
 import time
+import os
 from app.core.database import get_db_transaction
 
 
@@ -123,9 +124,14 @@ class TestSupabaseClientThreadSafety:
     """Tests for thread-safe Supabase client"""
 
     @patch('app.services.supabase_client.create_client')
-    def test_supabase_client_singleton(self, mock_create):
+    @patch('app.services.supabase_client.settings')
+    def test_supabase_client_singleton(self, mock_settings, mock_create):
         """Test that Supabase client is a singleton"""
-        from app.services.supabase_client import get_supabase_client, _supabase_client, _client_lock
+        from app.services.supabase_client import get_supabase_client
+
+        # Provide required credentials via mocked settings
+        mock_settings.SUPABASE_URL = "https://test.supabase.co"
+        mock_settings.SUPABASE_SERVICE_ROLE_KEY = "test-service-key"
 
         # Reset global state
         import app.services.supabase_client as client_module
@@ -145,10 +151,19 @@ class TestSupabaseClientThreadSafety:
         # Client should only be created once
         mock_create.assert_called_once()
 
+        # Restore singleton state to avoid polluting other tests
+        with client_module._client_lock:
+            client_module._supabase_client = None
+
     @patch('app.services.supabase_client.create_client')
-    def test_supabase_client_thread_safe_initialization(self, mock_create):
+    @patch('app.services.supabase_client.settings')
+    def test_supabase_client_thread_safe_initialization(self, mock_settings, mock_create):
         """Test that concurrent initialization is thread-safe"""
         from app.services.supabase_client import get_supabase_client
+
+        # Provide required credentials via mocked settings
+        mock_settings.SUPABASE_URL = "https://test.supabase.co"
+        mock_settings.SUPABASE_SERVICE_ROLE_KEY = "test-service-key"
 
         # Reset global state
         import app.services.supabase_client as client_module
@@ -176,6 +191,10 @@ class TestSupabaseClientThreadSafety:
 
         # Client should only be created once despite concurrent access
         mock_create.assert_called_once()
+
+        # Restore singleton state
+        with client_module._client_lock:
+            client_module._supabase_client = None
 
 
 class TestCacheThreadSafety:
@@ -303,6 +322,11 @@ class TestCacheThreadSafety:
 @pytest.mark.database
 class TestTransactionIntegration:
     """Integration tests for transaction management (requires real database)"""
+
+    @pytest.fixture(autouse=True)
+    def require_db(self):
+        if not os.getenv("TEST_DATABASE_URL"):
+            pytest.skip("Integration tests require TEST_DATABASE_URL")
 
     def test_real_transaction_commit(self):
         """Test real transaction commits successfully"""

@@ -1,9 +1,61 @@
 """
 PILAR-2b V3 Backend - Municipality Logic Unit Tests
 Direct testing of municipality endpoint logic without server dependencies
+
+Note: SAMPLE_MUNICIPALITIES was removed from the endpoint module when it was
+refactored to use Supabase/PostGIS. The constant is now defined here so these
+unit tests remain independent of the live database.
 """
 import pytest
-from app.api.v1.endpoints.municipalities import SAMPLE_MUNICIPALITIES
+
+# Representative São Paulo state municipalities used exclusively by these unit tests.
+SAMPLE_MUNICIPALITIES = [
+    {
+        "id": 1,
+        "name": "São Paulo",
+        "code": "3550308",
+        "population": 12_396_372,
+        "area_km2": 1521.11,
+        "biogas_potential": 49_500_000,
+        "coordinates": {"lat": -23.5505, "lng": -46.6333},
+    },
+    {
+        "id": 2,
+        "name": "Campinas",
+        "code": "3509502",
+        "population": 1_223_237,
+        "area_km2": 796.41,
+        "biogas_potential": 7_800_000,
+        "coordinates": {"lat": -22.9071, "lng": -47.0627},
+    },
+    {
+        "id": 3,
+        "name": "Ribeirão Preto",
+        "code": "3543402",
+        "population": 711_825,
+        "area_km2": 651.43,
+        "biogas_potential": 5_100_000,
+        "coordinates": {"lat": -21.1775, "lng": -47.8103},
+    },
+    {
+        "id": 4,
+        "name": "Sorocaba",
+        "code": "3552205",
+        "population": 687_357,
+        "area_km2": 456.07,
+        "biogas_potential": 4_200_000,
+        "coordinates": {"lat": -23.5015, "lng": -47.4526},
+    },
+    {
+        "id": 5,
+        "name": "Araçatuba",
+        "code": "3502804",
+        "population": 196_622,
+        "area_km2": 1167.29,
+        "biogas_potential": 1_350_000,
+        "coordinates": {"lat": -21.2096, "lng": -50.4328},
+    },
+]
 
 
 @pytest.mark.unit
