@@ -560,6 +560,16 @@ export default function DesktopBottomDrawer({
                         </span>
                       </label>
                     ))}
+                    {/* Coming-soon: SP Intermediate Regions layer */}
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-dashed border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed select-none">
+                      <input type="checkbox" disabled className="w-4 h-4 rounded shrink-0" />
+                      <span className="text-xs text-gray-500 font-medium leading-tight flex-1">
+                        🗺️ Regiões Intermediárias SP
+                      </span>
+                      <span className="px-1.5 py-0.5 text-[9px] font-bold bg-gray-200 text-gray-500 rounded-full shrink-0">
+                        EM BREVE
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

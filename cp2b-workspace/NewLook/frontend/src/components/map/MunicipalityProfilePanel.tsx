@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  FileText,
 } from 'lucide-react';
 import type { MunicipalityFeature } from '@/types/geospatial';
 
@@ -258,7 +259,16 @@ export default function MunicipalityProfilePanel({
           </Section>
 
           {/* External Links */}
-          <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
+          <div className="pt-4 border-t border-gray-200 dark:border-slate-700 space-y-2">
+            <a
+              href={`/municipality/${props.ibge_code}`}
+              className="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors group border border-green-200 dark:border-green-800"
+            >
+              <span className="text-sm font-semibold text-green-800 dark:text-green-300">
+                Ver Perfil Completo
+              </span>
+              <FileText className="w-4 h-4 text-green-600 group-hover:text-green-800 dark:text-green-400" />
+            </a>
             <a
               href={`https://cidades.ibge.gov.br/brasil/sp/${props.name.toLowerCase()}/panorama`}
               target="_blank"

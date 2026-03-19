@@ -29,6 +29,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
+import GlobalSearch from '@/components/ui/GlobalSearch'
 import { logger } from '@/lib/logger'
 
 interface NavItemConfig {
@@ -212,6 +213,9 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
 
           {/* Theme & Language Toggles + User Menu (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Global Search */}
+            <GlobalSearch variant={isPublic ? 'light' : 'dark'} />
+
             {/* Language Toggle */}
             <LanguageSwitcher />
 

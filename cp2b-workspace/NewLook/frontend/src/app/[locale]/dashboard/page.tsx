@@ -83,11 +83,10 @@ export default function DashboardPage() {
     },
     {
       title: 'Comparação de Municípios',
-      description: 'Compare múltiplos municípios lado a lado com métricas de potencial e infraestrutura (Em Desenvolvimento)',
+      description: 'Compare múltiplos municípios lado a lado com métricas de potencial de biogás por setor e infraestrutura',
       icon: FileText,
       href: '/dashboard/compare',
       color: 'teal',
-      badge: 'Em Breve'
     },
     {
       title: 'Análise Avançada',

@@ -9,6 +9,7 @@ import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import VideoModal from '@/components/ui/VideoModal'
 import NewsletterSignup from '@/components/ui/NewsletterSignup'
+import TestimonialCarousel from '@/components/ui/TestimonialCarousel'
 import {
   ArrowRight,
   Play,
@@ -26,6 +27,10 @@ import {
   ChevronRight,
   Github,
   Sparkles,
+  Download,
+  FileJson,
+  Sheet,
+  Globe,
 } from 'lucide-react'
 
 // Animation wrapper component for fade-in effects
@@ -645,6 +650,126 @@ export default function HomePage() {
                   {t('cta_section.button_learn_more')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </Link>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white" aria-labelledby="testimonials-heading">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-center mb-12">
+              <h2 id="testimonials-heading" className="text-3xl font-bold text-cp2b-gray-900 mb-4">
+                O que dizem pesquisadores e gestores
+              </h2>
+              <p className="text-cp2b-gray-600 max-w-xl mx-auto">
+                Perspectivas de quem usa a plataforma para embasar decisões em biogás e bioenergia.
+              </p>
+            </div>
+            <TestimonialCarousel
+              testimonials={[
+                {
+                  name: 'Dr. Marcelo Ferreira',
+                  role: 'Pesquisador em Bioenergia',
+                  organization: 'NIPE-UNICAMP',
+                  content:
+                    'A plataforma CP2B transformou a forma como mapeamos o potencial de biogás no estado. A combinação de dados geoespaciais com parâmetros cinéticos e FDE permite análises que antes levavam semanas serem feitas em minutos.',
+                  rating: 5,
+                },
+                {
+                  name: 'Engª. Ana Paula Souza',
+                  role: 'Analista de Projetos',
+                  organization: 'Secretaria de Infraestrutura e Meio Ambiente – SP',
+                  content:
+                    'Usamos a ferramenta de Análise de Proximidade para identificar clusters de biomassa próximos a gasodutos existentes. Os resultados foram fundamentais para priorizar investimentos em biometano na região de Ribeirão Preto.',
+                  rating: 5,
+                },
+                {
+                  name: 'Prof. Carlos Henrique Lima',
+                  role: 'Professor e Pesquisador',
+                  organization: 'ESALQ-USP',
+                  content:
+                    'A Base Científica com valores de BMP e parâmetros cinéticos, todos com referências bibliográficas, é uma contribuição única para o campo. Recomendo a todos os alunos de pós-graduação em engenharia ambiental.',
+                  rating: 5,
+                },
+                {
+                  name: 'Lic. Roberto Machado',
+                  role: 'Coordenador de Energia Renovável',
+                  organization: 'Prefeitura Municipal de Campinas',
+                  content:
+                    'Conseguimos identificar que resíduos de suinocultura e RSU juntos representam uma oportunidade de biogás de mais de 50M m³/ano só no entorno de Campinas. Dados que embasaram nossa proposta de política pública municipal.',
+                  rating: 4,
+                },
+              ]}
+            />
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Dataset Download Section */}
+      <section className="py-16 bg-white" aria-labelledby="data-heading">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 text-white">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white/10 rounded-xl shrink-0">
+                    <Download className="w-6 h-6 text-cp2b-lime" />
+                  </div>
+                  <div>
+                    <h2 id="data-heading" className="text-xl font-bold mb-2">
+                      Dados Abertos para Pesquisa
+                    </h2>
+                    <p className="text-gray-300 text-sm max-w-lg">
+                      Todos os dados da plataforma estão disponíveis para download gratuito.
+                      Use em seus próprios modelos, publicações e políticas públicas.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 shrink-0">
+                  <a
+                    href="https://github.com/aikiesan/NewLook"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1.5 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium transition-colors text-center"
+                  >
+                    <Sheet className="w-5 h-5 text-green-400" />
+                    CSV
+                  </a>
+                  <a
+                    href="https://github.com/aikiesan/NewLook"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1.5 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium transition-colors text-center"
+                  >
+                    <Globe className="w-5 h-5 text-blue-400" />
+                    GeoJSON
+                  </a>
+                  <a
+                    href="https://github.com/aikiesan/NewLook"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-1.5 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium transition-colors text-center"
+                  >
+                    <FileJson className="w-5 h-5 text-yellow-400" />
+                    JSON
+                  </a>
+                </div>
+              </div>
+              <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+                {[
+                  { label: '645 municípios', desc: 'com potencial de biogás por setor e resíduo' },
+                  { label: '50+ resíduos', desc: 'parâmetros BMP, TS, VS, C/N com referências' },
+                  { label: '8 camadas', desc: 'infraestrutura: gasodutos, subestações, ETEs' },
+                  { label: 'Licença CC-BY 4.0', desc: 'uso livre para pesquisa e fins não-comerciais' },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div className="font-bold text-cp2b-lime">{item.label}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{item.desc}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </FadeIn>
