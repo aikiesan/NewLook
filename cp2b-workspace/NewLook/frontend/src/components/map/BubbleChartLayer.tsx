@@ -52,14 +52,18 @@ export default function BubbleChartLayer({
       const color = getColor(value, minValue, maxValue);
 
       // Get centroid coordinates
+      // MunicipalityFeature geometry is 'Point' | 'MultiPolygon' (never 'Polygon')
       const geometry = feature.geometry;
       let coordinates: [number, number] | null = null;
 
-      if (geometry.type === 'Polygon') {
-        coordinates = getCentroid(geometry.coordinates[0] as Array<[number, number]>);
+      if (geometry.type === 'Point') {
+        // Point: coordinates is [lng, lat]
+        const coords = geometry.coordinates as number[];
+        coordinates = [coords[0], coords[1]];
       } else if (geometry.type === 'MultiPolygon') {
-        // Use the first polygon's centroid
-        coordinates = getCentroid(geometry.coordinates[0][0] as Array<[number, number]>);
+        // MultiPolygon: coordinates is [][][], use first ring of first polygon
+        const coords = geometry.coordinates as number[][][][];
+        coordinates = getCentroid(coords[0][0] as Array<[number, number]>);
       }
 
       if (!coordinates) return;

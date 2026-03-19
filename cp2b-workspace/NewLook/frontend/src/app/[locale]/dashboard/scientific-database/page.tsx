@@ -83,6 +83,33 @@ import {
 
 import type { SectorCode } from '@/services/residuosApi'
 
+// ── Citation export helpers ───────────────────────────────────────────────────
+
+function toAPA(ref: ScientificReference): string {
+  const authors = ref.authors || 'Autor desconhecido'
+  const year = ref.year || 'n.d.'
+  const title = ref.title || 'Sem título'
+  const journal = ref.journal ? `*${ref.journal}*` : ''
+  const doi = ref.doi ? ` https://doi.org/${ref.doi}` : ''
+  return `${authors} (${year}). ${title}. ${journal}${doi}`.trim()
+}
+
+function toBibTeX(ref: ScientificReference): string {
+  const key = `${(ref.authors || 'unknown').split(',')[0].trim().replace(/\s+/g, '').toLowerCase()}${ref.year}`
+  const lines = [
+    `@article{${key},`,
+    `  author  = {${ref.authors || ''}},`,
+    `  title   = {${ref.title || ''}},`,
+    `  year    = {${ref.year || ''}},`,
+  ]
+  if (ref.journal) lines.push(`  journal = {${ref.journal}},`)
+  if (ref.doi) lines.push(`  doi     = {${ref.doi}},`)
+  lines.push('}')
+  return lines.join('\n')
+}
+
+// ── Sector label helper ───────────────────────────────────────────────────────
+
 // Helper function to get sector label from either old SectorType or new SectorCode
 function getSectorLabel(sector: SectorType | SectorCode | string): string {
   const sectorMap: Record<string, string> = {
@@ -145,6 +172,16 @@ export default function ScientificDatabasePage() {
 
   // Error state
   const [error, setError] = useState<string | null>(null)
+
+  // Citation copy feedback: key = `${refId}-apa` or `${refId}-bib`
+  const [copiedCitation, setCopiedCitation] = useState<string | null>(null)
+
+  const copyCitation = useCallback((text: string, key: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedCitation(key)
+      setTimeout(() => setCopiedCitation(null), 2000)
+    })
+  }, [])
 
   // Fetch all data
   const fetchAllData = useCallback(async () => {
@@ -1278,6 +1315,33 @@ export default function ScientificDatabasePage() {
                               Acessar o Artigo
                             </a>
                           )}
+                        </div>
+
+                        {/* Citation export buttons */}
+                        <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">
+                            Citar:
+                          </span>
+                          <button
+                            onClick={() => copyCitation(toAPA(ref), `${ref.id}-apa`)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                              copiedCitation === `${ref.id}-apa`
+                                ? 'bg-green-50 border-green-300 text-green-700'
+                                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            {copiedCitation === `${ref.id}-apa` ? '✓ Copiado!' : 'APA'}
+                          </button>
+                          <button
+                            onClick={() => copyCitation(toBibTeX(ref), `${ref.id}-bib`)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                              copiedCitation === `${ref.id}-bib`
+                                ? 'bg-green-50 border-green-300 text-green-700'
+                                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            {copiedCitation === `${ref.id}-bib` ? '✓ Copiado!' : 'BibTeX'}
+                          </button>
                         </div>
                       </div>
                     </div>
