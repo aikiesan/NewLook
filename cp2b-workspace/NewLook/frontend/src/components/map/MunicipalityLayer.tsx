@@ -168,7 +168,12 @@ export default function MunicipalityLayer({
       }
     );
 
-    // Popup (click)
+    // Popup (click) — responsive width: full-width on mobile, fixed on desktop
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const popupWidth = isMobile
+      ? Math.min(window.innerWidth - 32, 340)
+      : 560;
+
     layer.bindPopup(() => {
       const container = L.DomUtil.create('div');
       const root = createRoot(container);
@@ -180,12 +185,12 @@ export default function MunicipalityLayer({
       );
       return container;
     }, {
-      maxWidth: 560,
-      minWidth: 560,
-      maxHeight: 550,
+      maxWidth: popupWidth,
+      minWidth: isMobile ? Math.min(window.innerWidth - 32, 300) : 560,
+      maxHeight: isMobile ? 420 : 550,
       className: 'municipality-popup',
       autoPan: true,
-      autoPanPadding: [20, 20],
+      autoPanPadding: [10, 10],
       keepInView: true,
     });
 
