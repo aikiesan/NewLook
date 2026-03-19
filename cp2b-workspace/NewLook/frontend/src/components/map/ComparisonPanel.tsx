@@ -68,7 +68,7 @@ export default function ComparisonPanel({
     switch (category) {
       case 'overview':
         return [
-          { label: 'População', key: 'population_2022', unit: 'hab' },
+          { label: 'População', key: 'population', unit: 'hab' },
           { label: 'Área', key: 'area_km2', unit: 'km²' },
           { label: 'Biogás Total', key: 'total_biogas_m3_year', unit: 'm³/ano' },
         ];

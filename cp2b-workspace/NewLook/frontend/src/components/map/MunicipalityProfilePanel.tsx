@@ -128,7 +128,7 @@ export default function MunicipalityProfilePanel({
               <StatCard
                 icon={<Users className="w-5 h-5 text-blue-600" />}
                 label="População"
-                value={formatNumber(props.population_2022)}
+                value={formatNumber(props.population)}
                 subtitle="habitantes (2022)"
               />
               <StatCard
@@ -141,8 +141,8 @@ export default function MunicipalityProfilePanel({
                 icon={<Users className="w-5 h-5 text-purple-600" />}
                 label="Densidade"
                 value={
-                  props.population_2022 && props.area_km2
-                    ? formatNumber(Math.round(props.population_2022 / props.area_km2))
+                  props.population && props.area_km2
+                    ? formatNumber(Math.round(props.population / props.area_km2))
                     : 'N/A'
                 }
                 subtitle="hab/km²"

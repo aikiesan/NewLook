@@ -8,7 +8,7 @@
 import React from 'react';
 import { GeoJSON } from 'react-leaflet';
 import type { GeoJsonObject, Feature } from 'geojson';
-import type { MunicipalityCollection } from '@/types/geospatial';
+import type { MunicipalityCollection, MunicipalityFeature } from '@/types/geospatial';
 import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import MunicipalityPopup from '../dashboard/MunicipalityPopup';
 import L from 'leaflet';
@@ -19,6 +19,8 @@ interface MunicipalityLayerProps {
   opacity?: number;
   biomassType?: BiomassType;
   selectedResidues?: ResidueType[];
+  onMunicipalityClick?: (feature: MunicipalityFeature) => void;
+  onMunicipalityHover?: (feature: MunicipalityFeature | null, e?: MouseEvent) => void;
 }
 
 // YlGnBu color scale (ColorBrewer - colorblind safe)
@@ -36,7 +38,9 @@ export default function MunicipalityLayer({
   data,
   opacity = 0.7,
   biomassType = 'total',
-  selectedResidues = []
+  selectedResidues = [],
+  onMunicipalityClick,
+  onMunicipalityHover,
 }: MunicipalityLayerProps) {
 
   // Get biogas value based on selected residues or biomass type
@@ -151,48 +155,52 @@ export default function MunicipalityLayer({
 
     const props = feature.properties;
     const biogasValue = getBiogasValue(props);
-
-    // Tooltip (hover)
-    layer.bindTooltip(
-      `<div style="text-align: center; padding: 4px;">
-        <strong style="font-size: 12px; color: white;">${props.name}</strong><br/>
-        <span style="font-size: 11px; color: rgba(255, 255, 255, 0.9);">
-          ${getBiomassLabel()}: ${formatBiogas(biogasValue)} m³/ano
-        </span>
-      </div>`,
-      {
-        permanent: false,
-        direction: 'top',
-        className: 'custom-tooltip',
-        offset: [0, -10]
-      }
-    );
-
-    // Popup (click) — responsive width: full-width on mobile, fixed on desktop
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const popupWidth = isMobile
-      ? Math.min(window.innerWidth - 32, 340)
-      : 560;
 
-    layer.bindPopup(() => {
-      const container = L.DomUtil.create('div');
-      const root = createRoot(container);
-
-      root.render(
-        <MunicipalityPopup
-          properties={props}
-        />
+    // Tooltip (hover) — only bind HTML tooltip when no hover handler (mobile fallback)
+    if (!onMunicipalityHover) {
+      layer.bindTooltip(
+        `<div style="text-align: center; padding: 4px;">
+          <strong style="font-size: 12px; color: white;">${props.name}</strong><br/>
+          <span style="font-size: 11px; color: rgba(255, 255, 255, 0.9);">
+            ${getBiomassLabel()}: ${formatBiogas(biogasValue)} m³/ano
+          </span>
+        </div>`,
+        {
+          permanent: false,
+          direction: 'top',
+          className: 'custom-tooltip',
+          offset: [0, -10]
+        }
       );
-      return container;
-    }, {
-      maxWidth: popupWidth,
-      minWidth: isMobile ? Math.min(window.innerWidth - 32, 300) : 560,
-      maxHeight: isMobile ? 420 : 550,
-      className: 'municipality-popup',
-      autoPan: true,
-      autoPanPadding: [10, 10],
-      keepInView: true,
-    });
+    }
+
+    // Popup (click) — only bind popup when no click handler (mobile fallback)
+    if (!onMunicipalityClick) {
+      const popupWidth = isMobile
+        ? Math.min(window.innerWidth - 32, 340)
+        : 560;
+
+      layer.bindPopup(() => {
+        const container = L.DomUtil.create('div');
+        const root = createRoot(container);
+
+        root.render(
+          <MunicipalityPopup
+            properties={props}
+          />
+        );
+        return container;
+      }, {
+        maxWidth: popupWidth,
+        minWidth: isMobile ? Math.min(window.innerWidth - 32, 300) : 560,
+        maxHeight: isMobile ? 420 : 550,
+        className: 'municipality-popup',
+        autoPan: true,
+        autoPanPadding: [10, 10],
+        keepInView: true,
+      });
+    }
 
     // Hover effects for polygons
     if (layer instanceof L.Path) {
@@ -205,6 +213,11 @@ export default function MunicipalityLayer({
             fillOpacity: Math.min(opacity + 0.2, 1),
           });
           target.bringToFront();
+
+          // Desktop: call hover handler with feature + mouse event
+          if (onMunicipalityHover) {
+            onMunicipalityHover(feature as MunicipalityFeature, e.originalEvent as MouseEvent);
+          }
         },
         mouseout: (e) => {
           const target = e.target;
@@ -216,6 +229,17 @@ export default function MunicipalityLayer({
             fillOpacity: opacity,
             fillColor: color,
           });
+
+          // Desktop: clear hover
+          if (onMunicipalityHover) {
+            onMunicipalityHover(null);
+          }
+        },
+        click: () => {
+          // Desktop: open profile panel instead of popup
+          if (onMunicipalityClick) {
+            onMunicipalityClick(feature as MunicipalityFeature);
+          }
         },
       });
     }

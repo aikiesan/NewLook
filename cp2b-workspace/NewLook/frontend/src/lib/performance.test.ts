@@ -523,7 +523,7 @@ describe('Performance Utilities', () => {
   describe('Integration Tests', () => {
     it('should combine measurePerformance with retryOperation', async () => {
       let attempts = 0;
-      const flaky Operation = async () => {
+      const flakyOperation = async () => {
         attempts++;
         if (attempts < 2) throw new Error('Temporary error');
         return 'success';

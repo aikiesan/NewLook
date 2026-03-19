@@ -161,7 +161,7 @@ function getAttributeLabel(attribute: string): string {
     agricultural_biogas_m3_year: 'Biogás Agrícola',
     livestock_biogas_m3_year: 'Biogás Pecuário',
     urban_biogas_m3_year: 'Biogás Urbano',
-    population_2022: 'População',
+    population: 'População',
     area_km2: 'Área',
   };
   return labels[attribute] || attribute;

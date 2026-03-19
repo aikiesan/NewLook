@@ -47,15 +47,21 @@ export default function MapSearchBox({ data }: MapSearchBoxProps) {
 
   // Handle municipality selection
   const handleSelectMunicipality = (feature: typeof data.features[0]) => {
-    if (feature.geometry.type === 'Point') {
-      const coords = feature.geometry.coordinates as number[];
-      // Zoom to point (coords are [lon, lat], Leaflet uses [lat, lon])
-      map.flyTo([coords[1], coords[0]], 12, {
-        duration: 1.5,
-      });
+    const geom = feature.geometry;
+
+    if (geom.type === 'Point') {
+      const coords = geom.coordinates as number[];
+      map.flyTo([coords[1], coords[0]], 12, { duration: 1.5 });
+    } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+      // Create a GeoJSON layer temporarily to get bounds
+      const geoLayer = L.geoJSON(geom as any);
+      const bounds = geoLayer.getBounds();
+      if (bounds.isValid()) {
+        map.flyToBounds(bounds, { padding: [40, 40], duration: 1.5 });
+      }
     }
 
-    // Find the marker and open its popup
+    // Find the layer and open its popup
     map.eachLayer((layer: any) => {
       if (layer.feature && layer.feature.properties.id === feature.properties.id) {
         layer.openPopup();
@@ -123,7 +129,7 @@ export default function MapSearchBox({ data }: MapSearchBoxProps) {
   }, [map]);
 
   return (
-    <div ref={searchRef} className="leaflet-top leaflet-right" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 1000, pointerEvents: 'auto' }}>
+    <div ref={searchRef} className="hidden md:block" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, pointerEvents: 'auto' }}>
       <div style={{ width: '300px' }}>
       {/* Search Input */}
       <div className="relative">

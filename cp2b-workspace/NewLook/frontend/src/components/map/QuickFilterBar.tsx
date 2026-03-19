@@ -23,6 +23,7 @@ interface QuickFilterBarProps {
 const VIZ_OPTIONS: { value: VisualizationMode; label: string }[] = [
   { value: 'choropleth', label: '🗺️ Mapa' },
   { value: 'heatmap', label: '🔥 Calor' },
+  { value: 'bubble', label: '🫧 Bolhas' },
 ];
 
 const BIOMASS_OPTIONS: { value: BiomassType; label: string }[] = [

@@ -108,7 +108,7 @@ export default function ExportControl({
         p.ibge_code,
         p.name,
         p.intermediate_region,
-        p.population_2022 || 0,
+        p.population || 0,
         p.area_km2 || 0,
         p.total_biogas_m3_year || 0,
         p.agricultural_biogas_m3_year || 0,
