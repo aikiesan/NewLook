@@ -18,39 +18,33 @@ import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import type { VisualizationMode } from './LeftFilterPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
-import { BarChart3, Download } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
 // Dynamically import components to avoid SSR issues
 const MunicipalityLayer = dynamic(() => import('./MunicipalityLayer'), { ssr: false });
 const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), { ssr: false });
-const LeftFilterPanel = dynamic(() => import('./LeftFilterPanel'), { ssr: false });
-const RightLayerPanel = dynamic(() => import('./RightLayerPanel'), { ssr: false });
 const HeatmapLayer = dynamic(() => import('./HeatmapLayer'), { ssr: false });
 const MapBiomasLayer = dynamic(() => import('./MapBiomasLayer'), { ssr: false });
 const MapBiomasLegend = dynamic(() => import('./MapBiomasLegend'), { ssr: false });
 const BiomassLayerLegend = dynamic(() => import('./BiomassLayerLegend'), { ssr: false });
 const HeatmapLegend = dynamic(() => import('./HeatmapLegend'), { ssr: false });
-const ReferencesPanel = dynamic(() => import('./ReferencesPanel'), { ssr: false });
 const MobileBottomSheet = dynamic(() => import('./MobileBottomSheet'), { ssr: false });
 const QuickFilterBar = dynamic(() => import('./QuickFilterBar'), { ssr: false });
 
-// Phase 1: FloatingStatsPanel
-const FloatingStatsPanel = dynamic(() => import('./FloatingStatsPanel'), { ssr: false });
+// Desktop bottom drawer (replaces all floating panels)
+const DesktopBottomDrawer = dynamic(() => import('./DesktopBottomDrawer'), { ssr: false });
 
-// Phase 2: Profile + Tooltip
+// Profile + Tooltip overlays
 const MunicipalityProfilePanel = dynamic(() => import('./MunicipalityProfilePanel'), { ssr: false });
 const EnhancedTooltip = dynamic(() => import('./EnhancedTooltip'), { ssr: false });
 
-// Phase 3: Comparison + Export
+// Modals
 const ComparisonPanel = dynamic(() => import('./ComparisonPanel'), { ssr: false });
 const ExportControl = dynamic(() => import('./ExportControl'), { ssr: false });
 
-// Phase 4: BubbleChartLayer
+// Visualization layers
 const BubbleChartLayer = dynamic(() => import('./BubbleChartLayer'), { ssr: false });
-
-// Phase 5: MapSearchBox
 const MapSearchBox = dynamic(() => import('./MapSearchBox'), { ssr: false });
 
 // São Paulo state center coordinates
@@ -175,6 +169,18 @@ export default function MapComponent({
   const handleMunicipalityHover = useCallback((feature: MunicipalityFeature | null, e?: MouseEvent) => {
     setHoveredMunicipality(feature);
     if (e) setMousePosition({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'Escape') { setSelectedMunicipality(null); return; }
+      if (e.key === 'c' || e.key === 'C') { setShowComparison(true); return; }
+      if (e.key === 'e' || e.key === 'E') { setShowExport(true); return; }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   // ── Comparison callbacks (Phase 3) ────────────────────────────────────────
@@ -409,43 +415,29 @@ export default function MapComponent({
         {visibleLayerIds.includes('etes') && <InfrastructureLayer layerType="etes" />}
       </MapContainer>
 
-      {/* ── Desktop Floating Panels (hidden on mobile) ── */}
+      {/* ── Desktop Bottom Drawer (replaces all floating panels) ── */}
       {isMounted && (
-        <div className="hidden md:block">
-          <LeftFilterPanel
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            selectedResidues={selectedResidues}
-            onResiduesChange={handleResiduesChange}
-            biomassType={biomassType}
-            onBiomassTypeChange={handleBiomassTypeChange}
-            visualizationMode={visualizationMode}
-            onVisualizationModeChange={handleVisualizationModeChange}
-          />
-        </div>
+        <DesktopBottomDrawer
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          selectedResidues={selectedResidues}
+          onResiduesChange={handleResiduesChange}
+          biomassType={biomassType}
+          onBiomassTypeChange={handleBiomassTypeChange}
+          visualizationMode={visualizationMode}
+          onVisualizationModeChange={handleVisualizationModeChange}
+          opacity={opacity}
+          onOpacityChange={handleOpacityChange}
+          layers={layers}
+          onLayerToggle={handleLayerToggle}
+          municipalityCount={displayData.features.length}
+          totalMunicipalities={data.features.length}
+          onOpenComparison={() => setShowComparison(true)}
+          onOpenExport={() => setShowExport(true)}
+        />
       )}
 
-      {isMounted && (
-        <div className="hidden md:block">
-          <RightLayerPanel
-            opacity={opacity}
-            onOpacityChange={handleOpacityChange}
-            layers={layers}
-            onLayerToggle={handleLayerToggle}
-            municipalityCount={displayData.features.length}
-            totalMunicipalities={data.features.length}
-          />
-        </div>
-      )}
-
-      {/* ── Phase 1: FloatingStatsPanel (bottom-left, desktop only) ── */}
-      {isMounted && (
-        <div className="hidden md:block">
-          <FloatingStatsPanel visible={true} />
-        </div>
-      )}
-
-      {/* ── Phase 2: EnhancedTooltip (desktop hover, replaces simple tooltip) ── */}
+      {/* ── EnhancedTooltip (desktop hover) ── */}
       {isMounted && hoveredMunicipality && (
         <div className="hidden md:block">
           <EnhancedTooltip
@@ -465,28 +457,7 @@ export default function MapComponent({
         />
       )}
 
-      {/* ── Phase 3: Desktop Action Toolbar (bottom-center) ── */}
-      {isMounted && (
-        <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] items-center gap-1 bg-white/95 backdrop-blur-sm shadow-lg rounded-lg px-2 py-1.5">
-          <button
-            onClick={() => setShowComparison(true)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-purple-600"
-            title="Comparar Municípios"
-          >
-            <BarChart3 className="w-5 h-5" />
-          </button>
-          <div className="w-px h-5 bg-gray-200" />
-          <button
-            onClick={() => setShowExport(true)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-blue-600"
-            title="Exportar Dados"
-          >
-            <Download className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
-      {/* ── Phase 3: ComparisonPanel (full-screen modal) ── */}
+      {/* ── ComparisonPanel (full-screen modal) ── */}
       {isMounted && (
         <ComparisonPanel
           municipalities={data?.features || []}
@@ -514,9 +485,6 @@ export default function MapComponent({
 
       {isMounted && <MapBiomasLegend visible={showMapBiomasLegend} />}
       {isMounted && <BiomassLayerLegend visible={showBiomassLayerLegend} />}
-
-      {/* References Panel (Data Sources) */}
-      {isMounted && <ReferencesPanel />}
 
       {/* ── Mobile Bottom Sheet (hidden on desktop) ── */}
       {isMounted && (
