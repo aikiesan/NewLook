@@ -2,6 +2,7 @@
  * PILAR-2b V3 - Main Map Component
  * Full-page React Leaflet map with floating panels (DBFZ-inspired)
  * Mobile: QuickFilterBar + MobileBottomSheet replace floating panels
+ * Desktop: FloatingStatsPanel, EnhancedTooltip, ProfilePanel, Comparison, Export
  * All: URL query-param state so filters can be shared/bookmarked
  */
 
@@ -17,6 +18,7 @@ import type { BiomassType, ResidueType } from './FloatingControlPanel';
 import type { VisualizationMode } from './LeftFilterPanel';
 import MapLegend from './MapLegend';
 import MapLoadingSkeleton from './MapLoadingSkeleton';
+import { BarChart3, Download } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
@@ -34,6 +36,23 @@ const ReferencesPanel = dynamic(() => import('./ReferencesPanel'), { ssr: false 
 const MobileBottomSheet = dynamic(() => import('./MobileBottomSheet'), { ssr: false });
 const QuickFilterBar = dynamic(() => import('./QuickFilterBar'), { ssr: false });
 
+// Phase 1: FloatingStatsPanel
+const FloatingStatsPanel = dynamic(() => import('./FloatingStatsPanel'), { ssr: false });
+
+// Phase 2: Profile + Tooltip
+const MunicipalityProfilePanel = dynamic(() => import('./MunicipalityProfilePanel'), { ssr: false });
+const EnhancedTooltip = dynamic(() => import('./EnhancedTooltip'), { ssr: false });
+
+// Phase 3: Comparison + Export
+const ComparisonPanel = dynamic(() => import('./ComparisonPanel'), { ssr: false });
+const ExportControl = dynamic(() => import('./ExportControl'), { ssr: false });
+
+// Phase 4: BubbleChartLayer
+const BubbleChartLayer = dynamic(() => import('./BubbleChartLayer'), { ssr: false });
+
+// Phase 5: MapSearchBox
+const MapSearchBox = dynamic(() => import('./MapSearchBox'), { ssr: false });
+
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
 const DEFAULT_ZOOM = 7;
@@ -44,7 +63,7 @@ const VALID_RESIDUES: ResidueType[] = [
   'cattle', 'swine', 'poultry', 'aquaculture', 'rsu', 'rpo',
 ];
 const VALID_BIOMASS: BiomassType[] = ['total', 'agricultural', 'livestock', 'urban'];
-const VALID_VIZ: VisualizationMode[] = ['choropleth', 'heatmap'];
+const VALID_VIZ: VisualizationMode[] = ['choropleth', 'heatmap', 'bubble'];
 
 interface MapComponentProps {
   activeFilters?: FilterCriteria;
@@ -97,7 +116,15 @@ export default function MapComponent({
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
   const [opacity, setOpacity] = useState<number>(propOpacity);
 
-  // Write URL whenever filter state changes (uses history.replaceState directly)
+  // ── Enhanced interaction state (Phase 2+3) ────────────────────────────────
+  const [selectedMunicipality, setSelectedMunicipality] = useState<MunicipalityFeature | null>(null);
+  const [hoveredMunicipality, setHoveredMunicipality] = useState<MunicipalityFeature | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [comparisonMunicipalities, setComparisonMunicipalities] = useState<MunicipalityFeature[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+
+  // Write URL whenever filter state changes
   const syncURL = useCallback((
     mode: VisualizationMode,
     type: BiomassType,
@@ -140,6 +167,29 @@ export default function MapComponent({
     onOpacityChange?.(val);
   };
 
+  // ── Municipality interaction callbacks (Phase 2) ──────────────────────────
+  const handleMunicipalityClick = useCallback((feature: MunicipalityFeature) => {
+    setSelectedMunicipality(feature);
+  }, []);
+
+  const handleMunicipalityHover = useCallback((feature: MunicipalityFeature | null, e?: MouseEvent) => {
+    setHoveredMunicipality(feature);
+    if (e) setMousePosition({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  // ── Comparison callbacks (Phase 3) ────────────────────────────────────────
+  const handleAddToComparison = useCallback((feature: MunicipalityFeature) => {
+    setComparisonMunicipalities(prev => {
+      if (prev.length >= 4) return prev;
+      if (prev.some(m => m.properties.ibge_code === feature.properties.ibge_code)) return prev;
+      return [...prev, feature];
+    });
+  }, []);
+
+  const handleRemoveFromComparison = useCallback((id: number) => {
+    setComparisonMunicipalities(prev => prev.filter(m => m.properties.id !== id));
+  }, []);
+
   // ── Layer state ─────────────────────────────────────────────────────────────
   const [layers, setLayers] = useState([
     { id: 'municipalities', name: 'Municípios SP', visible: true, icon: '📍' },
@@ -179,6 +229,11 @@ export default function MapComponent({
     () => layers.filter(l => l.visible).map(l => l.id),
     [layers]
   );
+
+  // ── Derive biomass attribute for BubbleChartLayer ─────────────────────────
+  const biomassAttribute = biomassType === 'total'
+    ? 'total_biogas_m3_year'
+    : `${biomassType}_biogas_m3_year`;
 
   // ── Data filtering ──────────────────────────────────────────────────────────
   const filteredData = useMemo(() => {
@@ -311,7 +366,10 @@ export default function MapComponent({
           maxZoom={19}
         />
 
-        {/* Municipality Layer - Choropleth or Heatmap */}
+        {/* Phase 5: In-map search box (desktop, inside MapContainer for useMap access) */}
+        {displayData && <MapSearchBox data={displayData} />}
+
+        {/* Municipality Layer - Choropleth, Heatmap, or Bubble */}
         {visibleLayerIds.includes('municipalities') && displayData && (
           <>
             {visualizationMode === 'choropleth' ? (
@@ -320,6 +378,14 @@ export default function MapComponent({
                 opacity={opacity}
                 biomassType={biomassType}
                 selectedResidues={selectedResidues}
+                onMunicipalityClick={handleMunicipalityClick}
+                onMunicipalityHover={handleMunicipalityHover}
+              />
+            ) : visualizationMode === 'bubble' ? (
+              <BubbleChartLayer
+                data={displayData}
+                opacity={opacity}
+                attribute={biomassAttribute}
               />
             ) : (
               <HeatmapLayer
@@ -370,6 +436,75 @@ export default function MapComponent({
             totalMunicipalities={data.features.length}
           />
         </div>
+      )}
+
+      {/* ── Phase 1: FloatingStatsPanel (bottom-left, desktop only) ── */}
+      {isMounted && (
+        <div className="hidden md:block">
+          <FloatingStatsPanel visible={true} />
+        </div>
+      )}
+
+      {/* ── Phase 2: EnhancedTooltip (desktop hover, replaces simple tooltip) ── */}
+      {isMounted && hoveredMunicipality && (
+        <div className="hidden md:block">
+          <EnhancedTooltip
+            municipality={hoveredMunicipality}
+            position={mousePosition}
+            visible={true}
+          />
+        </div>
+      )}
+
+      {/* ── Phase 2: MunicipalityProfilePanel (desktop click) ── */}
+      {isMounted && (
+        <MunicipalityProfilePanel
+          municipality={selectedMunicipality}
+          onClose={() => setSelectedMunicipality(null)}
+          visible={selectedMunicipality !== null}
+        />
+      )}
+
+      {/* ── Phase 3: Desktop Action Toolbar (bottom-center) ── */}
+      {isMounted && (
+        <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] items-center gap-1 bg-white/95 backdrop-blur-sm shadow-lg rounded-lg px-2 py-1.5">
+          <button
+            onClick={() => setShowComparison(true)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-purple-600"
+            title="Comparar Municípios"
+          >
+            <BarChart3 className="w-5 h-5" />
+          </button>
+          <div className="w-px h-5 bg-gray-200" />
+          <button
+            onClick={() => setShowExport(true)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-blue-600"
+            title="Exportar Dados"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* ── Phase 3: ComparisonPanel (full-screen modal) ── */}
+      {isMounted && (
+        <ComparisonPanel
+          municipalities={data?.features || []}
+          selectedMunicipalities={comparisonMunicipalities}
+          onMunicipalityAdd={handleAddToComparison}
+          onMunicipalityRemove={handleRemoveFromComparison}
+          onClose={() => setShowComparison(false)}
+          visible={showComparison}
+        />
+      )}
+
+      {/* ── Phase 3: ExportControl (center modal) ── */}
+      {isMounted && (
+        <ExportControl
+          data={displayData}
+          visible={showExport}
+          onClose={() => setShowExport(false)}
+        />
       )}
 
       {/* ── Legend (Bottom-Right) ── */}

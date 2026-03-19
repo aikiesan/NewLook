@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Minus, Plus } from 'lucide-react';
 import type { ResidueType, BiomassType } from './FloatingControlPanel';
 
-export type VisualizationMode = 'choropleth' | 'heatmap';
+export type VisualizationMode = 'choropleth' | 'heatmap' | 'bubble';
 
 interface LeftFilterPanelProps {
   searchQuery: string;
@@ -281,6 +281,25 @@ export default function LeftFilterPanel({
                     />
                     <span className="text-xs font-medium">
                       🔥 Mapa de Calor (Concentração)
+                    </span>
+                  </label>
+                  <label
+                    className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer transition-colors ${
+                      visualizationMode === 'bubble'
+                        ? 'bg-purple-100 border border-purple-300 text-purple-800'
+                        : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="visualizationMode"
+                      value="bubble"
+                      checked={visualizationMode === 'bubble'}
+                      onChange={() => onVisualizationModeChange('bubble')}
+                      className="w-4 h-4 text-purple-600 flex-shrink-0"
+                    />
+                    <span className="text-xs font-medium">
+                      🫧 Bolhas Proporcionais (Volume)
                     </span>
                   </label>
                 </div>

@@ -68,7 +68,7 @@ export default function EnhancedTooltip({
           <QuickStat
             icon={<Users className="w-4 h-4 text-blue-600" />}
             label="População"
-            value={formatNumber(props.population_2022)}
+            value={formatNumber(props.population)}
           />
           <QuickStat
             icon={<Maximize className="w-4 h-4 text-green-600" />}
