@@ -9,7 +9,6 @@ import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import VideoModal from '@/components/ui/VideoModal'
 import NewsletterSignup from '@/components/ui/NewsletterSignup'
-import TestimonialCarousel from '@/components/ui/TestimonialCarousel'
 import {
   ArrowRight,
   Play,
@@ -656,57 +655,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white" aria-labelledby="testimonials-heading">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 id="testimonials-heading" className="text-3xl font-bold text-cp2b-gray-900 mb-4">
-                O que dizem pesquisadores e gestores
-              </h2>
-              <p className="text-cp2b-gray-600 max-w-xl mx-auto">
-                Perspectivas de quem usa a plataforma para embasar decisões em biogás e bioenergia.
-              </p>
-            </div>
-            <TestimonialCarousel
-              testimonials={[
-                {
-                  name: 'Dr. Marcelo Ferreira',
-                  role: 'Pesquisador em Bioenergia',
-                  organization: 'NIPE-UNICAMP',
-                  content:
-                    'A plataforma CP2B transformou a forma como mapeamos o potencial de biogás no estado. A combinação de dados geoespaciais com parâmetros cinéticos e FDE permite análises que antes levavam semanas serem feitas em minutos.',
-                  rating: 5,
-                },
-                {
-                  name: 'Engª. Ana Paula Souza',
-                  role: 'Analista de Projetos',
-                  organization: 'Secretaria de Infraestrutura e Meio Ambiente – SP',
-                  content:
-                    'Usamos a ferramenta de Análise de Proximidade para identificar clusters de biomassa próximos a gasodutos existentes. Os resultados foram fundamentais para priorizar investimentos em biometano na região de Ribeirão Preto.',
-                  rating: 5,
-                },
-                {
-                  name: 'Prof. Carlos Henrique Lima',
-                  role: 'Professor e Pesquisador',
-                  organization: 'ESALQ-USP',
-                  content:
-                    'A Base Científica com valores de BMP e parâmetros cinéticos, todos com referências bibliográficas, é uma contribuição única para o campo. Recomendo a todos os alunos de pós-graduação em engenharia ambiental.',
-                  rating: 5,
-                },
-                {
-                  name: 'Lic. Roberto Machado',
-                  role: 'Coordenador de Energia Renovável',
-                  organization: 'Prefeitura Municipal de Campinas',
-                  content:
-                    'Conseguimos identificar que resíduos de suinocultura e RSU juntos representam uma oportunidade de biogás de mais de 50M m³/ano só no entorno de Campinas. Dados que embasaram nossa proposta de política pública municipal.',
-                  rating: 4,
-                },
-              ]}
-            />
-          </FadeIn>
-        </div>
-      </section>
 
       {/* Dataset Download Section */}
       <section className="py-16 bg-white" aria-labelledby="data-heading">
