@@ -4,7 +4,7 @@
  */
 
 import {
-  CP2B_COLORS,
+  PILAR2B_COLORS,
   BIOGAS_THRESHOLDS,
   getBiogasColor,
   getLegendItems,
@@ -19,30 +19,30 @@ import {
 } from './mapUtils';
 
 describe('Constants', () => {
-  describe('CP2B_COLORS', () => {
+  describe('PILAR2B_COLORS', () => {
     it('should define all required colors', () => {
-      expect(CP2B_COLORS.darkGreen).toBeDefined();
-      expect(CP2B_COLORS.mediumGreen).toBeDefined();
-      expect(CP2B_COLORS.lightGreen).toBeDefined();
-      expect(CP2B_COLORS.paleGreen).toBeDefined();
-      expect(CP2B_COLORS.veryPaleGreen).toBeDefined();
-      expect(CP2B_COLORS.accent).toBeDefined();
-      expect(CP2B_COLORS.text).toBeDefined();
-      expect(CP2B_COLORS.border).toBeDefined();
+      expect(PILAR2B_COLORS.darkGreen).toBeDefined();
+      expect(PILAR2B_COLORS.mediumGreen).toBeDefined();
+      expect(PILAR2B_COLORS.lightGreen).toBeDefined();
+      expect(PILAR2B_COLORS.paleGreen).toBeDefined();
+      expect(PILAR2B_COLORS.veryPaleGreen).toBeDefined();
+      expect(PILAR2B_COLORS.accent).toBeDefined();
+      expect(PILAR2B_COLORS.text).toBeDefined();
+      expect(PILAR2B_COLORS.border).toBeDefined();
     });
 
     it('should use valid hex color formats', () => {
       const hexColorRegex = /^#[0-9A-F]{6}$/i;
 
-      Object.values(CP2B_COLORS).forEach((color) => {
+      Object.values(PILAR2B_COLORS).forEach((color) => {
         expect(color).toMatch(hexColorRegex);
       });
     });
 
     it('should have correct brand colors', () => {
-      expect(CP2B_COLORS.darkGreen).toBe('#1E5128');
-      expect(CP2B_COLORS.mediumGreen).toBe('#2D6A2E');
-      expect(CP2B_COLORS.lightGreen).toBe('#4E9F3D');
+      expect(PILAR2B_COLORS.darkGreen).toBe('#1E5128');
+      expect(PILAR2B_COLORS.mediumGreen).toBe('#2D6A2E');
+      expect(PILAR2B_COLORS.lightGreen).toBe('#4E9F3D');
     });
   });
 
@@ -74,39 +74,39 @@ describe('Constants', () => {
 
 describe('getBiogasColor', () => {
   it('should return darkGreen for very high values', () => {
-    expect(getBiogasColor(300_000_000)).toBe(CP2B_COLORS.darkGreen);
-    expect(getBiogasColor(400_000_000)).toBe(CP2B_COLORS.darkGreen);
-    expect(getBiogasColor(1_000_000_000)).toBe(CP2B_COLORS.darkGreen);
+    expect(getBiogasColor(300_000_000)).toBe(PILAR2B_COLORS.darkGreen);
+    expect(getBiogasColor(400_000_000)).toBe(PILAR2B_COLORS.darkGreen);
+    expect(getBiogasColor(1_000_000_000)).toBe(PILAR2B_COLORS.darkGreen);
   });
 
   it('should return mediumGreen for high values', () => {
-    expect(getBiogasColor(200_000_000)).toBe(CP2B_COLORS.mediumGreen);
-    expect(getBiogasColor(250_000_000)).toBe(CP2B_COLORS.mediumGreen);
-    expect(getBiogasColor(299_999_999)).toBe(CP2B_COLORS.mediumGreen);
+    expect(getBiogasColor(200_000_000)).toBe(PILAR2B_COLORS.mediumGreen);
+    expect(getBiogasColor(250_000_000)).toBe(PILAR2B_COLORS.mediumGreen);
+    expect(getBiogasColor(299_999_999)).toBe(PILAR2B_COLORS.mediumGreen);
   });
 
   it('should return lightGreen for medium values', () => {
-    expect(getBiogasColor(150_000_000)).toBe(CP2B_COLORS.lightGreen);
-    expect(getBiogasColor(175_000_000)).toBe(CP2B_COLORS.lightGreen);
-    expect(getBiogasColor(199_999_999)).toBe(CP2B_COLORS.lightGreen);
+    expect(getBiogasColor(150_000_000)).toBe(PILAR2B_COLORS.lightGreen);
+    expect(getBiogasColor(175_000_000)).toBe(PILAR2B_COLORS.lightGreen);
+    expect(getBiogasColor(199_999_999)).toBe(PILAR2B_COLORS.lightGreen);
   });
 
   it('should return paleGreen for low values', () => {
-    expect(getBiogasColor(100_000_000)).toBe(CP2B_COLORS.paleGreen);
-    expect(getBiogasColor(125_000_000)).toBe(CP2B_COLORS.paleGreen);
-    expect(getBiogasColor(149_999_999)).toBe(CP2B_COLORS.paleGreen);
+    expect(getBiogasColor(100_000_000)).toBe(PILAR2B_COLORS.paleGreen);
+    expect(getBiogasColor(125_000_000)).toBe(PILAR2B_COLORS.paleGreen);
+    expect(getBiogasColor(149_999_999)).toBe(PILAR2B_COLORS.paleGreen);
   });
 
   it('should return veryPaleGreen for very low values', () => {
-    expect(getBiogasColor(0)).toBe(CP2B_COLORS.veryPaleGreen);
-    expect(getBiogasColor(50_000_000)).toBe(CP2B_COLORS.veryPaleGreen);
-    expect(getBiogasColor(99_999_999)).toBe(CP2B_COLORS.veryPaleGreen);
+    expect(getBiogasColor(0)).toBe(PILAR2B_COLORS.veryPaleGreen);
+    expect(getBiogasColor(50_000_000)).toBe(PILAR2B_COLORS.veryPaleGreen);
+    expect(getBiogasColor(99_999_999)).toBe(PILAR2B_COLORS.veryPaleGreen);
   });
 
   it('should handle edge cases', () => {
-    expect(getBiogasColor(0)).toBe(CP2B_COLORS.veryPaleGreen);
-    expect(getBiogasColor(-1)).toBe(CP2B_COLORS.veryPaleGreen);
-    expect(getBiogasColor(Number.MAX_SAFE_INTEGER)).toBe(CP2B_COLORS.darkGreen);
+    expect(getBiogasColor(0)).toBe(PILAR2B_COLORS.veryPaleGreen);
+    expect(getBiogasColor(-1)).toBe(PILAR2B_COLORS.veryPaleGreen);
+    expect(getBiogasColor(Number.MAX_SAFE_INTEGER)).toBe(PILAR2B_COLORS.darkGreen);
   });
 });
 
@@ -131,11 +131,11 @@ describe('getLegendItems', () => {
   it('should have correct colors', () => {
     const items = getLegendItems();
 
-    expect(items[0].color).toBe(CP2B_COLORS.darkGreen);
-    expect(items[1].color).toBe(CP2B_COLORS.mediumGreen);
-    expect(items[2].color).toBe(CP2B_COLORS.lightGreen);
-    expect(items[3].color).toBe(CP2B_COLORS.paleGreen);
-    expect(items[4].color).toBe(CP2B_COLORS.veryPaleGreen);
+    expect(items[0].color).toBe(PILAR2B_COLORS.darkGreen);
+    expect(items[1].color).toBe(PILAR2B_COLORS.mediumGreen);
+    expect(items[2].color).toBe(PILAR2B_COLORS.lightGreen);
+    expect(items[3].color).toBe(PILAR2B_COLORS.paleGreen);
+    expect(items[4].color).toBe(PILAR2B_COLORS.veryPaleGreen);
   });
 
   it('should have non-overlapping ranges', () => {
@@ -474,7 +474,7 @@ describe('Integration tests', () => {
 
     // Get color
     const color = getBiogasColor(biogasValue);
-    expect(color).toBe(CP2B_COLORS.mediumGreen);
+    expect(color).toBe(PILAR2B_COLORS.mediumGreen);
 
     // Format long
     const formatted = formatBiogas(biogasValue);

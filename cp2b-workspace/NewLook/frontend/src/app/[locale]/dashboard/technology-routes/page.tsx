@@ -18,7 +18,7 @@ const TemplateLoader = dynamic(() => import('./components/TemplateLoader'), { ss
 // const WelcomeWizard = dynamic(() => import('./components/WelcomeWizard'), { ssr: false });
 
 /**
- * CP2B Technology Routes Page
+ * PILAR-2b Technology Routes Page
  * Educational tool for creating visual biogas technology pathways
  * Zero calculations - pure visual organization with scientific references
  * Force redeploy: 2025-12-05
@@ -58,7 +58,7 @@ export default function TechnologyRoutesPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-cp2b-lime-light/10">
-      {/* CP2B Branded Header */}
+      {/* PILAR-2b Branded Header */}
       <header className="bg-gradient-to-r from-cp2b-green to-cp2b-dark-green shadow-md z-20">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
@@ -74,7 +74,7 @@ export default function TechnologyRoutesPage() {
             <div className="flex items-center gap-3">
               <Image
                 src="/images/logotipo-full-black.png"
-                alt="CP2B"
+                alt="PILAR-2b"
                 width={32}
                 height={32}
                 className="h-8 w-auto brightness-0 invert"

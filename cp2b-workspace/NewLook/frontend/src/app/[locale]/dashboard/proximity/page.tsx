@@ -270,7 +270,7 @@ function ProximityAnalysisContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with CP2B green gradient */}
+      {/* Header with PILAR-2b green gradient */}
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-emerald-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button

@@ -1,12 +1,16 @@
-# 🌱 PILAR-2b - Plataforma Inteligente de Localização e Aproveitamento de Resíduos
+# PILAR-2b - Intelligent Waste Location and Utilization Platform for Biogas and Bioproducts
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/aikiesan/CP2B_Maps_V3)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/aikiesan/NewLook)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](https://opensource.org/)
 
-**PILAR-2b** (_Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogás e Bioprodutos_) is an open-source platform for analyzing **biogas and bioproduct potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
+**PILAR-2b** (_Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos_) is an open-source microservices framework for analyzing **biogas and bioproduct potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
 
-The name PILAR-2b emphasizes the dual conversion pathway: **Biogas to Bioproducts** (de biogás para bioprodutos), highlighting the energy conversion flow that is central to sustainable waste valorization.
+This study addresses identified gaps through three interconnected contributions:
+
+1. **PILAR-2b** was designed and deployed as an open-source microservices platform that integrates heterogeneous government datasets into a unified geospatial database accessible through a browser-based interface without requiring desktop GIS.
+2. A **feedstock-dependent correction factor methodology** was implemented and validated, decomposing theoretical biomass potential into practical mobilisable availability through explicit factor-specific attribution across collection efficiency, competing uses, seasonal availability, and logistical constraints.
+3. The **spatial distribution of biogas potential** was quantified across São Paulo State's 645 municipalities, demonstrating the framework's capacity to generate investment-relevant outputs at municipal resolution within an open and replicable computational architecture.
 
 **Research Project**: FAPESP 2025/08745-2
 **Production URL**: https://cp2bmaps.pages.dev
@@ -44,7 +48,7 @@ The name PILAR-2b emphasizes the dual conversion pathway: **Biogas to Bioproduct
 ## 🏗️ Architecture
 
 ### Frontend
-- **Framework**: Next.js 15.5.7 + React 18 + TypeScript
+- **Framework**: Next.js 16 + React 19 + TypeScript
 - **Styling**: Tailwind CSS
 - **Maps**: React Leaflet 4.2
 - **Charts**: Recharts 2.12

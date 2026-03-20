@@ -5,10 +5,10 @@
 @tailwind utilities;
 
 /* ============================================
-   CP2B DARK MODE - CSS VARIABLES
+   PILAR-2b DARK MODE - CSS VARIABLES
    ============================================ */
 
-/* Custom CP2B theme variables - Extended palette */
+/* Custom PILAR-2b theme variables - Extended palette */
 :root {
   /* Legacy colors */
   --cp2b-primary: #1E5128;
@@ -16,7 +16,7 @@
   --cp2b-accent: #D8E9A8;
   --cp2b-dark: #191A19;
 
-  /* CP2B Primary Colors */
+  /* PILAR-2b Primary Colors */
   --cp2b-dark-green: #1B5E20;
   --cp2b-green: #2F7D32;
   --cp2b-green-light: #4CAF50;
@@ -67,7 +67,7 @@
   --surface: 30 41 59;       /* #1E293B - Slate 800 */
   --foreground: 248 250 252; /* #F8FAFC - Slate 50 */
 
-  /* CP2B Primary (Lighter for dark mode) */
+  /* PILAR-2b Primary (Lighter for dark mode) */
   --cp2b-primary: #2A7A3E;
   --cp2b-secondary: #6BC454;
   --cp2b-green: #3D9948;

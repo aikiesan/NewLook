@@ -3,8 +3,8 @@
  * Color scales, formatting, and helper functions for map visualization
  */
 
-// CP2B Brand Colors
-export const CP2B_COLORS = {
+// PILAR-2b Brand Colors
+export const PILAR2B_COLORS = {
   darkGreen: '#1E5128',
   mediumGreen: '#2D6A2E',
   lightGreen: '#4E9F3D',
@@ -28,11 +28,11 @@ export const BIOGAS_THRESHOLDS = {
  * Get color for biogas potential value (choropleth map)
  */
 export function getBiogasColor(biogas: number): string {
-  if (biogas >= BIOGAS_THRESHOLDS.veryHigh) return CP2B_COLORS.darkGreen;
-  if (biogas >= BIOGAS_THRESHOLDS.high) return CP2B_COLORS.mediumGreen;
-  if (biogas >= BIOGAS_THRESHOLDS.medium) return CP2B_COLORS.lightGreen;
-  if (biogas >= BIOGAS_THRESHOLDS.low) return CP2B_COLORS.paleGreen;
-  return CP2B_COLORS.veryPaleGreen;
+  if (biogas >= BIOGAS_THRESHOLDS.veryHigh) return PILAR2B_COLORS.darkGreen;
+  if (biogas >= BIOGAS_THRESHOLDS.high) return PILAR2B_COLORS.mediumGreen;
+  if (biogas >= BIOGAS_THRESHOLDS.medium) return PILAR2B_COLORS.lightGreen;
+  if (biogas >= BIOGAS_THRESHOLDS.low) return PILAR2B_COLORS.paleGreen;
+  return PILAR2B_COLORS.veryPaleGreen;
 }
 
 /**
@@ -41,30 +41,30 @@ export function getBiogasColor(biogas: number): string {
 export function getLegendItems() {
   return [
     {
-      color: CP2B_COLORS.darkGreen,
+      color: PILAR2B_COLORS.darkGreen,
       label: 'Very High (>300M)',
       minValue: BIOGAS_THRESHOLDS.veryHigh,
     },
     {
-      color: CP2B_COLORS.mediumGreen,
+      color: PILAR2B_COLORS.mediumGreen,
       label: 'High (200-300M)',
       minValue: BIOGAS_THRESHOLDS.high,
       maxValue: BIOGAS_THRESHOLDS.veryHigh,
     },
     {
-      color: CP2B_COLORS.lightGreen,
+      color: PILAR2B_COLORS.lightGreen,
       label: 'Medium (150-200M)',
       minValue: BIOGAS_THRESHOLDS.medium,
       maxValue: BIOGAS_THRESHOLDS.high,
     },
     {
-      color: CP2B_COLORS.paleGreen,
+      color: PILAR2B_COLORS.paleGreen,
       label: 'Low (100-150M)',
       minValue: BIOGAS_THRESHOLDS.low,
       maxValue: BIOGAS_THRESHOLDS.medium,
     },
     {
-      color: CP2B_COLORS.veryPaleGreen,
+      color: PILAR2B_COLORS.veryPaleGreen,
       label: 'Very Low (<100M)',
       minValue: 0,
       maxValue: BIOGAS_THRESHOLDS.low,

@@ -433,7 +433,7 @@ export default function ReferencesPanel() {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 py-4 rounded-t-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white" />
-            <h2 className="text-lg md:text-xl font-bold text-white">Fontes de Dados - CP2B BiogasAtlas</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white">Fontes de Dados - PILAR-2b BiogasAtlas</h2>
           </div>
           <button
             onClick={() => setIsOpen(false)}

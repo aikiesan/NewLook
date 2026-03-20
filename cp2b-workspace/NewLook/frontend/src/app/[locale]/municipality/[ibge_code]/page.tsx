@@ -203,7 +203,7 @@ export default function MunicipalityPage() {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: `${p.name} — CP2B BiogasAtlas`, url: window.location.href })
+      navigator.share({ title: `${p.name} — PILAR-2b BiogasAtlas`, url: window.location.href })
     } else {
       navigator.clipboard.writeText(window.location.href)
       alert('URL copiada!')
@@ -219,7 +219,7 @@ export default function MunicipalityPage() {
 
       {/* Print header — only in print */}
       <div className="hidden print:block px-8 pt-6 pb-2 border-b">
-        <p className="text-xs text-gray-500">CP2B BiogasAtlas · NIPE-UNICAMP · FAPESP 2025/08745-2</p>
+        <p className="text-xs text-gray-500">PILAR-2b BiogasAtlas · NIPE-UNICAMP · FAPESP 2025/08745-2</p>
         <h1 className="text-2xl font-bold mt-1">{p.name} · Perfil de Biogás</h1>
         <p className="text-sm text-gray-500">IBGE: {p.ibge_code} · {p.intermediate_region}</p>
       </div>
@@ -460,7 +460,7 @@ export default function MunicipalityPage() {
         {/* ── Print footer ── */}
         <div className="hidden print:block mt-8 pt-4 border-t text-xs text-gray-400">
           <p>Fonte: IBGE PAM/PPM 2024, SNIS 2023, MapBiomas 10.0, ANP, EPE. Metodologia: FDE — NIPE-UNICAMP.</p>
-          <p>CP2B BiogasAtlas · {new Date().toLocaleDateString('pt-BR')} · {window?.location?.href}</p>
+          <p>PILAR-2b BiogasAtlas · {new Date().toLocaleDateString('pt-BR')} · {window?.location?.href}</p>
         </div>
       </main>
     </div>

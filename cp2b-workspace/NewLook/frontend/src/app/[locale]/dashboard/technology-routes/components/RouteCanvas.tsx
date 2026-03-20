@@ -280,7 +280,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
     // Add title
     ctx.fillStyle = '#2F7D32';
     ctx.font = 'bold 24px Arial';
-    ctx.fillText('Rota Tecnológica CP2B', 20, 40);
+    ctx.fillText('Rota Tecnológica PILAR-2b', 20, 40);
 
     // For now, we'll use a simple approach and recommend using browser screenshot
     // In a production app, you'd use a library like html-to-image or toPng from reactflow

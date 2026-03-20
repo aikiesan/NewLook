@@ -30,25 +30,28 @@ import {
   Building2,
   Factory
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Existing Components
+// Core components (eagerly loaded)
 import SimpleResidueSelector, { ResidueCategory } from '@/components/analysis/SimpleResidueSelector'
-import TopMunicipalitiesChart from '@/components/analysis/charts/TopMunicipalitiesChart'
 import TopMunicipalitiesMiniCard from '@/components/analysis/TopMunicipalitiesMiniCard'
-import DistributionHistogram from '@/components/analysis/charts/DistributionHistogram'
-import RegionalPieChart from '@/components/analysis/charts/RegionalPieChart'
-import CategoryComparisonChart from '@/components/analysis/charts/CategoryComparisonChart'
 
-// New Enhanced Components
-import PotentialCascadeChart from '@/components/analysis/charts/PotentialCascadeChart'
-import BiomassFlowSankey from '@/components/analysis/charts/BiomassFlowSankey'
-import FactorRangeSliders from '@/components/analysis/FactorRangeSliders'
-import ScenarioComparator from '@/components/analysis/ScenarioComparator'
-import MethodologyPanel from '@/components/analysis/MethodologyPanel'
-import PerResidueFactorEditor from '@/components/analysis/PerResidueFactorEditor'
-import ScenarioSelector from '@/components/analysis/ScenarioSelector'
-import ReferencesModal from '@/components/analysis/ReferencesModal'
+// Lazy load heavy chart components (reduce initial bundle size)
+const TopMunicipalitiesChart = dynamic(() => import('@/components/analysis/charts/TopMunicipalitiesChart'), { ssr: false })
+const DistributionHistogram = dynamic(() => import('@/components/analysis/charts/DistributionHistogram'), { ssr: false })
+const RegionalPieChart = dynamic(() => import('@/components/analysis/charts/RegionalPieChart'), { ssr: false })
+const CategoryComparisonChart = dynamic(() => import('@/components/analysis/charts/CategoryComparisonChart'), { ssr: false })
+const PotentialCascadeChart = dynamic(() => import('@/components/analysis/charts/PotentialCascadeChart'), { ssr: false })
+const BiomassFlowSankey = dynamic(() => import('@/components/analysis/charts/BiomassFlowSankey'), { ssr: false })
+
+// Lazy load analysis panels (shown conditionally)
+const FactorRangeSliders = dynamic(() => import('@/components/analysis/FactorRangeSliders'), { ssr: false })
+const ScenarioComparator = dynamic(() => import('@/components/analysis/ScenarioComparator'), { ssr: false })
+const MethodologyPanel = dynamic(() => import('@/components/analysis/MethodologyPanel'), { ssr: false })
+const PerResidueFactorEditor = dynamic(() => import('@/components/analysis/PerResidueFactorEditor'), { ssr: false })
+const ScenarioSelector = dynamic(() => import('@/components/analysis/ScenarioSelector'), { ssr: false })
+const ReferencesModal = dynamic(() => import('@/components/analysis/ReferencesModal'), { ssr: false })
 
 // API
 import {

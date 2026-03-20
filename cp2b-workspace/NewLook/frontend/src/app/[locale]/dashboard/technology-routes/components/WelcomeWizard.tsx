@@ -163,7 +163,7 @@ export default function WelcomeWizard({ onClose }: WelcomeWizardProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-        {/* Header with CP2B Gradient */}
+        {/* Header with PILAR-2b Gradient */}
         <div className="bg-gradient-to-r from-cp2b-green to-cp2b-lime px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
