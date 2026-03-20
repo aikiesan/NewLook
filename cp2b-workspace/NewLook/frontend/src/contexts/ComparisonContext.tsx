@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 interface Municipality {
   id: number;
@@ -54,16 +54,19 @@ export function ComparisonProvider({ children }: { children: React.ReactNode }) 
     [selectedMunicipalities]
   );
 
+  const value = useMemo(
+    () => ({
+      selectedMunicipalities,
+      addMunicipality,
+      removeMunicipality,
+      clearComparison,
+      isSelected,
+    }),
+    [selectedMunicipalities, addMunicipality, removeMunicipality, clearComparison, isSelected]
+  );
+
   return (
-    <ComparisonContext.Provider
-      value={{
-        selectedMunicipalities,
-        addMunicipality,
-        removeMunicipality,
-        clearComparison,
-        isSelected,
-      }}
-    >
+    <ComparisonContext.Provider value={value}>
       {children}
     </ComparisonContext.Provider>
   );

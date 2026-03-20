@@ -9,6 +9,7 @@
  * - Optimized error handling
  */
 
+import { logger } from '@/lib/logger';
 import type {
   TechnologyCardWithReferences,
   TechnologyCard,
@@ -119,7 +120,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
       };
     }
   } catch (error) {
-    console.error('Failed to get auth headers:', error);
+    logger.error('Failed to get auth headers:', error);
   }
 
   return {
@@ -136,14 +137,14 @@ async function apiCall<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  console.log(`[TechRoutes API] Calling: ${url}`);
+  logger.debug(`[TechRoutes API] Calling: ${url}`);
 
   const headers = await getAuthHeaders();
 
   // Create abort controller for timeout (better browser compatibility)
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
-    console.warn(`[TechRoutes API] Request timeout for ${endpoint}`);
+    logger.warn(`[TechRoutes API] Request timeout for ${endpoint}`);
     controller.abort();
   }, 15000); // Reduced to 15 seconds for better UX
 
@@ -158,24 +159,24 @@ async function apiCall<T>(
     });
 
     clearTimeout(timeoutId);
-    console.log(`[TechRoutes API] Response status: ${response.status}`);
+    logger.debug(`[TechRoutes API] Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMsg = errorData.detail || `API error: ${response.status}`;
-      console.error(`[TechRoutes API] Error response:`, errorData);
+      logger.error(`[TechRoutes API] Error response:`, errorData);
       throw new Error(errorMsg);
     }
 
     const data = await response.json();
-    console.log(`[TechRoutes API] Success:`, data.length || 'N/A', 'items received');
+    logger.debug(`[TechRoutes API] Success:`, data.length || 'N/A', 'items received');
     return data;
   } catch (error) {
     clearTimeout(timeoutId);
-    console.error(`[TechRoutes API] Call failed for ${endpoint}:`, error);
+    logger.error(`[TechRoutes API] Call failed for ${endpoint}:`, error);
 
     if (error instanceof Error) {
-      console.error(`[TechRoutes API] Error details:`, {
+      logger.error(`[TechRoutes API] Error details:`, {
         name: error.name,
         message: error.message,
         stack: error.stack,
@@ -209,19 +210,19 @@ export const technologyRoutesApi = {
     // Check cache first
     const cached = apiCache.get<TechnologyCardWithReferences[]>(cacheKey);
     if (cached) {
-      console.log(`[Cache HIT] ${cacheKey}`);
+      logger.debug(`[Cache HIT] ${cacheKey}`);
       return cached;
     }
 
     // Check if request is already pending (deduplication)
     const pending = apiCache.getPendingRequest<TechnologyCardWithReferences[]>(cacheKey);
     if (pending) {
-      console.log(`[Request DEDUP] ${cacheKey}`);
+      logger.debug(`[Request DEDUP] ${cacheKey}`);
       return pending;
     }
 
     // Make new request
-    console.log(`[Cache MISS] ${cacheKey} - fetching from API`);
+    logger.debug(`[Cache MISS] ${cacheKey} - fetching from API`);
     const params = category ? `?category=${encodeURIComponent(category)}` : '';
 
     const requestPromise = (async () => {

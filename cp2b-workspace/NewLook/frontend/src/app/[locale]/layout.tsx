@@ -10,6 +10,7 @@ import { QueryProvider } from '@/contexts/QueryProvider'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { locales, type Locale } from '@/config/i18n'
+import { logger } from '@/lib/logger'
 
 // Generate dynamic metadata based on locale
 export async function generateMetadata({
@@ -76,6 +77,41 @@ export default async function LocaleLayout({
                   document.documentElement.classList.add(resolved);
                 } catch (e) {}
               `,
+            }}
+          />
+          {/* JSON-LD Structured Data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@graph': [
+                  {
+                    '@type': 'Organization',
+                    '@id': 'https://pilar2b.vercel.app/#organization',
+                    name: 'NIPE-UNICAMP',
+                    url: 'https://pilar2b.vercel.app',
+                    description:
+                      'Interdisciplinary Center for Energy Planning at the University of Campinas',
+                  },
+                  {
+                    '@type': 'WebApplication',
+                    '@id': 'https://pilar2b.vercel.app/#webapp',
+                    name: 'PILAR-2b',
+                    url: 'https://pilar2b.vercel.app',
+                    applicationCategory: 'UtilitiesApplication',
+                    operatingSystem: 'All',
+                    provider: {
+                      '@type': 'Organization',
+                      '@id': 'https://pilar2b.vercel.app/#organization',
+                    },
+                    inLanguage: [
+                      { '@type': 'Language', name: 'English', alternateName: 'en' },
+                      { '@type': 'Language', name: 'Portuguese', alternateName: 'pt-BR' },
+                    ],
+                  },
+                ],
+              }),
             }}
           />
         </head>

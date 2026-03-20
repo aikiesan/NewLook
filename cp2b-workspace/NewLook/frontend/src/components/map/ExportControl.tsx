@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { MunicipalityCollection } from '@/types/geospatial';
 import html2canvas from 'html2canvas';
+import { logger } from '@/lib/logger';
 
 interface ExportControlProps {
   data: MunicipalityCollection | null;
@@ -61,7 +62,7 @@ export default function ExportControl({
         setSelectedFormat(null);
       }, 2000);
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error:', error);
       setExportStatus('error');
       setErrorMessage(error instanceof Error ? error.message : 'Erro desconhecido');
       setTimeout(() => {

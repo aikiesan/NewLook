@@ -186,7 +186,7 @@ export async function analyzeProximity(
         });
         
         // Log the full result structure for debugging
-        console.log('Full API result structure:', JSON.stringify(result, null, 2));
+        logger.debug('Full API result structure:', JSON.stringify(result, null, 2));
 
         // Log cache hits from backend
         if (result.from_cache) {

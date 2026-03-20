@@ -9,6 +9,7 @@ import {
   getValidationStatusLabel
 } from '@/types/references'
 import { getReferencesForResidue, getReferenceStatistics } from '@/services/referencesApi'
+import { logger } from '@/lib/logger'
 
 interface ReferenceListProps {
   codigoResidue: string
@@ -40,7 +41,7 @@ export default function ReferenceList({
       setReferences(refsData)
       setStatistics(statsData)
     } catch (error) {
-      console.error('Error fetching references:', error)
+      logger.error('Error fetching references:', error)
     } finally {
       setLoading(false)
     }

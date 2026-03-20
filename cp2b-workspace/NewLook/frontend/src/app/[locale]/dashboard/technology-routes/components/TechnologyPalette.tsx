@@ -5,6 +5,7 @@ import { Plus, Search, Filter, ChevronDown, ChevronRight } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences, TechnologyCategory } from '@/types/technology-routes';
 import TechnologyCard from './TechnologyCard';
+import { logger } from '@/lib/logger';
 
 const CATEGORIES: { id: TechnologyCategory; label: string; emoji: string; step?: number }[] = [
   { id: 'feedstock', label: 'Resíduos', emoji: '🌾', step: 1 },
@@ -40,18 +41,18 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
     try {
       setLoading(true);
       setError(null);
-      console.log('[TechnologyPalette] Starting to load technologies...');
+      logger.debug('[TechnologyPalette] Starting to load technologies...');
       const data = await technologyRoutesApi.getTechnologies();
-      console.log('[TechnologyPalette] Loaded technologies:', data.length);
-      console.log('[TechnologyPalette] First tech object:', data[0]); // Debug data structure
+      logger.debug('[TechnologyPalette] Loaded technologies:', data.length);
+      logger.debug('[TechnologyPalette] First tech object:', data[0]);
       setTechnologies(data);
     } catch (error) {
-      console.error('[TechnologyPalette] Failed to load technologies:', error);
+      logger.error('[TechnologyPalette] Failed to load technologies:', error);
       const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
       setError(`Erro ao carregar tecnologias: ${errorMsg}`);
     } finally {
       setLoading(false);
-      console.log('[TechnologyPalette] Loading complete');
+      logger.debug('[TechnologyPalette] Loading complete');
     }
   }, []);
 
@@ -60,7 +61,7 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
     return technologies.filter((tech) => {
       // Safety check for undefined properties
       if (!tech.namePt || !tech.nameEn) {
-        console.warn('[TechnologyPalette] Tech missing name properties:', tech);
+        logger.warn('[TechnologyPalette] Tech missing name properties:', tech);
         return false;
       }
 

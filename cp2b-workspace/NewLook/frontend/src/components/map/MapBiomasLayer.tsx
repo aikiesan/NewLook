@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { TileLayer, useMap } from 'react-leaflet';
+import { logger } from '@/lib/logger';
 
 interface MapBiomasLayerProps {
   /** Layer opacity (0-1) */
@@ -72,7 +73,7 @@ export default function MapBiomasLayer({
       // Error handling for tiles
       eventHandlers={{
         tileerror: (error) => {
-          console.warn('MapBiomas tile error:', error);
+          logger.warn('MapBiomas tile error:', error);
         }
       }}
     />

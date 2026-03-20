@@ -11,6 +11,7 @@ import { LogIn, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getErrorMessage } from '@/types/errors'
 import { useTranslations } from 'next-intl'
+import { logger } from '@/lib/logger'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function LoginPage() {
   // Navigate to dashboard once user is loaded after login
   useEffect(() => {
     if (shouldNavigate && user && !loading) {
-      console.log('[Login] User loaded, navigating to dashboard')
+      logger.info('[Login] User loaded, navigating to dashboard')
       router.push('/dashboard')
       setShouldNavigate(false)
     }
@@ -35,7 +36,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (shouldNavigate && !user) {
       const timeoutId = setTimeout(() => {
-        console.warn('[Login] User profile timeout after 8s, forcing navigation')
+        logger.warn('[Login] User profile timeout after 8s, forcing navigation')
         router.push('/dashboard')
         setShouldNavigate(false)
       }, 8000)

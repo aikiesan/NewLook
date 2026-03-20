@@ -4,6 +4,8 @@
  * Source: Panorama_CP2B validated data with 189 scientific references
  */
 
+import { logger } from '@/lib/logger'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // ==========================================
@@ -174,7 +176,7 @@ export async function getSectors(): Promise<Sector[]> {
     const data = await response.json()
     return data.sectors || []
   } catch (error) {
-    console.error('Error fetching sectors:', error)
+    logger.error('Error fetching sectors:', error)
     throw error
   }
 }
@@ -197,7 +199,7 @@ export async function getSubsectors(sectorCodigo?: SectorCode): Promise<Subsecto
     const data = await response.json()
     return data.subsectors || []
   } catch (error) {
-    console.error('Error fetching subsectors:', error)
+    logger.error('Error fetching subsectors:', error)
     throw error
   }
 }
@@ -244,7 +246,7 @@ export async function getResiduos(options?: {
       total: data.total || 0
     }
   } catch (error) {
-    console.error('Error fetching residuos:', error)
+    logger.error('Error fetching residuos:', error)
     throw error
   }
 }
@@ -263,7 +265,7 @@ export async function getResiduo(residuoId: number): Promise<ResiduoDetail> {
     const data = await response.json()
     return data.residuo
   } catch (error) {
-    console.error('Error fetching residuo:', error)
+    logger.error('Error fetching residuo:', error)
     throw error
   }
 }
@@ -292,7 +294,7 @@ export async function getResiduoReferences(
       references: data.references || []
     }
   } catch (error) {
-    console.error('Error fetching residuo references:', error)
+    logger.error('Error fetching residuo references:', error)
     throw error
   }
 }
@@ -315,7 +317,7 @@ export async function getConversionFactors(category?: string): Promise<Conversio
     const data = await response.json()
     return data.factors || []
   } catch (error) {
-    console.error('Error fetching conversion factors:', error)
+    logger.error('Error fetching conversion factors:', error)
     throw error
   }
 }
@@ -334,7 +336,7 @@ export async function getSectorSummary(): Promise<SectorSummary[]> {
     const data = await response.json()
     return data.summary || []
   } catch (error) {
-    console.error('Error fetching sector summary:', error)
+    logger.error('Error fetching sector summary:', error)
     throw error
   }
 }
@@ -354,7 +356,7 @@ export async function compareResiduos(ids: number[]): Promise<Residuo[]> {
     const data = await response.json()
     return data.comparison || []
   } catch (error) {
-    console.error('Error comparing residuos:', error)
+    logger.error('Error comparing residuos:', error)
     throw error
   }
 }

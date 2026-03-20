@@ -6,6 +6,7 @@
 'use client';
 
 import { useQuery, useQueries } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 import { geospatialClient } from '@/lib/api/geospatialClient';
 import { queryKeys } from '@/lib/queryClient';
 import type {
@@ -27,13 +28,13 @@ export function useGeospatialData() {
   const queryResult = useQuery({
     queryKey: queryKeys.municipalities.geojson(),
     queryFn: async () => {
-      console.log('🔍 Fetching municipalities GeoJSON...');
+      logger.debug('Fetching municipalities GeoJSON...');
       try {
         const data = await geospatialClient.getMunicipalitiesGeoJSON();
-        console.log('✅ Municipalities fetched:', data?.features?.length, 'features');
+        logger.info('Municipalities fetched:', data?.features?.length, 'features');
         return data;
       } catch (error) {
-        console.error('❌ Error fetching municipalities:', error);
+        logger.error('Error fetching municipalities:', error);
         throw error;
       }
     },

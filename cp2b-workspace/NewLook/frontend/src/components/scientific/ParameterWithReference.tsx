@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react'
 import { ScientificReference } from '@/types/scientific'
 import { getReferencesForParameter } from '@/services/scientificApi'
 import ReferencePopover from './ReferencePopover'
+import { logger } from '@/lib/logger'
 
 interface ParameterWithReferenceProps {
   residueId: number
@@ -68,7 +69,7 @@ export default function ParameterWithReference({
       const fetchedReferences = await getReferencesForParameter(residueId, parameterType)
       setReferences(fetchedReferences)
     } catch (error) {
-      console.error(`Error fetching references for ${parameterType}:`, error)
+      logger.error(`Error fetching references for ${parameterType}:`, error)
     } finally {
       setIsLoading(false)
       setIsOpen(true) // Open popover after fetching

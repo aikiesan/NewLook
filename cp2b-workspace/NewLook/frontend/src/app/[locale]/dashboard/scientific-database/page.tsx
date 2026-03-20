@@ -82,6 +82,7 @@ import {
 } from '@/services/scientificApi'
 
 import type { SectorCode } from '@/services/residuosApi'
+import { logger } from '@/lib/logger'
 
 // ── Citation export helpers ───────────────────────────────────────────────────
 
@@ -202,31 +203,31 @@ export default function ScientificDatabasePage() {
       if (kineticsRes.status === 'fulfilled') {
         setKineticsData(kineticsRes.value.data)
       } else {
-        console.warn('Failed to load kinetics data:', kineticsRes.reason)
+        logger.warn('Failed to load kinetics data:', kineticsRes.reason)
       }
 
       if (chemicalRes.status === 'fulfilled') {
         setChemicalData(chemicalRes.value.data)
       } else {
-        console.warn('Failed to load chemical data:', chemicalRes.reason)
+        logger.warn('Failed to load chemical data:', chemicalRes.reason)
       }
 
       if (refsRes.status === 'fulfilled') {
         setReferences(refsRes.value.data)
       } else {
-        console.warn('Failed to load references:', refsRes.reason)
+        logger.warn('Failed to load references:', refsRes.reason)
       }
 
       if (residues.status === 'fulfilled') {
         setResidueList(residues.value)
       } else {
-        console.warn('Failed to load residue list:', residues.reason)
+        logger.warn('Failed to load residue list:', residues.reason)
       }
 
       if (summaryData.status === 'fulfilled') {
         setSummary(summaryData.value)
       } else {
-        console.warn('Failed to load summary data:', summaryData.reason)
+        logger.warn('Failed to load summary data:', summaryData.reason)
       }
 
       // Also fetch real residuos data from Panorama_CP2B
@@ -248,7 +249,7 @@ export default function ScientificDatabasePage() {
         uniqueResiduos = allResiduosRes.value?.residuos || []
         isMockData = !!allResiduosRes.value?._isMockData
       } else {
-        console.warn('Failed to load residuos:', allResiduosRes.reason)
+        logger.warn('Failed to load residuos:', allResiduosRes.reason)
       }
 
       const deduplicatedResiduos = uniqueResiduos.filter((residuo: any, index: number, self: any[]) =>
@@ -271,17 +272,17 @@ export default function ScientificDatabasePage() {
         const deduplicatedSummary = Array.from(uniqueSectorsMap.values())
         setSectorSummary(deduplicatedSummary)
       } else {
-        console.warn('Failed to load sector summary:', sectorSum.reason)
+        logger.warn('Failed to load sector summary:', sectorSum.reason)
       }
 
       if (factors.status === 'fulfilled') {
         setConversionFactors(factors.value?.factors || [])
         // Log warning if conversion factors failed to load
         if (factors.value?.error) {
-          console.warn('Could not load conversion factors:', factors.value.error)
+          logger.warn('Could not load conversion factors:', factors.value.error)
         }
       } else {
-        console.warn('Failed to load conversion factors:', factors.reason)
+        logger.warn('Failed to load conversion factors:', factors.reason)
       }
 
       // Check if backend is available (not using mock data)
@@ -338,7 +339,7 @@ export default function ScientificDatabasePage() {
         } : prev)
       }
     } catch (err) {
-      console.error('Error fetching data:', err)
+      logger.error('Error fetching data:', err)
       setError('Erro ao carregar dados científicos')
     } finally {
       setLoading(false)
@@ -353,7 +354,7 @@ export default function ScientificDatabasePage() {
         setResiduoDetails(result.residuo)
       }
     } catch (err) {
-      console.error('Error fetching residuo details:', err)
+      logger.error('Error fetching residuo details:', err)
     }
   }, [])
 
@@ -370,7 +371,7 @@ export default function ScientificDatabasePage() {
   const kineticCurveData = useMemo(() => {
     // Debug: log available kinetics data
     if (kineticsData.length === 0) {
-      console.warn('⚠️ No kinetics data available')
+      logger.warn('No kinetics data available')
       return []
     }
 
@@ -380,8 +381,8 @@ export default function ScientificDatabasePage() {
 
     // Debug: check if filtering worked
     if (selectedResidues.length > 0 && selected.length === 0) {
-      console.warn('⚠️ No kinetics data matched selected residues:', selectedResidues)
-      console.log('Available kinetics residue names:', kineticsData.map(k => k.residue_name))
+      logger.warn('No kinetics data matched selected residues:', selectedResidues)
+      logger.debug('Available kinetics residue names:', kineticsData.map(k => k.residue_name))
     }
 
     if (selected.length === 0) return []
@@ -399,10 +400,10 @@ export default function ScientificDatabasePage() {
 
           // Debug: log zero yields
           if (t === 0 || t === 30) {
-            console.log(`📊 ${kinetic.residue_name} at t=${t}: ${yieldValue.toFixed(2)}`)
+            logger.debug(`${kinetic.residue_name} at t=${t}: ${yieldValue.toFixed(2)}`)
           }
         } catch (error) {
-          console.error(`Error generating curve for ${kinetic.residue_name}:`, error)
+          logger.error(`Error generating curve for ${kinetic.residue_name}:`, error)
           point[kinetic.residue_name] = 0
         }
       })
@@ -480,7 +481,7 @@ export default function ScientificDatabasePage() {
     if (!isAuthenticated) return
 
     const intervalId = setInterval(() => {
-      console.log('🔄 Auto-refreshing scientific database data...')
+      logger.debug('Auto-refreshing scientific database data...')
       fetchAllData()
     }, 30000) // 30 seconds
 

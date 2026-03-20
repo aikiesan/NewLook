@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Settings, User, Bell, Palette, Shield, HelpCircle, Save, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardLayout } from '@/components/layout'
+import { logger } from '@/lib/logger'
 
 interface UserSettings {
   notifications: {
@@ -61,7 +62,7 @@ export default function SettingsPage() {
       try {
         setSettings(JSON.parse(savedSettings))
       } catch (e) {
-        console.error('Failed to load settings:', e)
+        logger.error('Failed to load settings:', e)
       }
     }
   }, [])
@@ -84,7 +85,7 @@ export default function SettingsPage() {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
-      console.error('Failed to save settings:', error)
+      logger.error('Failed to save settings:', error)
     } finally {
       setSaving(false)
     }

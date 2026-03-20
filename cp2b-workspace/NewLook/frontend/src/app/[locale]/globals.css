@@ -103,8 +103,8 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Smooth transitions for dark mode toggle */
-  * {
+  /* Smooth transitions for dark mode toggle - applied only to interactive elements */
+  a, button, input, select, textarea, [role="button"] {
     @apply transition-colors duration-150;
   }
 }

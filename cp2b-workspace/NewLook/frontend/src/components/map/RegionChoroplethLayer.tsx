@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON } from 'react-leaflet'
 import L from 'leaflet'
+import { logger } from '@/lib/logger'
 
 interface RegionChoroplethLayerProps {
   selectedRegion: string | null
@@ -53,7 +54,7 @@ export default function RegionChoroplethLayer({
         setGeoJsonData(shapefileData)
         setRegionCodeMap(nameToCode)
       } catch (err: any) {
-        console.error('Error fetching region data:', err)
+        logger.error('Error fetching region data:', err)
         setError(err.message)
       } finally {
         setLoading(false)
@@ -104,7 +105,7 @@ export default function RegionChoroplethLayer({
       return regionCodeMap[regionName]
     }
 
-    console.warn(`No code found for region: ${regionName}`)
+    logger.warn(`No code found for region: ${regionName}`)
     return null
   }
 
@@ -170,7 +171,7 @@ export default function RegionChoroplethLayer({
     const stateName = feature.properties?.sigla_uf || feature.properties?.SIGLA_UF || ''
 
     if (!regionCode) {
-      console.warn('Region code not found for:', regionName, 'Properties:', feature.properties)
+      logger.warn('Region code not found for:', regionName, 'Properties:', feature.properties)
       return
     }
 
@@ -297,7 +298,7 @@ export default function RegionChoroplethLayer({
   }
 
   if (error || !geoJsonData) {
-    console.error('Region choropleth error:', error)
+    logger.error('Region choropleth error:', error)
     return null
   }
 

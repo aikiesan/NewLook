@@ -24,7 +24,7 @@ interface MunicipalityPopupProps {
   properties: MunicipalityProperties;
 }
 
-export default function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
+function MunicipalityPopup({ properties }: MunicipalityPopupProps) {
   // Defensive checks for required properties
   if (!properties || !properties.name) {
     return (
@@ -239,3 +239,5 @@ export default function MunicipalityPopup({ properties }: MunicipalityPopupProps
     </div>
   );
 }
+
+export default React.memo(MunicipalityPopup);
