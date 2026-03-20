@@ -1135,10 +1135,10 @@ export default function ScientificDatabasePage() {
                     <label className="text-xs font-medium text-gray-600 block mb-1.5">Setor Econômico</label>
                     <div className="space-y-2">
                       {([
-                        { code: 'AG_AGRICULTURA' as SectorCode, label: '🌾 Agrícola', color: 'green' },
-                        { code: 'PC_PECUARIA' as SectorCode, label: '🐄 Pecuária', color: 'amber' },
-                        { code: 'IN_INDUSTRIAL' as SectorCode, label: '🏭 Industrial', color: 'blue' },
-                        { code: 'UR_URBANO' as SectorCode, label: '🏙️ Urbano', color: 'gray' }
+                        { code: 'agricultural' as SectorType, label: '🌾 Agrícola', color: 'green' },
+                        { code: 'livestock' as SectorType, label: '🐄 Pecuária', color: 'amber' },
+                        { code: 'industrial' as SectorType, label: '🏭 Industrial', color: 'blue' },
+                        { code: 'urban' as SectorType, label: '🏙️ Urbano', color: 'gray' }
                       ]).map(sector => {
                         const count = references.filter(r => r.sector === sector.code).length
                         return (

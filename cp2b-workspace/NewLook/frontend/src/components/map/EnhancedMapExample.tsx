@@ -11,6 +11,7 @@
 import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import dynamic from 'next/dynamic';
+import type { ResidueType } from './FloatingControlPanel';
 import {
   Clock,
   Download,
@@ -86,7 +87,7 @@ export default function EnhancedMapExample() {
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedResidues, setSelectedResidues] = useState<string[]>([]);
+  const [selectedResidues, setSelectedResidues] = useState<ResidueType[]>([]);
   const [biogasRange, setBiogasRange] = useState<[number, number]>([0, 10000000]);
 
   // Visualization state

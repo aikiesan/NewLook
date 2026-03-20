@@ -52,7 +52,7 @@ export default function MapSearchBox({ data }: MapSearchBoxProps) {
     if (geom.type === 'Point') {
       const coords = geom.coordinates as number[];
       map.flyTo([coords[1], coords[0]], 12, { duration: 1.5 });
-    } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+    } else if ((geom.type as string) === 'Polygon' || geom.type === 'MultiPolygon') {
       // Create a GeoJSON layer temporarily to get bounds
       const geoLayer = L.geoJSON(geom as any);
       const bounds = geoLayer.getBounds();

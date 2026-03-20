@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * About Page - PILAR-2b V3
- * Comprehensive information about the Centro Paulista de Estudos em Biogás e Bioprodutos
+ * About Page - PILAR-2b
+ * Comprehensive information about the Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos
  * Public version matching the dashboard Sobre page content
  */
 import { useState } from 'react'
@@ -46,7 +46,7 @@ export default function AboutPage() {
   const projectTimeline: TimelineEvent[] = [
     {
       date: 'Fevereiro 2025',
-      title: 'Início do Projeto CP2B',
+      title: 'Início do Projeto PILAR-2b',
       description: 'Lançamento oficial do Centro Paulista de Estudos em Biogás e Bioprodutos com financiamento FAPESP.',
       status: 'completed',
       details: [
@@ -96,7 +96,7 @@ export default function AboutPage() {
     {
       date: 'Fevereiro 2030',
       title: 'Conclusão do Projeto',
-      description: 'Encerramento da primeira fase do CP2B com legado de pesquisa e inovação.',
+      description: 'Encerramento da primeira fase do PILAR-2b com legado de pesquisa e inovação.',
       status: 'upcoming',
       details: [
         'Relatório final de impacto',
@@ -208,8 +208,8 @@ export default function AboutPage() {
               </div>
 
               <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                CP2B
-                <span className="block text-green-300">Centro Paulista de Estudos em Biogás e Bioprodutos</span>
+                PILAR-2b
+                <span className="block text-green-300">Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos</span>
               </h1>
 
               <p className="text-lg text-green-100 mb-8 leading-relaxed">
@@ -332,7 +332,7 @@ export default function AboutPage() {
                 </div>
                 <div className="md:w-2/3 p-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                    Coordenadora Geral do CP2B
+                    Coordenadora Geral do PILAR-2b
                   </h3>
                   <div className="space-y-3 text-gray-600 mb-6">
                     <p className="flex items-start">
@@ -699,7 +699,7 @@ export default function AboutPage() {
               Linha do Tempo do Projeto
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Acompanhe os principais marcos do desenvolvimento do CP2B desde o início até a conclusão prevista.
+              Acompanhe os principais marcos do desenvolvimento do PILAR-2b desde o início até a conclusão prevista.
             </p>
           </div>
 
@@ -711,7 +711,7 @@ export default function AboutPage() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <NewsletterSignup
-            title="Acompanhe o progresso do CP2B"
+            title="Acompanhe o progresso do PILAR-2b"
             description="Receba atualizações sobre o projeto, publicações científicas e eventos do setor de biogás."
           />
         </div>

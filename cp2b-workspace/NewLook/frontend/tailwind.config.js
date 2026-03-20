@@ -22,7 +22,7 @@ module.exports = {
           800: '#075985',
           900: '#0c4a6e',
         },
-        // CP2B Brand Colors - New Extended Palette
+        // PILAR-2b Brand Colors - New Extended Palette
         cp2b: {
           // Legacy colors (kept for backward compatibility)
           primary: '#1E5128',

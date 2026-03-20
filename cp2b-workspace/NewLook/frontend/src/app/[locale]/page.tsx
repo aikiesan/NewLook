@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { Link } from '@/navigation'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
-import VideoModal from '@/components/ui/VideoModal'
-import NewsletterSignup from '@/components/ui/NewsletterSignup'
+
+// Lazy load below-fold and conditional components
+const VideoModal = dynamic(() => import('@/components/ui/VideoModal'), { ssr: false })
+const NewsletterSignup = dynamic(() => import('@/components/ui/NewsletterSignup'), { ssr: false })
 import {
   ArrowRight,
   Play,
@@ -84,21 +87,6 @@ const FadeIn = ({
     </div>
   )
 }
-
-// Floating animation wrapper
-const Float = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`animate-float ${className}`}>
-    {children}
-  </div>
-)
-
-// Pulse glow animation wrapper
-const PulseGlow = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`animate-pulse-glow ${className}`}>
-    {children}
-  </div>
-)
-
 
 // StatCard Component with hover animations
 const StatCard = ({
@@ -668,11 +656,10 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h2 id="data-heading" className="text-xl font-bold mb-2">
-                      Dados Abertos para Pesquisa
+                      {t('open_data.heading')}
                     </h2>
                     <p className="text-gray-300 text-sm max-w-lg">
-                      Todos os dados da plataforma estão disponíveis para download gratuito.
-                      Use em seus próprios modelos, publicações e políticas públicas.
+                      {t('open_data.description')}
                     </p>
                   </div>
                 </div>
@@ -707,15 +694,10 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
-                {[
-                  { label: '645 municípios', desc: 'com potencial de biogás por setor e resíduo' },
-                  { label: '50+ resíduos', desc: 'parâmetros BMP, TS, VS, C/N com referências' },
-                  { label: '8 camadas', desc: 'infraestrutura: gasodutos, subestações, ETEs' },
-                  { label: 'Licença CC-BY 4.0', desc: 'uso livre para pesquisa e fins não-comerciais' },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <div className="font-bold text-cp2b-lime">{item.label}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{item.desc}</div>
+                {(['municipalities', 'residues', 'layers', 'license'] as const).map((key) => (
+                  <div key={key}>
+                    <div className="font-bold text-cp2b-lime">{t(`open_data.${key}.label`)}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{t(`open_data.${key}.desc`)}</div>
                   </div>
                 ))}
               </div>
@@ -752,7 +734,7 @@ export default function HomePage() {
             <div className="flex flex-col items-center md:items-start gap-2">
               <Image
                 src="/images/logotipo-full-black.png"
-                alt="CP2B"
+                alt="PILAR-2b"
                 width={100}
                 height={34}
                 className="brightness-200"

@@ -48,7 +48,7 @@ const publicNavConfig: NavItemConfig[] = [
   { href: '/', labelKey: 'home', icon: <Home className="h-4 w-4" /> },
   { href: '/map', labelKey: 'map', icon: <Map className="h-4 w-4" /> },
   { href: '/dashboard', labelKey: 'dashboard', icon: <BarChart3 className="h-4 w-4" /> },
-  { href: 'https://nipe.unicamp.br/cp2b/', labelKey: 'about', icon: <Info className="h-4 w-4" /> },
+  { href: '/about', labelKey: 'about', icon: <Info className="h-4 w-4" /> },
 ]
 
 const authenticatedNavConfig: NavItemConfig[] = [
@@ -151,7 +151,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
             >
               <Image
                 src={currentStyles.logo}
-                alt="CP2B - Centro Paulista de Estudos em Biogás"
+                alt="PILAR-2b - Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos"
                 width={140}
                 height={48}
                 className={`transition-transform group-hover:scale-105 ${currentStyles.logoClass}`}

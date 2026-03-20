@@ -2,13 +2,13 @@
 
 /**
  * Dashboard About Page - Redirects to NIPE Unicamp
- * Auto-redirects users to the official CP2B website
+ * Auto-redirects users to the official PILAR-2b website
  */
 import { useEffect } from 'react';
 
 export default function AboutPage() {
   useEffect(() => {
-    // Redirect to NIPE Unicamp CP2B page
+    // Redirect to NIPE Unicamp PILAR-2b page
     window.location.href = 'https://nipe.unicamp.br/cp2b/';
   }, []);
 

@@ -116,7 +116,7 @@ export interface LiteratureRange {
 // ==========================================
 
 export type ReferenceType = 'journal' | 'conference' | 'thesis' | 'report' | 'book'
-export type ParameterType = 'bmp' | 'kinetics' | 'cn' | 'ph' | 'codigestion' | 'fde' | 'cod'
+export type ParameterType = 'bmp' | 'kinetics' | 'cn' | 'ph' | 'codigestion' | 'fde' | 'cod' | 'vs'
 
 export interface ScientificReference {
   id: number
@@ -293,7 +293,8 @@ export const PARAMETER_LABELS: Record<ParameterType, string> = {
   ph: 'pH',
   codigestion: 'Co-digestão',
   fde: 'FDE/SAF',
-  cod: 'COD'
+  cod: 'COD',
+  vs: 'Sólidos Voláteis'
 }
 
 // Classification colors

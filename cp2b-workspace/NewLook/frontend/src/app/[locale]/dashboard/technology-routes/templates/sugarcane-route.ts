@@ -1,5 +1,5 @@
 /**
- * CP2B Technology Routes - Sugarcane Biogas Template
+ * PILAR-2b Technology Routes - Sugarcane Biogas Template
  * Complete route from sugarcane bagasse to biomethane and fertilizer
  */
 

@@ -126,9 +126,14 @@ export default function HeatmapLayer({
         const coordinates = feature.geometry.coordinates;
         let lat: number, lng: number;
 
-        if (feature.geometry.type === 'Polygon') {
+        const geomType = feature.geometry.type as string;
+        if (geomType === 'Point') {
+          const coords = coordinates as number[];
+          lng = coords[0];
+          lat = coords[1];
+        } else if (geomType === 'Polygon') {
           // Calculate centroid of first polygon ring
-          const coords = coordinates[0] as [number, number][];
+          const coords = (coordinates as unknown as number[][][])[0] as [number, number][];
           const sum = coords.reduce((acc, [lng, lat]) => {
             acc.lng += lng;
             acc.lat += lat;
@@ -136,9 +141,9 @@ export default function HeatmapLayer({
           }, { lng: 0, lat: 0 });
           lng = sum.lng / coords.length;
           lat = sum.lat / coords.length;
-        } else if (feature.geometry.type === 'MultiPolygon') {
+        } else if (geomType === 'MultiPolygon') {
           // Use first polygon of multipolygon
-          const coords = coordinates[0][0] as [number, number][];
+          const coords = (coordinates as unknown as number[][][][])[0][0] as [number, number][];
           const sum = coords.reduce((acc, [lng, lat]) => {
             acc.lng += lng;
             acc.lat += lat;

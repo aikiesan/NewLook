@@ -87,7 +87,7 @@ export default function LeftFilterPanel({
         <div className="bg-gradient-to-r from-[#1E5128] to-[#2C6B3A] px-3 py-2.5 flex items-center justify-between">
           <h3 className="text-white text-sm font-semibold flex items-center gap-2">
             <span className="text-lg">🔍</span>
-            CP2B BiogasAtlas
+            PILAR-2b BiogasAtlas
           </h3>
           <button
             onClick={() => setIsMinimized(true)}

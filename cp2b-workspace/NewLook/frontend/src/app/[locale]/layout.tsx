@@ -24,7 +24,7 @@ export async function generateMetadata({
     title: t('title'),
     description: t('description'),
     keywords: t('keywords'),
-    authors: [{ name: 'NIPE-UNICAMP / CP2B' }],
+    authors: [{ name: 'NIPE-UNICAMP / PILAR-2b' }],
     openGraph: {
       title: t('title'),
       description: t('description'),
@@ -69,7 +69,7 @@ export default async function LocaleLayout({
             dangerouslySetInnerHTML={{
               __html: `
                 try {
-                  const theme = localStorage.getItem('cp2b-theme') || 'system';
+                  const theme = localStorage.getItem('pilar2b-theme') || 'system';
                   const resolved = theme === 'system'
                     ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                     : theme;

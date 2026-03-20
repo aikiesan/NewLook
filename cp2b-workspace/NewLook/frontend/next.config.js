@@ -68,7 +68,7 @@ const nextConfig = {
 
   // Keep relaxed checks for faster builds
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Output standalone for better Vercel performance

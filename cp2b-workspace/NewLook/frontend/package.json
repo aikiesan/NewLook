@@ -1,7 +1,15 @@
 {
-  "name": "cp2b-maps-frontend",
+  "name": "pilar-2b-frontend",
   "version": "3.0.0",
   "private": true,
+  "description": "PILAR-2b: Intelligent Waste Location and Utilization Platform for Biogas and Bioproducts - Open-source geospatial framework for biogas potential analysis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aikiesan/NewLook"
+  },
+  "keywords": ["biogas", "bioproducts", "geospatial", "open-source", "next.js", "react", "sustainability", "renewable-energy"],
+  "author": "NIPE-UNICAMP / PILAR-2b",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -259,8 +259,8 @@ export default function BiomassFlowSankey({
             nodeWidth={15}
             nodePadding={30}
             margin={{ top: 20, right: 200, bottom: 20, left: 20 }}
-            node={CustomNode as unknown as React.ReactElement}
-            link={CustomLink as unknown as React.ReactElement}
+            node={CustomNode as unknown as React.ReactElement<SVGElement>}
+            link={CustomLink as unknown as React.ReactElement<SVGElement>}
           >
             <Tooltip content={<CustomTooltip />} />
           </Sankey>

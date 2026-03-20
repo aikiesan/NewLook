@@ -32,7 +32,7 @@
     "badge": {
       "beta": "Beta"
     },
-    "copyright": "© 2025 PILAR-2b V3. Plataforma de Análise de Biogás."
+    "copyright": "© 2025 PILAR-2b. Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos."
   },
   "auth": {
     "errors": {
@@ -43,7 +43,7 @@
       "registration_failed": "Falha no registro. Tente novamente."
     },
     "login": {
-      "back_to_home": "Voltar para página inicial - PILAR-2b V3",
+      "back_to_home": "Voltar para página inicial - PILAR-2b",
       "title": "Acessar sua conta",
       "or": "Ou",
       "create_account": "crie uma nova conta",
@@ -82,7 +82,7 @@
       "login": "Fazer login"
     },
     "common": {
-      "copyright": "© 2025 PILAR-2b V3. Plataforma de Análise de Biogás."
+      "copyright": "© 2025 PILAR-2b. Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos."
     }
   },
   "landing": {
@@ -95,7 +95,7 @@
       "cta_explore": "Explorar Mapa Interativo",
       "cta_demo": "Ver Demonstração",
       "showcase_badge": "Veja a plataforma em ação",
-      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma PILAR-2b V3."
+      "showcase_description": "Explore exemplos reais de análises geoespaciais e relatórios gerados pela plataforma PILAR-2b."
     },
     "screenshots": {
       "interactive_map": {
@@ -180,6 +180,14 @@
       "button_register": "Criar Conta Gratuita",
       "button_learn_more": "Saiba Mais"
     },
+    "open_data": {
+      "heading": "Dados Abertos para Pesquisa",
+      "description": "Todos os dados da plataforma estão disponíveis para download gratuito. Use em seus próprios modelos, publicações e políticas públicas.",
+      "municipalities": { "label": "645 municípios", "desc": "com potencial de biogás por setor e resíduo" },
+      "residues": { "label": "50+ resíduos", "desc": "parâmetros BMP, TS, VS, C/N com referências" },
+      "layers": { "label": "8 camadas", "desc": "infraestrutura: gasodutos, subestações, ETEs" },
+      "license": { "label": "Licença CC-BY 4.0", "desc": "uso livre para pesquisa e fins não-comerciais" }
+    },
     "newsletter": {
       "title": "Receba novidades sobre biogás",
       "description": "Inscreva-se para receber atualizações sobre novos recursos, análises e insights sobre o setor de biogás em São Paulo."
@@ -228,8 +236,8 @@
     "language": "Idioma"
   },
   "metadata": {
-    "title": "PILAR-2b V3 - Atlas de Potencial de Biogás",
-    "description": "Plataforma geoespacial para análise do potencial de produção de biogás a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério e ferramentas de simulação econômica.",
-    "keywords": "biogás, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP"
+    "title": "PILAR-2b - Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos",
+    "description": "Framework geoespacial open-source para análise do potencial de produção de biogás e bioprodutos a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério, fatores de correção dependentes de resíduos e ferramentas para pesquisa reproduzível.",
+    "keywords": "biogás, bioprodutos, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP, open-source, PILAR-2b, framework, pesquisa reproduzível"
   }
 }

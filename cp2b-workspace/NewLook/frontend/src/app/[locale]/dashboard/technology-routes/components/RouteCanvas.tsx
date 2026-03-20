@@ -14,6 +14,7 @@ import ReactFlow, {
   ReactFlowInstance,
   useReactFlow,
   NodeDragHandler,
+  ConnectionLineType,
 } from 'reactflow';
 import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Trash2, Undo2, Redo2, LayoutGrid, Download, Eraser } from 'lucide-react';
 import CustomNode from './CustomNode';
@@ -280,7 +281,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
     // Add title
     ctx.fillStyle = '#2F7D32';
     ctx.font = 'bold 24px Arial';
-    ctx.fillText('Rota Tecnológica CP2B', 20, 40);
+    ctx.fillText('Rota Tecnológica PILAR-2b', 20, 40);
 
     // For now, we'll use a simple approach and recommend using browser screenshot
     // In a production app, you'd use a library like html-to-image or toPng from reactflow
@@ -560,8 +561,8 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
     if (!trashZoneRef.current) return;
 
     const trashRect = trashZoneRef.current.getBoundingClientRect();
-    const mouseX = (event as MouseEvent).clientX;
-    const mouseY = (event as MouseEvent).clientY;
+    const mouseX = (event as unknown as MouseEvent).clientX;
+    const mouseY = (event as unknown as MouseEvent).clientY;
 
     const isOver =
       mouseX >= trashRect.left &&
@@ -626,7 +627,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
             stroke: '#2F7D32',
             strokeDasharray: '5, 5',
           }}
-          connectionLineType="smoothstep"
+          connectionLineType={ConnectionLineType.SmoothStep}
         >
           <Background color="#e5e7eb" gap={16} />
 

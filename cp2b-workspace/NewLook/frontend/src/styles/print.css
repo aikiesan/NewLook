@@ -167,13 +167,13 @@
     }
 
     @bottom-left {
-      content: "CP2B Maps V3 - Análise de Proximidade";
+      content: "PILAR-2b - Análise de Proximidade";
       font-size: 9pt;
       color: #666;
     }
 
     @bottom-center {
-      content: "© 2025 CP2B Project";
+      content: "© 2025 PILAR-2b Project";
       font-size: 8pt;
       color: #999;
     }

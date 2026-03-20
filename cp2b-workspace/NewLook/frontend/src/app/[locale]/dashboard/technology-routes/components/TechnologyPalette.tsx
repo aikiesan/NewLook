@@ -95,7 +95,7 @@ export default function TechnologyPalette({ onAddToCanvas }: TechnologyPalettePr
 
   return (
     <div className="flex flex-col h-full">
-      {/* CP2B Branded Header */}
+      {/* PILAR-2b Branded Header */}
       <div className="p-4 border-b border-cp2b-green/20 bg-gradient-to-b from-cp2b-lime-light/20 to-white">
         <div className="flex items-center justify-between mb-3">
           <div>

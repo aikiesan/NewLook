@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Load theme from localStorage on mount
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem('cp2b-theme') as Theme;
+    const stored = localStorage.getItem('pilar2b-theme') as Theme;
     if (stored && ['light', 'dark', 'system'].includes(stored)) {
       setTheme(stored);
     }
@@ -50,8 +50,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(resolved);
 
       // Save to localStorage
-      localStorage.setItem('cp2b-theme', theme);
-      localStorage.setItem('cp2b-resolved-theme', resolved);
+      localStorage.setItem('pilar2b-theme', theme);
+      localStorage.setItem('pilar2b-resolved-theme', resolved);
     };
 
     updateTheme();
