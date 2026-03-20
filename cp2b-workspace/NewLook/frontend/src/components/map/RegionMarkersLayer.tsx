@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { logger } from '@/lib/logger'
 
 interface Region {
   cd_rgint: string
@@ -48,7 +49,7 @@ export default function RegionMarkersLayer({
         const data = await response.json()
         setRegions(data.regions || [])
       } catch (err: any) {
-        console.error('Error fetching Brazil regions:', err)
+        logger.error('Error fetching Brazil regions:', err)
         setError(err.message)
       } finally {
         setLoading(false)
@@ -113,7 +114,7 @@ export default function RegionMarkersLayer({
   }
 
   if (error) {
-    console.error('Region markers error:', error)
+    logger.error('Region markers error:', error)
     return null
   }
 

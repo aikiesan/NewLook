@@ -4,6 +4,7 @@
  */
 
 import { authenticatedFetch } from '@/lib/apiClient';
+import { logger } from '@/lib/logger';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -133,13 +134,13 @@ export async function getAnalysisByResidue(
   }
 
   const url = `${API_BASE_URL}/api/v1/analysis/by-residue?${params}`;
-  console.log('Fetching analysis by residue:', url);
+  logger.debug('Fetching analysis by residue:', url);
 
   const response = await authenticatedFetch(url);
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => response.statusText);
-    console.error('API Error:', response.status, errorText);
+    logger.error('API Error:', response.status, errorText);
     throw new Error(`Failed to fetch residue analysis: ${response.status} ${errorText}`);
   }
 

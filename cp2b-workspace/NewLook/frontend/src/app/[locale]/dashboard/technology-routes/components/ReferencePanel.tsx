@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { X, ExternalLink, BookOpen } from 'lucide-react';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences } from '@/types/technology-routes';
+import { logger } from '@/lib/logger';
 
 interface ReferencePanelProps {
   nodeId: string;
@@ -26,7 +27,7 @@ export default function ReferencePanel({ nodeId, onClose }: ReferencePanelProps)
       const data = await technologyRoutesApi.getTechnologyById(techId);
       setTechnology(data);
     } catch (error) {
-      console.error('Failed to load technology:', error);
+      logger.error('Failed to load technology:', error);
     } finally {
       setLoading(false);
     }

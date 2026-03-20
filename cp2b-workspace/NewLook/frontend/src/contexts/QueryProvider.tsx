@@ -8,6 +8,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
 import { ReactNode, useEffect } from 'react';
 
 interface QueryProviderProps {
@@ -26,9 +27,9 @@ interface QueryProviderProps {
 export function QueryProvider({ children }: QueryProviderProps) {
   useEffect(() => {
     // Log that QueryProvider is mounted (always enabled for debugging)
-    console.log('✅ QueryProvider mounted successfully');
-    console.log('🌍 Environment:', process.env.NODE_ENV);
-    console.log('🔗 API URL:', process.env.NEXT_PUBLIC_API_URL || 'default');
+    logger.debug('QueryProvider mounted successfully');
+    logger.debug('Environment:', process.env.NODE_ENV);
+    logger.debug('API URL:', process.env.NEXT_PUBLIC_API_URL || 'default');
   }, []);
 
   return (

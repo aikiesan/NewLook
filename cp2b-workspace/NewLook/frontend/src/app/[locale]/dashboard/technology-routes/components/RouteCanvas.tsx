@@ -21,6 +21,7 @@ import CustomNode from './CustomNode';
 import ConnectionToast, { ToastType } from './ConnectionToast';
 import { technologyRoutesApi } from '@/services/technologyRoutesApi';
 import type { TechnologyCardWithReferences } from '@/types/technology-routes';
+import { logger } from '@/lib/logger';
 
 const nodeTypes = {
   technology: CustomNode,
@@ -415,7 +416,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
       const targetNode = nodes.find((n) => n.id === connection.target);
 
       if (!sourceNode || !targetNode) {
-        console.error('Source or target node not found');
+        logger.error('Source or target node not found');
         return;
       }
 
@@ -483,7 +484,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
           )
         );
       } catch (error) {
-        console.error('Connection validation failed:', error);
+        logger.error('Connection validation failed:', error);
         showToast(
           'Erro ao validar conexão. Verifique sua conexão com a internet e tente novamente.',
           'error'
@@ -527,7 +528,7 @@ export default function RouteCanvas({ onNodeSelect, selectedNodeId, onSetAddToCa
 
         setNodes((nds) => nds.concat(newNode));
       } catch (error) {
-        console.error('Failed to parse dropped technology:', error);
+        logger.error('Failed to parse dropped technology:', error);
       }
     },
     [reactFlowInstance, setNodes]

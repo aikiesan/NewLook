@@ -83,6 +83,7 @@ import {
 
 // Data
 import { getResidueByCode, DETAILED_RESIDUES } from '@/data/residueFactors'
+import { logger } from '@/lib/logger'
 
 export default function AdvancedAnalysisPage() {
   const router = useRouter()
@@ -268,7 +269,7 @@ export default function AdvancedAnalysisPage() {
       })
       setTopMunicipalities(residueResponse.data)
     } catch (err) {
-      console.error('Error fetching municipalities:', err)
+      logger.error('Error fetching municipalities:', err)
       setError('Erro ao carregar dados dos municipios')
     } finally {
       setLoadingMunicipalities(false)
@@ -280,7 +281,7 @@ export default function AdvancedAnalysisPage() {
       const statsResponse = await getStatisticsByCategory()
       setCategoryStats(statsResponse)
     } catch (err) {
-      console.error('Error fetching statistics:', err)
+      logger.error('Error fetching statistics:', err)
     } finally {
       setLoadingStats(false)
     }
@@ -292,7 +293,7 @@ export default function AdvancedAnalysisPage() {
       const regionResponse = await getStatisticsByRegion(apiCategory)
       setRegionData(regionResponse.regions)
     } catch (err) {
-      console.error('Error fetching regional data:', err)
+      logger.error('Error fetching regional data:', err)
     } finally {
       setLoadingRegion(false)
     }
@@ -305,7 +306,7 @@ export default function AdvancedAnalysisPage() {
       setHistogramData(distResponse.histogram)
       setDistributionStats(distResponse.statistics)
     } catch (err) {
-      console.error('Error fetching distribution:', err)
+      logger.error('Error fetching distribution:', err)
     } finally {
       setLoadingDistribution(false)
     }

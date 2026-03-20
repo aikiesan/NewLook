@@ -3,6 +3,8 @@
  * Provides authentication headers for API requests
  */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Get authentication headers from Supabase session
  * Returns headers with Authorization Bearer token if user is authenticated
@@ -21,7 +23,7 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.warn('Supabase credentials not found');
+      logger.warn('Supabase credentials not found');
       return {
         'Content-Type': 'application/json',
       };
@@ -37,7 +39,7 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
       };
     }
   } catch (error) {
-    console.error('Failed to get auth headers:', error);
+    logger.error('Failed to get auth headers:', error);
   }
 
   return {

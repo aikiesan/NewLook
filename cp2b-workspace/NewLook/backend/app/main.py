@@ -5,13 +5,16 @@ Sprint 4: Performance optimizations, error handling, and production deployment
 """
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from datetime import datetime, timezone
 from slowapi.errors import RateLimitExceeded
+import logging
+
+log = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.core.database import test_db_connection
@@ -22,13 +25,14 @@ from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler
 from app.middleware.request_size_limit import request_size_limit_middleware
 from app.services.cache_service import get_all_cache_stats
 
-# Create FastAPI app
+# Create FastAPI app - disable docs in production
+_is_production = settings.APP_ENV == "production"
 app = FastAPI(
     title="PILAR-2b V3 API",
     description="Backend API for biogas potential analysis platform",
     version="3.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
 )
 
 # Register slowapi limiter with FastAPI app

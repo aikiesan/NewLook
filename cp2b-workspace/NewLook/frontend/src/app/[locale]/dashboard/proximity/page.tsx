@@ -31,6 +31,7 @@ import {
   generateShareURL,
   parseShareURL
 } from '@/services/proximityApi'
+import { logger } from '@/lib/logger'
 
 // Dynamically import map to avoid SSR issues
 const ProximityMap = dynamic(() => import('@/components/map/ProximityMap'), {
@@ -140,7 +141,7 @@ function ProximityAnalysisContent() {
 
       setAnalysisResult(result as unknown as AnalysisResult)
     } catch (err: any) {
-      console.error('❌ Analysis error:', err);
+      logger.error('Analysis error:', err);
       setError(err.message || 'Erro ao realizar análise')
     } finally {
       setLoading(false)

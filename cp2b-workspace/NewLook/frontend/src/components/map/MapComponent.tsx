@@ -21,6 +21,8 @@ import MapLoadingSkeleton from './MapLoadingSkeleton';
 import 'leaflet/dist/leaflet.css';
 import '@/lib/leafletConfig';
 
+const MAP_CONTAINER_STYLE = { height: '100%', width: '100%' } as const;
+
 // Dynamically import components to avoid SSR issues
 const MunicipalityLayer = dynamic(() => import('./MunicipalityLayer'), { ssr: false });
 const InfrastructureLayer = dynamic(() => import('./InfrastructureLayer'), { ssr: false });
@@ -46,6 +48,10 @@ const ExportControl = dynamic(() => import('./ExportControl'), { ssr: false });
 // Visualization layers
 const BubbleChartLayer = dynamic(() => import('./BubbleChartLayer'), { ssr: false });
 const MapSearchBox = dynamic(() => import('./MapSearchBox'), { ssr: false });
+const IntermediateRegionBoundaryLayer = dynamic(
+  () => import('./IntermediateRegionBoundaryLayer'),
+  { ssr: false }
+);
 
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
@@ -199,6 +205,7 @@ export default function MapComponent({
   // ── Layer state ─────────────────────────────────────────────────────────────
   const [layers, setLayers] = useState([
     { id: 'municipalities', name: 'Municípios SP', visible: true, icon: '📍' },
+    { id: 'intermediate-regions', name: 'Regiões Intermediárias (IBGE)', visible: false, icon: '🗺️' },
     { id: 'mapbiomas', name: 'MapBiomas 2024', visible: false, icon: '🌳' },
     { id: 'biogas-plants', name: 'Plantas de Biomassa (MapBiomas+ANP, 2024)', visible: false, icon: '🏭' },
     { id: 'pipelines', name: 'Gasodutos (EPE, 2024)', visible: false, icon: '🔧' },
@@ -363,7 +370,7 @@ export default function MapComponent({
         center={SAO_PAULO_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        style={{ height: '100%', width: '100%' }}
+        style={MAP_CONTAINER_STYLE}
       >
         {/* Base Map Tile Layer */}
         <TileLayer
@@ -413,6 +420,11 @@ export default function MapComponent({
         {visibleLayerIds.includes('substations') && <InfrastructureLayer layerType="substations" />}
         {visibleLayerIds.includes('transmission-lines') && <InfrastructureLayer layerType="transmission-lines" />}
         {visibleLayerIds.includes('etes') && <InfrastructureLayer layerType="etes" />}
+
+        {/* Intermediate Region Boundaries (IBGE Regiões Intermediárias SP) */}
+        {visibleLayerIds.includes('intermediate-regions') && (
+          <IntermediateRegionBoundaryLayer visible={true} />
+        )}
       </MapContainer>
 
       {/* ── Desktop Bottom Drawer (replaces all floating panels) ── */}

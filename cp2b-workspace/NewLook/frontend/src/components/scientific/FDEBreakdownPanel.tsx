@@ -10,6 +10,7 @@ import {
 import { getFDEBreakdown } from '@/services/referencesApi'
 import FactorReferenceCard from './FactorReferenceCard'
 import ReferenceList from './ReferenceList'
+import { logger } from '@/lib/logger'
 
 interface FDEBreakdownPanelProps {
   codigoResidue: string
@@ -40,7 +41,7 @@ export default function FDEBreakdownPanel({
         setBreakdown(data)
       }
     } catch (err) {
-      console.error('Error fetching FDE breakdown:', err)
+      logger.error('Error fetching FDE breakdown:', err)
       setError('Erro ao carregar dados de FDE.')
     } finally {
       setLoading(false)
