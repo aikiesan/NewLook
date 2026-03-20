@@ -62,7 +62,7 @@ export default function BubbleChartLayer({
         coordinates = [coords[0], coords[1]];
       } else if (geometry.type === 'MultiPolygon') {
         // MultiPolygon: coordinates is [][][], use first ring of first polygon
-        const coords = geometry.coordinates as number[][][][];
+        const coords = geometry.coordinates as unknown as number[][][][];
         coordinates = getCentroid(coords[0][0] as Array<[number, number]>);
       }
 

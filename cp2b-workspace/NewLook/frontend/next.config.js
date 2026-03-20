@@ -70,9 +70,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
 
   // Output standalone for better Vercel performance
   output: 'standalone',
