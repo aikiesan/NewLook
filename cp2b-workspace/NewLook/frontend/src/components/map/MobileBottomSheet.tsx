@@ -1,12 +1,13 @@
 /**
  * PILAR-2b V3 - Mobile Bottom Sheet
  * Swipeable drawer that replaces floating panels on mobile (<md).
- * Provides Filtros | Camadas tabs with municipality stats in the handle bar.
+ * Provides Filters | Layers tabs with municipality stats in the handle bar.
  */
 
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp, Layers, Search, Minus } from 'lucide-react';
 import type { ResidueType, BiomassType } from './FloatingControlPanel';
 import type { VisualizationMode } from './LeftFilterPanel';
@@ -19,7 +20,6 @@ interface Layer {
 }
 
 interface MobileBottomSheetProps {
-  // Filter props
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedResidues: ResidueType[];
@@ -28,7 +28,6 @@ interface MobileBottomSheetProps {
   onBiomassTypeChange: (type: BiomassType) => void;
   visualizationMode: VisualizationMode;
   onVisualizationModeChange: (mode: VisualizationMode) => void;
-  // Layer props
   opacity: number;
   onOpacityChange: (opacity: number) => void;
   layers: Layer[];
@@ -40,26 +39,38 @@ interface MobileBottomSheetProps {
 type SheetState = 'collapsed' | 'half' | 'full';
 type ActiveTab = 'filters' | 'layers';
 
-const residueOptions = [
-  { value: 'sugarcane', label: 'Cana', category: 'agricultural', icon: '🌾' },
-  { value: 'soybean', label: 'Soja', category: 'agricultural', icon: '🌿' },
-  { value: 'corn', label: 'Milho', category: 'agricultural', icon: '🌽' },
-  { value: 'coffee', label: 'Café', category: 'agricultural', icon: '☕' },
-  { value: 'citrus', label: 'Citrus', category: 'agricultural', icon: '🍊' },
-  { value: 'cattle', label: 'Bovinos', category: 'livestock', icon: '🐄' },
-  { value: 'swine', label: 'Suínos', category: 'livestock', icon: '🐷' },
-  { value: 'poultry', label: 'Aves', category: 'livestock', icon: '🐔' },
-  { value: 'aquaculture', label: 'Aquicultura', category: 'livestock', icon: '🐟' },
-  { value: 'rsu', label: 'RSU', category: 'urban', icon: '🗑️' },
-  { value: 'rpo', label: 'RPO', category: 'urban', icon: '♻️' },
-] as const;
-
-const biomassOptions: { value: BiomassType; label: string; icon: string }[] = [
-  { value: 'total', label: 'Potencial Total', icon: '⚡' },
-  { value: 'agricultural', label: 'Agrícola', icon: '🌾' },
-  { value: 'livestock', label: 'Pecuária', icon: '🐄' },
-  { value: 'urban', label: 'Urbano', icon: '🏙️' },
+const RESIDUE_META = [
+  { value: 'sugarcane' as const, category: 'agricultural' as const, icon: '🌾' },
+  { value: 'soybean' as const, category: 'agricultural' as const, icon: '🌿' },
+  { value: 'corn' as const, category: 'agricultural' as const, icon: '🌽' },
+  { value: 'coffee' as const, category: 'agricultural' as const, icon: '☕' },
+  { value: 'citrus' as const, category: 'agricultural' as const, icon: '🍊' },
+  { value: 'cattle' as const, category: 'livestock' as const, icon: '🐄' },
+  { value: 'swine' as const, category: 'livestock' as const, icon: '🐷' },
+  { value: 'poultry' as const, category: 'livestock' as const, icon: '🐔' },
+  { value: 'aquaculture' as const, category: 'livestock' as const, icon: '🐟' },
+  { value: 'rsu' as const, category: 'urban' as const, icon: '🗑️' },
+  { value: 'rpo' as const, category: 'urban' as const, icon: '♻️' },
 ];
+
+const BIOMASS_META: { value: BiomassType; icon: string }[] = [
+  { value: 'total', icon: '⚡' },
+  { value: 'agricultural', icon: '🌾' },
+  { value: 'livestock', icon: '🐄' },
+  { value: 'urban', icon: '🏙️' },
+];
+
+const LAYER_KEY_MAP: Record<string, string> = {
+  'municipalities': 'layers.municipalitiesSP',
+  'intermediate-regions': 'layers.intermediateRegions',
+  'mapbiomas': 'layers.mapbiomas',
+  'biogas-plants': 'layers.biogasPlants',
+  'pipelines': 'layers.pipelines',
+  'substations': 'layers.substations',
+  'transmission-lines': 'layers.transmissionLines',
+  'etes': 'layers.etes',
+  'railways': 'layers.railways',
+};
 
 export default function MobileBottomSheet({
   searchQuery,
@@ -77,12 +88,12 @@ export default function MobileBottomSheet({
   municipalityCount,
   totalMunicipalities,
 }: MobileBottomSheetProps) {
+  const t = useTranslations('Map');
   const [sheetState, setSheetState] = useState<SheetState>('collapsed');
   const [activeTab, setActiveTab] = useState<ActiveTab>('filters');
   const [showResidues, setShowResidues] = useState(false);
   const [showBiomassTypes, setShowBiomassTypes] = useState(false);
 
-  // Touch drag state
   const dragStartY = useRef<number | null>(null);
   const dragStartState = useRef<SheetState>('collapsed');
 
@@ -101,7 +112,6 @@ export default function MobileBottomSheet({
     });
   };
 
-  // Touch handlers for swipe gesture on the handle
   const onTouchStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY;
     dragStartState.current = sheetState;
@@ -111,19 +121,15 @@ export default function MobileBottomSheet({
     if (dragStartY.current === null) return;
     const dy = dragStartY.current - e.changedTouches[0].clientY;
     if (Math.abs(dy) < 20) {
-      // Tap - cycle through states
       cycleSheet();
     } else if (dy > 40) {
-      // Swipe up
       setSheetState(prev => (prev === 'collapsed' ? 'half' : 'full'));
     } else if (dy < -40) {
-      // Swipe down
       setSheetState(prev => (prev === 'full' ? 'half' : 'collapsed'));
     }
     dragStartY.current = null;
   };
 
-  // Height classes for each state
   const heightClass =
     sheetState === 'collapsed'
       ? 'h-14'
@@ -134,13 +140,18 @@ export default function MobileBottomSheet({
   const filterCount = selectedResidues.length;
   const activeLayerCount = layers.filter(l => l.visible).length;
 
+  const getLayerName = (layerId: string): string => {
+    const key = LAYER_KEY_MAP[layerId];
+    return key ? t(key) : layerId;
+  };
+
   return (
     <div
       className={`md:hidden fixed bottom-0 left-0 right-0 z-[450] transition-all duration-300 ease-out ${heightClass}`}
       style={{ touchAction: 'none' }}
     >
       <div className="bg-white/97 backdrop-blur-sm shadow-2xl rounded-t-2xl border-t border-gray-200 flex flex-col h-full">
-        {/* ── Handle bar ── */}
+        {/* Handle bar */}
         <div
           className="flex flex-col items-center pt-2 pb-1 cursor-pointer select-none"
           onTouchStart={onTouchStart}
@@ -149,10 +160,7 @@ export default function MobileBottomSheet({
           aria-label="Toggle panel"
           role="button"
         >
-          {/* Pill handle */}
           <div className="w-10 h-1 bg-gray-300 rounded-full mb-2" />
-
-          {/* Stats row + chevron */}
           <div className="flex items-center justify-between w-full px-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
@@ -160,17 +168,17 @@ export default function MobileBottomSheet({
                 <span className="text-xs font-semibold text-gray-700">
                   {municipalityCount}
                   <span className="text-gray-400 font-normal">/{totalMunicipalities}</span>
-                  <span className="text-gray-500 font-normal"> municípios</span>
+                  <span className="text-gray-500 font-normal"> {t('municipalities.label')}</span>
                 </span>
               </div>
               {filterCount > 0 && (
                 <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-full">
-                  {filterCount} filtro{filterCount > 1 ? 's' : ''}
+                  {filterCount} {filterCount > 1 ? t('status.filters') : t('status.filter')}
                 </span>
               )}
               {activeLayerCount > 1 && (
                 <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded-full">
-                  {activeLayerCount} camadas
+                  {activeLayerCount} {t('status.layers')}
                 </span>
               )}
             </div>
@@ -182,7 +190,7 @@ export default function MobileBottomSheet({
           </div>
         </div>
 
-        {/* ── Content (hidden when collapsed) ── */}
+        {/* Content (hidden when collapsed) */}
         {sheetState !== 'collapsed' && (
           <>
             {/* Tab bar */}
@@ -196,7 +204,7 @@ export default function MobileBottomSheet({
                 }`}
               >
                 <Search className="w-4 h-4" />
-                Filtros
+                {t('panels.filters')}
                 {filterCount > 0 && (
                   <span className="ml-1 px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
                     {filterCount}
@@ -212,20 +220,20 @@ export default function MobileBottomSheet({
                 }`}
               >
                 <Layers className="w-4 h-4" />
-                Camadas
+                {t('panels.layers')}
               </button>
             </div>
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
 
-              {/* ──── FILTERS TAB ──── */}
+              {/* FILTERS TAB */}
               {activeTab === 'filters' && (
                 <>
                   {/* Search */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                      Buscar Município
+                      {t('search.label')}
                     </label>
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -233,7 +241,7 @@ export default function MobileBottomSheet({
                         type="text"
                         value={searchQuery}
                         onChange={e => onSearchChange(e.target.value)}
-                        placeholder="Nome ou código IBGE..."
+                        placeholder={t('search.placeholder')}
                         className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                       {searchQuery && (
@@ -247,10 +255,10 @@ export default function MobileBottomSheet({
                     </div>
                   </div>
 
-                  {/* Visualization mode - pill toggle */}
+                  {/* Visualization mode */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Modo de Visualização
+                      {t('vizModes.label')}
                     </label>
                     <div className="flex rounded-xl overflow-hidden border border-gray-300">
                       <button
@@ -261,7 +269,7 @@ export default function MobileBottomSheet({
                             : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                       >
-                        🗺️ Coroplético
+                        {t('vizModes.choropleth')}
                       </button>
                       <button
                         onClick={() => onVisualizationModeChange('heatmap')}
@@ -271,7 +279,7 @@ export default function MobileBottomSheet({
                             : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                       >
-                        🔥 Calor
+                        {t('vizModes.heatmap')}
                       </button>
                     </div>
                   </div>
@@ -282,12 +290,12 @@ export default function MobileBottomSheet({
                       onClick={() => setShowBiomassTypes(!showBiomassTypes)}
                       className="flex items-center justify-between w-full text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2"
                     >
-                      <span>⚡ Tipo de Biomassa</span>
+                      <span>{t('biomassTypes.label')}</span>
                       {showBiomassTypes ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                     {showBiomassTypes && (
                       <div className="grid grid-cols-2 gap-2">
-                        {biomassOptions.map(opt => (
+                        {BIOMASS_META.map(opt => (
                           <button
                             key={opt.value}
                             onClick={() => onBiomassTypeChange(opt.value)}
@@ -298,7 +306,7 @@ export default function MobileBottomSheet({
                             }`}
                           >
                             <span className="text-base">{opt.icon}</span>
-                            {opt.label}
+                            {t(`biomassTypes.${opt.value}`)}
                           </button>
                         ))}
                       </div>
@@ -312,7 +320,7 @@ export default function MobileBottomSheet({
                       className="flex items-center justify-between w-full text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2"
                     >
                       <span>
-                        🌾 Filtrar por Resíduo
+                        {t('residueFilter.label')}
                         {selectedResidues.length > 0 && (
                           <span className="ml-1.5 text-green-700">({selectedResidues.length})</span>
                         )}
@@ -327,38 +335,36 @@ export default function MobileBottomSheet({
                             onClick={() => onResiduesChange([])}
                             className="w-full text-xs text-red-600 font-medium bg-red-50 rounded-lg px-3 py-2 hover:bg-red-100 transition-colors text-left"
                           >
-                            ✕ Limpar filtros ({selectedResidues.length})
+                            {t('residueFilter.clearFilters')} ({selectedResidues.length})
                           </button>
                         )}
 
                         {(['agricultural', 'livestock', 'urban'] as const).map(cat => {
                           const catIcon = cat === 'agricultural' ? '🌾' : cat === 'livestock' ? '🐄' : '🏙️';
-                          const catLabel = cat === 'agricultural' ? 'Agrícola' : cat === 'livestock' ? 'Pecuária' : 'Urbano';
-                          const catColor = cat === 'agricultural' ? 'bg-green-100 text-green-800 border-green-300' : cat === 'livestock' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 'bg-blue-100 text-blue-800 border-blue-300';
                           const activeColor = cat === 'agricultural' ? 'bg-green-200 border-green-500' : cat === 'livestock' ? 'bg-yellow-200 border-yellow-500' : 'bg-blue-200 border-blue-500';
 
                           return (
                             <div key={cat}>
                               <div className="text-[10px] text-gray-500 font-bold uppercase mb-1.5 flex items-center gap-1">
-                                {catIcon} {catLabel}
+                                {catIcon} {t(`categories.${cat}`)}
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {residueOptions
+                                {RESIDUE_META
                                   .filter(r => r.category === cat)
                                   .map(residue => {
-                                    const isSelected = selectedResidues.includes(residue.value as ResidueType);
+                                    const isSelected = selectedResidues.includes(residue.value);
                                     return (
                                       <button
                                         key={residue.value}
-                                        onClick={() => handleResidueToggle(residue.value as ResidueType)}
+                                        onClick={() => handleResidueToggle(residue.value)}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                                           isSelected
-                                            ? `${activeColor}`
-                                            : `bg-white border-gray-200 text-gray-600 hover:bg-gray-50`
+                                            ? activeColor
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                                         }`}
                                       >
                                         <span>{residue.icon}</span>
-                                        {residue.label}
+                                        {t(`residues.${residue.value}`)}
                                       </button>
                                     );
                                   })}
@@ -372,13 +378,13 @@ export default function MobileBottomSheet({
                 </>
               )}
 
-              {/* ──── LAYERS TAB ──── */}
+              {/* LAYERS TAB */}
               {activeTab === 'layers' && (
                 <>
                   {/* Municipality count bar */}
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-600 font-medium">Municípios Visíveis</span>
+                      <span className="text-xs text-gray-600 font-medium">{t('municipalities.visible')}</span>
                       <div className="flex items-baseline gap-1">
                         <span className="text-lg font-bold text-green-700">{municipalityCount}</span>
                         <span className="text-xs text-gray-500">/ {totalMunicipalities}</span>
@@ -395,7 +401,7 @@ export default function MobileBottomSheet({
                   {/* Opacity slider */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Opacidade: {Math.round(opacity * 100)}%
+                      {t('opacity.label')}: {Math.round(opacity * 100)}%
                     </label>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-400">30%</span>
@@ -415,7 +421,7 @@ export default function MobileBottomSheet({
                   {/* Layer toggles */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-                      Camadas do Mapa
+                      {t('layers.mapLayers')}
                     </label>
                     <div className="space-y-1.5">
                       {layers.map(layer => (
@@ -434,7 +440,7 @@ export default function MobileBottomSheet({
                             className="w-4 h-4 text-green-600 rounded"
                           />
                           <span className="text-sm text-gray-700 font-medium leading-tight">
-                            {layer.icon} {layer.name}
+                            {layer.icon} {getLayerName(layer.id)}
                           </span>
                         </label>
                       ))}

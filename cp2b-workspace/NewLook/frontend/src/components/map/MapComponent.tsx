@@ -9,6 +9,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import dynamic from 'next/dynamic';
 import { useGeospatialData } from '@/hooks/useGeospatialData';
@@ -34,8 +35,8 @@ const HeatmapLegend = dynamic(() => import('./HeatmapLegend'), { ssr: false });
 const MobileBottomSheet = dynamic(() => import('./MobileBottomSheet'), { ssr: false });
 const QuickFilterBar = dynamic(() => import('./QuickFilterBar'), { ssr: false });
 
-// Desktop bottom drawer (replaces all floating panels)
-const DesktopBottomDrawer = dynamic(() => import('./DesktopBottomDrawer'), { ssr: false });
+// Desktop left panel (replaces bottom drawer with compact vertical control)
+const DesktopLeftPanel = dynamic(() => import('./DesktopLeftPanel'), { ssr: false });
 
 // Profile + Tooltip overlays
 const MunicipalityProfilePanel = dynamic(() => import('./MunicipalityProfilePanel'), { ssr: false });
@@ -84,6 +85,7 @@ export default function MapComponent({
   searchQuery: propSearchQuery = '',
   onSearchChange,
 }: MapComponentProps = {}) {
+  const t = useTranslations('Map');
   const { data, loading, error } = useGeospatialData();
   const [isMounted, setIsMounted] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
@@ -317,7 +319,7 @@ export default function MapComponent({
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl text-center">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
-            Erro ao Carregar Mapa
+            {t('errors.loadingError')}
           </h2>
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded p-4 mb-6 text-left">
             <p className="font-mono text-sm text-red-800 break-words">{error.message}</p>
@@ -326,7 +328,7 @@ export default function MapComponent({
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            Recarregar Página
+            {t('errors.reloadPage')}
           </button>
         </div>
       </div>
@@ -338,12 +340,12 @@ export default function MapComponent({
       <div className="w-full h-full bg-gray-100 dark:bg-slate-900 flex items-center justify-center p-8">
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-8 max-w-2xl text-center">
           <div className="text-6xl mb-4">📭</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Nenhum Dado Disponível</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('errors.noData')}</h2>
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            Tentar Novamente
+            {t('errors.tryAgain')}
           </button>
         </div>
       </div>
@@ -427,9 +429,9 @@ export default function MapComponent({
         )}
       </MapContainer>
 
-      {/* ── Desktop Bottom Drawer (replaces all floating panels) ── */}
+      {/* ── Desktop Left Panel (compact vertical controls) ── */}
       {isMounted && (
-        <DesktopBottomDrawer
+        <DesktopLeftPanel
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           selectedResidues={selectedResidues}

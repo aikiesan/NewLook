@@ -57,9 +57,7 @@ const LeftFilterPanel = dynamic(() => import('./LeftFilterPanel'), {
   ssr: false,
 });
 
-const RightLayerPanel = dynamic(() => import('./RightLayerPanel'), {
-  ssr: false,
-});
+// DesktopLeftPanel replaces the old RightLayerPanel - see MapComponent.tsx for integration
 
 // São Paulo state center coordinates
 const SAO_PAULO_CENTER: [number, number] = [-22.0, -48.5];
@@ -270,17 +268,8 @@ export default function EnhancedMapExample() {
         />
       )}
 
-      {/* Right Layer Panel */}
-      {isMounted && (
-        <RightLayerPanel
-          opacity={opacity}
-          onOpacityChange={setOpacity}
-          layers={layers}
-          onLayerToggle={handleLayerToggle}
-          municipalityCount={displayData.features.length}
-          totalMunicipalities={data.features.length}
-        />
-      )}
+      {/* Desktop Left Panel (replaces old RightLayerPanel + DesktopBottomDrawer) */}
+      {/* Note: DesktopLeftPanel requires additional props - see MapComponent.tsx for full integration */}
 
       {/* Floating Action Buttons - Bottom Right */}
       <div className="absolute bottom-8 right-8 z-[900] flex flex-col space-y-3 animate-slide-in-right">
