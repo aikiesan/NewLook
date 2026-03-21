@@ -14,7 +14,10 @@
     },
     "nav_descriptions": {
       "hub": "Resource Center",
-      "map": "Interactive SP Map"
+      "map": "Interactive SP Map",
+      "advanced": "MCDA and statistics",
+      "scientific_database": "Scientific database",
+      "proximity": "Proximity analysis"
     },
     "auth": {
       "login": "Login",
@@ -225,7 +228,118 @@
   },
   "Map": {
     "title": "Interactive Map",
-    "legend": "Map Legend"
+    "legend": "Map Legend",
+    "panels": {
+      "filters": "Filters",
+      "layers": "Layers",
+      "insights": "Insights",
+      "dataSources": "Data Sources",
+      "tools": "Tools"
+    },
+    "search": {
+      "label": "Search Municipality",
+      "placeholder": "Name or IBGE code..."
+    },
+    "residues": {
+      "sugarcane": "Sugarcane",
+      "soybean": "Soybean",
+      "corn": "Corn",
+      "coffee": "Coffee",
+      "citrus": "Citrus",
+      "cattle": "Cattle",
+      "swine": "Swine",
+      "poultry": "Poultry",
+      "aquaculture": "Aquaculture",
+      "rsu": "MSW",
+      "rpo": "POW"
+    },
+    "categories": {
+      "agricultural": "Agricultural",
+      "livestock": "Livestock",
+      "urban": "Urban"
+    },
+    "residueFilter": {
+      "label": "Filter by Residue",
+      "clear": "Clear",
+      "clearFilters": "Clear filters"
+    },
+    "biomassTypes": {
+      "label": "Biomass Type",
+      "total": "Total Potential",
+      "agricultural": "Agricultural",
+      "livestock": "Livestock",
+      "urban": "Urban"
+    },
+    "vizModes": {
+      "label": "Visualization Mode",
+      "choropleth": "Choropleth",
+      "heatmap": "Heat",
+      "bubble": "Bubbles"
+    },
+    "opacity": {
+      "label": "Map Opacity"
+    },
+    "municipalities": {
+      "visible": "Visible Municipalities",
+      "label": "municipalities"
+    },
+    "layers": {
+      "municipalitiesSP": "SP Municipalities",
+      "intermediateRegions": "Intermediate Regions (IBGE)",
+      "mapbiomas": "MapBiomas 2024",
+      "biogasPlants": "Biomass Plants (MapBiomas+ANP, 2024)",
+      "pipelines": "Pipelines (EPE, 2024)",
+      "substations": "Substations (EPE, 2024)",
+      "transmissionLines": "Transmission Lines (EPE, 2023)",
+      "etes": "WWTPs (SNIS, 2023)",
+      "railways": "Highways (EPE, 2023)",
+      "mapLayers": "Map Layers"
+    },
+    "layerGroups": {
+      "base": "Base",
+      "environmental": "Environmental",
+      "infrastructure": "Infrastructure"
+    },
+    "tools": {
+      "compare": "Compare",
+      "compareDesc": "municipalities side by side (up to 4)",
+      "export": "Export",
+      "exportDesc": "filtered data in CSV or GeoJSON",
+      "share": "Share",
+      "shareDesc": "URL includes all active filters",
+      "viewProfile": "View Profile",
+      "viewProfileDesc": "Detailed page for selected municipality",
+      "open": "Open",
+      "copyUrl": "Copy URL"
+    },
+    "dataSources": {
+      "agricultural": "Agricultural",
+      "livestock": "Livestock",
+      "urban": "Urban",
+      "infrastructure": "Infrastructure"
+    },
+    "insights": {
+      "totalBiogas": "Total Biogas Potential — SP",
+      "sectorBreakdown": "Distribution by Sector",
+      "top5": "Top 5 Municipalities",
+      "noData": "Data not available."
+    },
+    "status": {
+      "filter": "filter",
+      "filters": "filters",
+      "layers": "layers",
+      "comingSoon": "COMING SOON"
+    },
+    "errors": {
+      "loadingError": "Error Loading Map",
+      "noData": "No Data Available",
+      "reloadPage": "Reload Page",
+      "tryAgain": "Try Again"
+    },
+    "closePanel": "Close panel",
+    "expandPanel": "Expand filter panel",
+    "vis": "Vis",
+    "clearAll": "Clear"
   },
   "Register": {
     "title": "Create Account",

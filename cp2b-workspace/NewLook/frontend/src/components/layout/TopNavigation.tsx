@@ -9,6 +9,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   Leaf,
   Map,
@@ -28,35 +29,35 @@ import { logger } from '@/lib/logger'
 
 interface NavItem {
   href: string
-  label: string
+  labelKey: string
   icon: React.ReactNode
-  description?: string
+  descriptionKey?: string
 }
 
-const navItems: NavItem[] = [
+const NAV_ITEMS: NavItem[] = [
   {
     href: '/dashboard',
-    label: 'Mapa',
+    labelKey: 'nav.map',
     icon: <Map className="h-4 w-4" />,
-    description: 'Mapa interativo'
+    descriptionKey: 'nav_descriptions.map'
   },
   {
     href: '/dashboard/advanced-analysis',
-    label: 'Análises',
+    labelKey: 'nav.advanced',
     icon: <BarChart3 className="h-4 w-4" />,
-    description: 'MCDA e estatísticas'
+    descriptionKey: 'nav_descriptions.advanced'
   },
   {
     href: '/dashboard/scientific-database',
-    label: 'Científica',
+    labelKey: 'nav.scientific_database',
     icon: <Database className="h-4 w-4" />,
-    description: 'Base de dados científica'
+    descriptionKey: 'nav_descriptions.scientific_database'
   },
   {
     href: '/dashboard/proximity',
-    label: 'Proximidade',
+    labelKey: 'nav.proximity',
     icon: <GitCompare className="h-4 w-4" />,
-    description: 'Análise de proximidade'
+    descriptionKey: 'nav_descriptions.proximity'
   },
 ]
 
@@ -65,6 +66,7 @@ export default function TopNavigation() {
   const { user, logout, isAuthenticated } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const t = useTranslations('common')
 
   const handleLogout = async () => {
     try {
@@ -109,7 +111,7 @@ export default function TopNavigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -124,17 +126,15 @@ export default function TopNavigation() {
                 aria-current={isActive(item.href) ? 'page' : undefined}
               >
                 {item.icon}
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Link>
             ))}
           </div>
 
           {/* Theme Toggle + User Menu (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* User Menu */}
             {isAuthenticated && user ? (
               <div className="relative">
                 <button
@@ -153,7 +153,6 @@ export default function TopNavigation() {
                   />
                 </button>
 
-                {/* Dropdown Menu */}
                 {userMenuOpen && (
                   <div
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200"
@@ -162,13 +161,13 @@ export default function TopNavigation() {
                   >
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.full_name || 'Usuário'}
+                        {user.full_name || t('auth.user')}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
                         {user.email}
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        {user.role === 'admin' ? 'Administrador' : 'Autenticado'}
+                        {user.role === 'admin' ? t('auth.admin') : t('auth.authenticated')}
                       </p>
                     </div>
                     <Link
@@ -178,7 +177,7 @@ export default function TopNavigation() {
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <Settings className="h-4 w-4" aria-hidden="true" />
-                      Configurações
+                      {t('auth.settings')}
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -186,7 +185,7 @@ export default function TopNavigation() {
                       role="menuitem"
                     >
                       <LogOut className="h-4 w-4" aria-hidden="true" />
-                      Sair
+                      {t('auth.logout')}
                     </button>
                   </div>
                 )}
@@ -196,7 +195,7 @@ export default function TopNavigation() {
                 href="/login"
                 className="px-4 py-2 text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white"
               >
-                Entrar
+                {t('auth.login')}
               </Link>
             )}
           </div>
@@ -208,7 +207,7 @@ export default function TopNavigation() {
               className="inline-flex items-center justify-center p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-label={mobileMenuOpen ? t('menu.close') : t('menu.open')}
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" aria-hidden="true" />
@@ -226,7 +225,7 @@ export default function TopNavigation() {
             id="mobile-menu"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
+              {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -242,9 +241,9 @@ export default function TopNavigation() {
                 >
                   {item.icon}
                   <div>
-                    <span className="block">{item.label}</span>
-                    {item.description && (
-                      <span className="text-xs text-green-200">{item.description}</span>
+                    <span className="block">{t(item.labelKey)}</span>
+                    {item.descriptionKey && (
+                      <span className="text-xs text-green-200">{t(item.descriptionKey)}</span>
                     )}
                   </div>
                 </Link>
@@ -258,7 +257,7 @@ export default function TopNavigation() {
                   <User className="h-8 w-8 text-white p-1 bg-white/20 rounded-full" />
                   <div>
                     <p className="text-sm font-medium text-white">
-                      {user.full_name || 'Usuário'}
+                      {user.full_name || t('auth.user')}
                     </p>
                     <p className="text-xs text-green-200">{user.email}</p>
                   </div>
@@ -268,7 +267,7 @@ export default function TopNavigation() {
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm text-white bg-red-500/80 hover:bg-red-500 rounded-lg"
                 >
                   <LogOut className="h-4 w-4" aria-hidden="true" />
-                  Sair da conta
+                  {t('auth.logout_account')}
                 </button>
               </div>
             ) : (
@@ -278,7 +277,7 @@ export default function TopNavigation() {
                   className="block w-full px-4 py-2 text-center text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Entrar
+                  {t('auth.login')}
                 </Link>
               </div>
             )}

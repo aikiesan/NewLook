@@ -18,6 +18,11 @@ jest.mock('next/dynamic', () => ({
   },
 }));
 
+// Mock next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 // Mock Leaflet CSS imports
 jest.mock('leaflet/dist/leaflet.css', () => ({}));
 jest.mock('@/lib/leafletConfig', () => ({}));
@@ -83,10 +88,10 @@ jest.mock('./LeftFilterPanel', () => ({
   ),
 }));
 
-jest.mock('./RightLayerPanel', () => ({
+jest.mock('./DesktopLeftPanel', () => ({
   __esModule: true,
   default: ({ layers, onLayerToggle, municipalityCount, totalMunicipalities }: any) => (
-    <div data-testid="right-layer-panel">
+    <div data-testid="desktop-left-panel">
       <div data-testid="municipality-count">{municipalityCount} / {totalMunicipalities}</div>
       {layers.map((layer: any) => (
         <button
@@ -711,7 +716,7 @@ describe('MapComponent', () => {
       render(<MapComponent onOpacityChange={handleOpacityChange} />);
       jest.advanceTimersByTime(1500);
 
-      // Callback should be passed to RightLayerPanel
+      // Callback should be passed to DesktopLeftPanel
       waitFor(() => {
         expect(screen.getByTestId('right-layer-panel')).toBeInTheDocument();
       });

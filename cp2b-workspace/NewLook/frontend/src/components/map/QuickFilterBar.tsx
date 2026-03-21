@@ -7,6 +7,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import type { BiomassType } from './FloatingControlPanel';
 import type { VisualizationMode } from './LeftFilterPanel';
 import type { ResidueType } from './FloatingControlPanel';
@@ -20,26 +21,6 @@ interface QuickFilterBarProps {
   onResiduesChange: (residues: ResidueType[]) => void;
 }
 
-const VIZ_OPTIONS: { value: VisualizationMode; label: string }[] = [
-  { value: 'choropleth', label: '🗺️ Mapa' },
-  { value: 'heatmap', label: '🔥 Calor' },
-  { value: 'bubble', label: '🫧 Bolhas' },
-];
-
-const BIOMASS_OPTIONS: { value: BiomassType; label: string }[] = [
-  { value: 'total', label: '⚡ Total' },
-  { value: 'agricultural', label: '🌾 Agrícola' },
-  { value: 'livestock', label: '🐄 Pecuária' },
-  { value: 'urban', label: '🏙️ Urbano' },
-];
-
-const TOP_RESIDUES: { value: ResidueType; label: string }[] = [
-  { value: 'sugarcane', label: '🌾 Cana' },
-  { value: 'cattle', label: '🐄 Bovinos' },
-  { value: 'swine', label: '🐷 Suínos' },
-  { value: 'rsu', label: '🗑️ RSU' },
-];
-
 export default function QuickFilterBar({
   visualizationMode,
   onVisualizationModeChange,
@@ -48,6 +29,28 @@ export default function QuickFilterBar({
   selectedResidues,
   onResiduesChange,
 }: QuickFilterBarProps) {
+  const t = useTranslations('Map');
+
+  const vizOptions: { value: VisualizationMode; icon: string; key: string }[] = [
+    { value: 'choropleth', icon: '🗺️', key: 'vizModes.choropleth' },
+    { value: 'heatmap', icon: '🔥', key: 'vizModes.heatmap' },
+    { value: 'bubble', icon: '🫧', key: 'vizModes.bubble' },
+  ];
+
+  const biomassOptions: { value: BiomassType; icon: string; key: string }[] = [
+    { value: 'total', icon: '⚡', key: 'biomassTypes.total' },
+    { value: 'agricultural', icon: '🌾', key: 'biomassTypes.agricultural' },
+    { value: 'livestock', icon: '🐄', key: 'biomassTypes.livestock' },
+    { value: 'urban', icon: '🏙️', key: 'biomassTypes.urban' },
+  ];
+
+  const topResidues: { value: ResidueType; icon: string; key: string }[] = [
+    { value: 'sugarcane', icon: '🌾', key: 'residues.sugarcane' },
+    { value: 'cattle', icon: '🐄', key: 'residues.cattle' },
+    { value: 'swine', icon: '🐷', key: 'residues.swine' },
+    { value: 'rsu', icon: '🗑️', key: 'residues.rsu' },
+  ];
+
   const toggleResidue = (r: ResidueType) => {
     const next = selectedResidues.includes(r)
       ? selectedResidues.filter(x => x !== r)
@@ -63,11 +66,9 @@ export default function QuickFilterBar({
         className="flex items-center gap-2 px-3 py-2 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}
       >
-        {/* Divider label */}
-        <span className="text-[10px] text-gray-400 font-semibold uppercase shrink-0">Vis</span>
+        <span className="text-[10px] text-gray-400 font-semibold uppercase shrink-0">{t('vis')}</span>
 
-        {/* Visualization mode chips */}
-        {VIZ_OPTIONS.map(opt => (
+        {vizOptions.map(opt => (
           <button
             key={opt.value}
             onClick={() => onVisualizationModeChange(opt.value)}
@@ -77,15 +78,13 @@ export default function QuickFilterBar({
                 : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
             }`}
           >
-            {opt.label}
+            {opt.icon} {t(opt.key)}
           </button>
         ))}
 
-        {/* Separator */}
         <div className="w-px h-5 bg-gray-300 shrink-0" />
 
-        {/* Biomass type chips */}
-        {BIOMASS_OPTIONS.map(opt => (
+        {biomassOptions.map(opt => (
           <button
             key={opt.value}
             onClick={() => onBiomassTypeChange(opt.value)}
@@ -95,15 +94,13 @@ export default function QuickFilterBar({
                 : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
             }`}
           >
-            {opt.label}
+            {opt.icon} {t(opt.key)}
           </button>
         ))}
 
-        {/* Separator */}
         <div className="w-px h-5 bg-gray-300 shrink-0" />
 
-        {/* Top residue chips */}
-        {TOP_RESIDUES.map(opt => (
+        {topResidues.map(opt => (
           <button
             key={opt.value}
             onClick={() => toggleResidue(opt.value)}
@@ -113,11 +110,10 @@ export default function QuickFilterBar({
                 : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
             }`}
           >
-            {opt.label}
+            {opt.icon} {t(opt.key)}
           </button>
         ))}
 
-        {/* Clear all chip (shown when filters active) */}
         {hasActiveFilters && (
           <>
             <div className="w-px h-5 bg-gray-300 shrink-0" />
@@ -128,7 +124,7 @@ export default function QuickFilterBar({
               }}
               className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 transition-all whitespace-nowrap"
             >
-              ✕ Limpar
+              {t('clearAll')}
             </button>
           </>
         )}
