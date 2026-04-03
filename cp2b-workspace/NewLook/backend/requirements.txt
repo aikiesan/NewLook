@@ -13,7 +13,7 @@ alembic==1.13.0
 # python-jose removed: library is unmaintained and has unfixed CVEs (algorithm confusion).
 # JWT verification is handled by Supabase (supabase.auth.get_user) — no local JWT lib needed.
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.20  # Updated from 0.0.6 — fixes ReDoS (Content-Type), DoS (multipart boundary), arbitrary file write
+python-multipart==0.0.22  # Updated from 0.0.6 — fixes ReDoS (Content-Type), DoS (multipart boundary), arbitrary file write
 
 # Environment and Configuration
 python-dotenv==1.0.0
