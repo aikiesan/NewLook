@@ -10,8 +10,8 @@
  */
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from '@/navigation'
+import { useTranslations } from 'next-intl'
 import {
-  ArrowLeft,
   RefreshCw,
   Download,
   Search,
@@ -130,6 +130,7 @@ function getSectorLabel(sector: SectorType | SectorCode | string): string {
 
 export default function ScientificDatabasePage() {
   const router = useRouter()
+  const t = useTranslations('pages')
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // View mode state - extended with residuosDb
@@ -518,25 +519,13 @@ export default function ScientificDatabasePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
+      {/* Page Title */}
       <div className="bg-gradient-to-r from-cp2b-primary via-cp2b-secondary to-green-600 text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center text-white/90 hover:text-white mb-4 transition-all hover:translate-x-[-4px] group"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2 transition-transform group-hover:translate-x-[-2px]" />
-            Voltar ao Dashboard
-          </button>
-
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2 tracking-tight">
-                Base de Conhecimento Científico
-              </h1>
-              <p className="text-lg text-white/90 max-w-2xl">
-                Dados físico-químicos, cinética de degradação e referências científicas para resíduos de São Paulo
-              </p>
+              <h1 className="text-4xl font-bold mb-2 tracking-tight">{t('scientific_database.title')}</h1>
+              <p className="text-lg text-white/90 max-w-2xl">{t('scientific_database.subtitle')}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -545,13 +534,13 @@ export default function ScientificDatabasePage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
+                {t('scientific_database.refresh')}
               </button>
               <button
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
               >
                 <Download className="h-4 w-4" />
-                Exportar
+                {t('scientific_database.download')}
               </button>
             </div>
           </div>

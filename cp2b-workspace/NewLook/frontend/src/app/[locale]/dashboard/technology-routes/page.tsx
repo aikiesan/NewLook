@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { ReactFlowProvider } from 'reactflow';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
-import Link from 'next/link';
-import { HelpCircle, Info, ChevronLeft } from 'lucide-react';
+import { HelpCircle, Info } from 'lucide-react';
 import 'reactflow/dist/style.css';
 
 // Dynamically import components to avoid SSR issues
@@ -24,6 +23,7 @@ const TemplateLoader = dynamic(() => import('./components/TemplateLoader'), { ss
  * Force redeploy: 2025-12-05
  */
 export default function TechnologyRoutesPage() {
+  const t = useTranslations('pages');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
@@ -58,56 +58,32 @@ export default function TechnologyRoutesPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-cp2b-lime-light/10">
-      {/* PILAR-2b Branded Header */}
-      <header className="bg-gradient-to-r from-cp2b-green to-cp2b-dark-green shadow-md z-20">
+      {/* Page Title Bar */}
+      <div className="bg-gradient-to-r from-cp2b-green to-cp2b-dark-green shadow-md z-20">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 text-white hover:text-cp2b-lime transition-colors"
-              aria-label="Voltar ao Dashboard"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              <span className="text-sm font-medium">Dashboard</span>
-            </Link>
-            <div className="h-6 w-px bg-white/30" />
-            <div className="flex items-center gap-3">
-              <Image
-                src="/images/logotipo-full-black.png"
-                alt="PILAR-2b"
-                width={32}
-                height={32}
-                className="h-8 w-auto brightness-0 invert"
-              />
-              <div>
-                <h1 className="text-lg font-bold text-white">Rotas Tecnológicas</h1>
-                <p className="text-xs text-cp2b-lime-light">Construtor Visual de Processos de Biogás</p>
-              </div>
-            </div>
+          <div>
+            <h1 className="text-lg font-bold text-white">{t('technology_routes.title')}</h1>
+            <p className="text-xs text-cp2b-lime-light">{t('technology_routes.subtitle')}</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowWelcome(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-              aria-label="Ajuda"
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span>Ajuda</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setShowWelcome(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+            aria-label={t('technology_routes.help')}
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>{t('technology_routes.help')}</span>
+          </button>
         </div>
-
         {/* Guide Banner */}
         <div className="bg-cp2b-dark-green/30 px-4 py-2 border-t border-white/10">
           <div className="flex items-start gap-2 text-white/90 text-sm">
             <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <p>
-              <strong>Como usar:</strong> Selecione um resíduo → Escolha os processos → Monte sua rota tecnológica
+              <strong>{t('technology_routes.how_to_use')}:</strong> {t('technology_routes.guide')}
             </p>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Welcome Wizard Overlay - TEMPORARILY DISABLED */}
       {/* {showWelcome && (

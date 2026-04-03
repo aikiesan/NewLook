@@ -8,9 +8,9 @@
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter } from '@/navigation'
 import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import {
-  ArrowLeft,
   MapPin,
   Circle,
   Layers,
@@ -89,6 +89,7 @@ interface AnalysisResult {
 function ProximityAnalysisContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('pages')
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // Analysis state
@@ -271,21 +272,11 @@ function ProximityAnalysisContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with PILAR-2b green gradient */}
-      <div className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-emerald-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center text-white/80 hover:text-white mb-4 transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Voltar ao Dashboard
-          </button>
-
-          <h1 className="text-3xl font-bold mb-2">🎯 Análise de Proximidade</h1>
-          <p className="text-lg text-emerald-100">
-            Análise espacial de potencial de biogás por raio de captação
-          </p>
+      {/* Page Title */}
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-3xl font-bold mb-1">🎯 {t('proximity.title')}</h1>
+          <p className="text-emerald-100">{t('proximity.subtitle')}</p>
         </div>
       </div>
 

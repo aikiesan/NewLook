@@ -8,7 +8,16 @@
     "type": "git",
     "url": "https://github.com/aikiesan/NewLook"
   },
-  "keywords": ["biogas", "bioproducts", "geospatial", "open-source", "next.js", "react", "sustainability", "renewable-energy"],
+  "keywords": [
+    "biogas",
+    "bioproducts",
+    "geospatial",
+    "open-source",
+    "next.js",
+    "react",
+    "sustainability",
+    "renewable-energy"
+  ],
   "author": "NIPE-UNICAMP / PILAR-2b",
   "scripts": {
     "dev": "next dev",
@@ -49,6 +58,7 @@
     "clsx": "^2.1.1",
     "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.441.0",
     "next": "^16.0.8",
     "next-intl": "^4.6.0",

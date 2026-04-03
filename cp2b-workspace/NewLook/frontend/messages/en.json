@@ -353,5 +353,35 @@
     "title": "PILAR-2b - Intelligent Waste Location and Utilization Platform for Biogas and Bioproducts",
     "description": "Open-source geospatial framework for analyzing biogas and bioproduct potential from organic waste in São Paulo state. Interactive mapping, multi-criteria analysis, feedstock-dependent correction factors, and scientific database tools for reproducible research.",
     "keywords": "biogas, bioproducts, renewable energy, São Paulo, geospatial analysis, biomass, MCDA, sustainability, FAPESP, open-source, PILAR-2b, framework, reproducible research"
+  },
+  "pages": {
+    "back_to_dashboard": "Back to Dashboard",
+    "advanced_analysis": {
+      "title": "Advanced Analysis",
+      "subtitle": "Biogas potential with FDE correction factors (FC, FCp, FS, FL)",
+      "methodology": "Methodology",
+      "download": "Download"
+    },
+    "scientific_database": {
+      "title": "Scientific Knowledge Base",
+      "subtitle": "Physico-chemical data, degradation kinetics and scientific references for São Paulo residues",
+      "refresh": "Refresh",
+      "download": "Download"
+    },
+    "proximity": {
+      "title": "Proximity Analysis",
+      "subtitle": "Spatial analysis of biogas potential by collection radius"
+    },
+    "compare": {
+      "title": "Municipality Comparison",
+      "comparing": "Comparing {count} municipalities"
+    },
+    "technology_routes": {
+      "title": "Technology Routes",
+      "subtitle": "Visual Builder for Biogas Processes",
+      "help": "Help",
+      "how_to_use": "How to use",
+      "guide": "Select a residue → Choose processes → Build your technology route"
+    }
   }
 }
