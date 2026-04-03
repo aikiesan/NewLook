@@ -170,15 +170,14 @@ def auth_headers():
 
 @pytest.fixture
 def mock_jwt_decode(monkeypatch):
-    """Mock JWT token decoding"""
-    def mock_decode(token, key, algorithms):
-        return {
-            "sub": "test-user-id",
-            "email": "test@example.com",
-            "exp": 9999999999,
-        }
+    """Mock JWT token decoding.
 
-    monkeypatch.setattr("jose.jwt.decode", mock_decode)
+    python-jose was removed (unmaintained, unfixed CVEs). Auth is delegated to
+    Supabase via supabase.auth.get_user(), so patch that instead if needed.
+    This fixture is kept as a no-op for backward compatibility with any test
+    that requests it by name.
+    """
+    pass  # no-op: jose is no longer a dependency
 
 # Database test fixtures
 @pytest.fixture

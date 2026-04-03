@@ -6,8 +6,9 @@
  * Public version matching the dashboard Sobre page content
  */
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/navigation'
 import Image from 'next/image'
+import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import Timeline, { TimelineEvent } from '@/components/ui/Timeline'
 import NewsletterSignup from '@/components/ui/NewsletterSignup'
@@ -181,6 +182,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <UnifiedHeader variant="public" />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-emerald-900">
         {/* Background Pattern */}
