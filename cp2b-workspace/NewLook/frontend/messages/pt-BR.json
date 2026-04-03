@@ -353,5 +353,35 @@
     "title": "PILAR-2b - Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos",
     "description": "Framework geoespacial open-source para análise do potencial de produção de biogás e bioprodutos a partir de resíduos orgânicos no estado de São Paulo. Mapeamento interativo, análise multicritério, fatores de correção dependentes de resíduos e ferramentas para pesquisa reproduzível.",
     "keywords": "biogás, bioprodutos, energia renovável, São Paulo, análise geoespacial, biomassa, MCDA, sustentabilidade, FAPESP, open-source, PILAR-2b, framework, pesquisa reproduzível"
+  },
+  "pages": {
+    "back_to_dashboard": "Voltar ao Dashboard",
+    "advanced_analysis": {
+      "title": "Análises Avançadas",
+      "subtitle": "Potencial de biogás com fatores de correção FDE (FC, FCp, FS, FL)",
+      "methodology": "Metodologia",
+      "download": "Download"
+    },
+    "scientific_database": {
+      "title": "Base de Conhecimento Científico",
+      "subtitle": "Dados físico-químicos, cinética de degradação e referências científicas para resíduos de São Paulo",
+      "refresh": "Atualizar",
+      "download": "Download"
+    },
+    "proximity": {
+      "title": "Análise de Proximidade",
+      "subtitle": "Análise espacial de potencial de biogás por raio de captação"
+    },
+    "compare": {
+      "title": "Comparação de Municípios",
+      "comparing": "Comparando {count} municípios"
+    },
+    "technology_routes": {
+      "title": "Rotas Tecnológicas",
+      "subtitle": "Construtor Visual de Processos de Biogás",
+      "help": "Ajuda",
+      "how_to_use": "Como usar",
+      "guide": "Selecione um resíduo → Escolha os processos → Monte sua rota tecnológica"
+    }
   }
 }

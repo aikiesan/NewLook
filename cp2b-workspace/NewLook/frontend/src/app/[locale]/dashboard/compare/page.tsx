@@ -3,7 +3,8 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from '@/navigation';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface MunicipalityData {
   id: number;
@@ -24,6 +25,7 @@ interface MunicipalityData {
 function ComparePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('pages');
   const [municipalities, setMunicipalities] = useState<MunicipalityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +119,7 @@ function ComparePageContent() {
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
-            Voltar ao Dashboard
+            {t('back_to_dashboard')}
           </button>
         </div>
       </div>
@@ -126,23 +128,11 @@ function ComparePageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Voltar ao Dashboard
-          </button>
-
-          <h1 className="text-3xl font-bold text-gray-900">
-            Comparação de Municípios
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Comparando {municipalities.length} municípios
-          </p>
+      {/* Page Title */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">{t('compare.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('compare.comparing', { count: municipalities.length })}</p>
         </div>
       </div>
 

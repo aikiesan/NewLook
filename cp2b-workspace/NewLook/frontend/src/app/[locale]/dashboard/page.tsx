@@ -9,7 +9,6 @@
 import { useEffect } from 'react'
 import { useRouter, Link } from '@/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import {
   Map,
   Gauge,
@@ -112,9 +111,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors">
-      {/* Header */}
-      <UnifiedHeader variant="authenticated" />
-
       {/* Main Content */}
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

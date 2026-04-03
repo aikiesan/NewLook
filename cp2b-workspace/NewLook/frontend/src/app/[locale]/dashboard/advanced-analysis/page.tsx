@@ -7,8 +7,8 @@
  */
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from '@/navigation'
+import { useTranslations } from 'next-intl'
 import {
-  ArrowLeft,
   TrendingUp,
   TrendingDown,
   RefreshCw,
@@ -87,6 +87,7 @@ import { logger } from '@/lib/logger'
 
 export default function AdvancedAnalysisPage() {
   const router = useRouter()
+  const t = useTranslations('pages')
   const { user, loading: authLoading, isAuthenticated } = useAuth()
 
   // Helper to convert ResidueCategory to ApiCategory (filters out "industrial")
@@ -431,23 +432,13 @@ export default function AdvancedAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header with gradient and enhanced styling */}
+      {/* Page Title */}
       <div className="bg-gradient-to-r from-cp2b-primary via-cp2b-secondary to-green-600 text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center text-white/90 hover:text-white mb-4 transition-all hover:translate-x-[-4px] group"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2 transition-transform group-hover:translate-x-[-2px]" />
-            Voltar ao Dashboard
-          </button>
-
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2 tracking-tight">Analises Avancadas</h1>
-              <p className="text-lg text-white/90 max-w-2xl">
-                Potencial de biogas com fatores de correcao FDE (FC, FCp, FS, FL)
-              </p>
+              <h1 className="text-4xl font-bold mb-2 tracking-tight">{t('advanced_analysis.title')}</h1>
+              <p className="text-lg text-white/90 max-w-2xl">{t('advanced_analysis.subtitle')}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -455,7 +446,7 @@ export default function AdvancedAnalysisPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
               >
                 <BookOpen className="h-4 w-4" />
-                Metodologia
+                {t('advanced_analysis.methodology')}
               </button>
               <button
                 onClick={() => setShowReferences(true)}
@@ -470,7 +461,7 @@ export default function AdvancedAnalysisPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
               >
                 <RefreshCw className={`h-4 w-4 ${(loadingMunicipalities || loadingStats) ? 'animate-spin' : ''}`} />
-                Atualizar
+                {t('scientific_database.refresh')}
               </button>
               <button
                 onClick={handleExportCSV}
@@ -478,7 +469,7 @@ export default function AdvancedAnalysisPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-all backdrop-blur-sm border border-white/20"
               >
                 <Download className="h-4 w-4" />
-                Exportar CSV
+                {t('advanced_analysis.download')}
               </button>
             </div>
           </div>
