@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from '@/navigation'
 import { useTranslations } from 'next-intl'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import {
   TrendingUp,
   TrendingDown,
@@ -432,6 +433,10 @@ export default function AdvancedAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Breadcrumb items={[
+        { label: t('back_to_dashboard'), href: '/dashboard' },
+        { label: t('advanced_analysis.title') },
+      ]} />
       {/* Page Title */}
       <div className="bg-gradient-to-r from-cp2b-primary via-cp2b-secondary to-green-600 text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

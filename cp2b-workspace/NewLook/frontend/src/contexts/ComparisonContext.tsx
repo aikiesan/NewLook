@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Municipality {
   id: number;
@@ -21,6 +22,7 @@ const ComparisonContext = createContext<ComparisonContextType | undefined>(undef
 
 export function ComparisonProvider({ children }: { children: React.ReactNode }) {
   const [selectedMunicipalities, setSelectedMunicipalities] = useState<Municipality[]>([]);
+  const { addToast } = useToast();
 
   const addMunicipality = useCallback((municipality: Municipality) => {
     setSelectedMunicipalities((prev) => {
@@ -31,13 +33,13 @@ export function ComparisonProvider({ children }: { children: React.ReactNode }) 
 
       // Limit to 4 municipalities for comparison
       if (prev.length >= 4) {
-        alert('Você pode comparar no máximo 4 municípios por vez.');
+        addToast('Você pode comparar no máximo 4 municípios por vez.', 'warning');
         return prev;
       }
 
       return [...prev, municipality];
     });
-  }, []);
+  }, [addToast]);
 
   const removeMunicipality = useCallback((id: number) => {
     setSelectedMunicipalities((prev) => prev.filter((m) => m.id !== id));

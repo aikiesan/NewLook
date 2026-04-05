@@ -745,48 +745,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">PILAR-2b</h3>
-              <p className="text-gray-400 text-sm">
-                Centro Paulista de Estudos em Biogás e Bioprodutos - Plataforma de análise
-                de potencial de biogás do Estado de São Paulo.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">Links Rápidos</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
-                <li><Link href="/map" className="text-gray-400 hover:text-white transition-colors">Mapa Interativo</Link></li>
-                <li><Link href="/login" className="text-gray-400 hover:text-white transition-colors">Login</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">Financiamento</h3>
-              <div className="flex items-center">
-                <Award className="h-8 w-8 text-green-400 mr-3" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium">FAPESP</p>
-                  <p className="text-xs text-gray-400">2025/08745-2</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
-                Vigência: Fev/2025 - Fev/2030
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8">
-            <p className="text-center text-sm text-gray-500">
-              © 2025 PILAR-2b V3 - Centro Paulista de Estudos em Biogás e Bioprodutos.
-              NIPE/UNICAMP. Desenvolvido com tecnologia moderna para o futuro sustentável.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

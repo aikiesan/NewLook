@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 import { ReactFlowProvider } from 'reactflow';
 import dynamic from 'next/dynamic';
 import { HelpCircle, Info } from 'lucide-react';
@@ -58,6 +59,10 @@ export default function TechnologyRoutesPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-cp2b-lime-light/10">
+      <Breadcrumb items={[
+        { label: t('back_to_dashboard'), href: '/dashboard' },
+        { label: t('technology_routes.title') },
+      ]} />
       {/* Page Title Bar */}
       <div className="bg-gradient-to-r from-cp2b-green to-cp2b-dark-green shadow-md z-20">
         <div className="flex items-center justify-between px-4 py-3">

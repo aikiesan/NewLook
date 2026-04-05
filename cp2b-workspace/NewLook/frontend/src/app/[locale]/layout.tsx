@@ -10,6 +10,9 @@ import { QueryProvider } from '@/contexts/QueryProvider'
 import ComparisonBar from '@/components/comparison/ComparisonBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import UnifiedHeader from '@/components/layout/UnifiedHeader'
+import Footer from '@/components/layout/Footer'
+import { ToastProvider } from '@/contexts/ToastContext'
+import ToastContainer from '@/components/ui/ToastContainer'
 import { locales, type Locale } from '@/config/i18n'
 import { logger } from '@/lib/logger'
 
@@ -117,8 +120,8 @@ export default async function LocaleLayout({
             }}
           />
         </head>
-        <body className="font-sans antialiased">
-          <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
+        <body className="font-sans antialiased flex flex-col min-h-screen">
+          <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
             <NextIntlClientProvider
               locale={locale}
               messages={messages}
@@ -127,23 +130,28 @@ export default async function LocaleLayout({
               <QueryProvider>
                 <ThemeProvider>
                   <AuthProvider>
-                    <ComparisonProvider>
-                      <ErrorBoundary>
-                        {/* Skip navigation link for keyboard/screen-reader users */}
-                        <a
-                          href="#main-content"
-                          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 z-[200] px-4 py-2 bg-cp2b-green text-white rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
-                        >
-                          {tLayout('skip_to_content')}
-                        </a>
-                        {/* Persistent header across all pages */}
-                        <UnifiedHeader variant="auto" />
-                        <main id="main-content">
-                          {children}
-                        </main>
-                        <ComparisonBar />
-                      </ErrorBoundary>
-                    </ComparisonProvider>
+                    <ToastProvider>
+                      <ComparisonProvider>
+                        <ErrorBoundary>
+                          {/* Skip navigation link for keyboard/screen-reader users */}
+                          <a
+                            href="#main-content"
+                            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 z-[200] px-4 py-2 bg-cp2b-green text-white rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cp2b-lime"
+                          >
+                            {tLayout('skip_to_content')}
+                          </a>
+                          {/* Persistent header across all pages */}
+                          <UnifiedHeader variant="auto" />
+                          <main id="main-content" className="flex-1">
+                            {children}
+                          </main>
+                          <ComparisonBar />
+                          <Footer />
+                          {/* Global toast notification stack */}
+                          <ToastContainer />
+                        </ErrorBoundary>
+                      </ComparisonProvider>
+                    </ToastProvider>
                   </AuthProvider>
                 </ThemeProvider>
               </QueryProvider>
