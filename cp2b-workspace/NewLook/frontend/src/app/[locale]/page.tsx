@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic'
 import { Link } from '@/navigation'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/contexts/AuthContext'
-import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 
 // Lazy load below-fold and conditional components
@@ -332,18 +331,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors">
-      {/* Skip to main content link for keyboard users */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 bg-cp2b-green text-white px-4 py-2 rounded-md"
-        tabIndex={0}
-      >
-        {t('skip_to_content')}
-      </a>
-
-      {/* Unified Navigation Header - Always public on landing page */}
-      <UnifiedHeader variant="public" />
-
       {/* Hero Section */}
       <section
         id="main-content"
