@@ -35,6 +35,14 @@
     "badge": {
       "beta": "Beta"
     },
+    "theme": {
+      "switch_to_dark": "Switch to dark mode",
+      "switch_to_light": "Switch to light mode"
+    },
+    "lang": {
+      "switch_to_en": "Switch to English",
+      "switch_to_pt": "Mudar para Português"
+    },
     "copyright": "© 2025 PILAR-2b. Intelligent Waste Location and Utilization Platform for Biogas and Bioproducts."
   },
   "auth": {

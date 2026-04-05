@@ -16,7 +16,6 @@
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { Link } from '@/navigation'
-import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import { useGeospatialData } from '@/hooks/useGeospatialData'
 import {
   ArrowLeft,
@@ -125,7 +124,6 @@ export default function MunicipalityPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-        <UnifiedHeader variant="auto" />
         <div className="flex items-center justify-center h-[70vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] mx-auto mb-4" />
@@ -140,7 +138,6 @@ export default function MunicipalityPage() {
   if (error || !municipality) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-        <UnifiedHeader variant="auto" />
         <div className="flex items-center justify-center h-[70vh]">
           <div className="text-center max-w-md">
             <div className="text-5xl mb-4">🏙️</div>
@@ -212,11 +209,6 @@ export default function MunicipalityPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 print:bg-white">
-      {/* Header — hidden in print */}
-      <div className="print:hidden">
-        <UnifiedHeader variant="auto" />
-      </div>
-
       {/* Print header — only in print */}
       <div className="hidden print:block px-8 pt-6 pb-2 border-b">
         <p className="text-xs text-gray-500">PILAR-2b BiogasAtlas · NIPE-UNICAMP · FAPESP 2025/08745-2</p>

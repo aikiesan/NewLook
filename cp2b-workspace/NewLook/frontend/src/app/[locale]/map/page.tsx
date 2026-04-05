@@ -8,7 +8,6 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import UnifiedHeader from '@/components/layout/UnifiedHeader'
 import type { FilterCriteria } from '@/components/dashboard/FilterPanel'
 import type { BiomassType } from '@/components/map/FloatingControlPanel'
 
@@ -44,9 +43,6 @@ export default function PublicMapPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-slate-900 transition-colors">
-      {/* Unified Navigation Header - Public variant */}
-      <UnifiedHeader variant="public" />
-
       {/* Full-Page Map */}
       <main className="flex-1 relative">
         <MapComponent
