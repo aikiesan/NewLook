@@ -206,7 +206,26 @@
     "footer": {
       "fapesp_project": "Processo FAPESP 2025/08745-2",
       "about": "Sobre",
-      "copyright": "© 2025 NIPE-UNICAMP"
+      "copyright": "© 2025 NIPE-UNICAMP",
+      "newsletter_heading": "Receba Nossas Novidades",
+      "newsletter_desc": "Inscreva-se para receber novidades, análises e informações sobre biogás do PILAR-2b.",
+      "newsletter_name_placeholder": "Seu nome (opcional)",
+      "newsletter_email_placeholder": "Seu e-mail",
+      "newsletter_submit": "Inscrever",
+      "newsletter_success": "Obrigado! Você receberá nossas novidades em breve.",
+      "newsletter_error": "Por favor, insira um e-mail válido.",
+      "quick_links": "Links Rápidos",
+      "connect": "Conecte-se",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Uso",
+      "back_to_top": "Voltar ao topo",
+      "platform_acronym": "Plataforma Inteligente de Localização e Aproveitamento de Resíduos",
+      "platform_2b": "Biogás e Bioprodutos",
+      "institution": "NIPE-UNICAMP · Campinas, SP",
+      "whatsapp_label": "WhatsApp PILAR-2b",
+      "instagram_label": "Instagram @centro_biogas_cp2b",
+      "linkedin_label": "LinkedIn PILAR-2b / CP2b",
+      "youtube_label": "YouTube CP2b"
     },
     "navigation": {
       "previous": "Anterior",

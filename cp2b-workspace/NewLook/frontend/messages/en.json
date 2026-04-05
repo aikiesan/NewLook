@@ -206,7 +206,26 @@
     "footer": {
       "fapesp_project": "FAPESP Grant 2025/08745-2",
       "about": "About",
-      "copyright": "© 2025 NIPE-UNICAMP"
+      "copyright": "© 2025 NIPE-UNICAMP",
+      "newsletter_heading": "Get Our Updates",
+      "newsletter_desc": "Subscribe to receive PILAR-2b news, analyses, and biogas sector insights.",
+      "newsletter_name_placeholder": "Your name (optional)",
+      "newsletter_email_placeholder": "Your email",
+      "newsletter_submit": "Subscribe",
+      "newsletter_success": "Thank you! You'll receive our updates soon.",
+      "newsletter_error": "Please enter a valid email.",
+      "quick_links": "Quick Links",
+      "connect": "Connect",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "back_to_top": "Back to top",
+      "platform_acronym": "Intelligent Platform for Location and Utilization of Residues",
+      "platform_2b": "Biogas and Bioproducts",
+      "institution": "NIPE-UNICAMP · Campinas, SP",
+      "whatsapp_label": "WhatsApp PILAR-2b",
+      "instagram_label": "Instagram @centro_biogas_cp2b",
+      "linkedin_label": "LinkedIn PILAR-2b / CP2b",
+      "youtube_label": "YouTube CP2b"
     },
     "navigation": {
       "previous": "Previous",
