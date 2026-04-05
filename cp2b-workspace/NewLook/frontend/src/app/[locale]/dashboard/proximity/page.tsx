@@ -9,6 +9,7 @@ import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter } from '@/navigation'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import dynamic from 'next/dynamic'
 import {
   MapPin,
@@ -272,6 +273,10 @@ function ProximityAnalysisContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Breadcrumb items={[
+        { label: t('back_to_dashboard'), href: '/dashboard' },
+        { label: t('proximity.title') },
+      ]} />
       {/* Page Title */}
       <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

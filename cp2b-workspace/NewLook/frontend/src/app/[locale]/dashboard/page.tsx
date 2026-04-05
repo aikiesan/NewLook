@@ -9,6 +9,7 @@
 import { useEffect } from 'react'
 import { useRouter, Link } from '@/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { SkeletonDashboard } from '@/components/ui/Skeleton'
 import {
   Map,
   Gauge,
@@ -34,14 +35,7 @@ export default function DashboardPage() {
 
   // Show loading state while checking authentication
   if (loading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#1E5128] dark:border-emerald-500 mx-auto"></div>
-          <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg">Carregando dashboard...</p>
-        </div>
-      </div>
-    )
+    return <SkeletonDashboard />
   }
 
   // If not loading but no user, redirect (handled by useEffect above)

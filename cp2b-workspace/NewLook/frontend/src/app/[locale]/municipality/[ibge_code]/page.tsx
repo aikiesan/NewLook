@@ -16,6 +16,7 @@
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { Link } from '@/navigation'
+import { SkeletonMunicipalityPage } from '@/components/ui/Skeleton'
 import { useGeospatialData } from '@/hooks/useGeospatialData'
 import {
   ArrowLeft,
@@ -123,14 +124,7 @@ export default function MunicipalityPage() {
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-        <div className="flex items-center justify-center h-[70vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E5128] mx-auto mb-4" />
-            <p className="text-gray-500">Carregando dados...</p>
-          </div>
-        </div>
-      </div>
+      <SkeletonMunicipalityPage />
     )
   }
 

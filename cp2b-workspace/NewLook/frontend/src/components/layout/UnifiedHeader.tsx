@@ -103,7 +103,7 @@ export default function UnifiedHeader({ variant = 'auto' }: UnifiedHeaderProps) 
       logo: '/images/logotipo-full-black.png',
       logoClass: '',
       navLink: 'text-cp2b-gray-600 hover:text-cp2b-green',
-      navLinkActive: 'text-cp2b-gray-900',
+      navLinkActive: 'text-cp2b-green font-semibold relative after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:bg-cp2b-green after:rounded-full',
       mobileMenu: 'bg-white border-t border-gray-200',
       toggleBg: 'bg-gray-100 hover:bg-gray-200',
       toggleText: 'text-gray-700',
