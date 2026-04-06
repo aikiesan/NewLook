@@ -236,6 +236,9 @@
       "aria_label": "Assistir demonstração em vídeo da plataforma"
     }
   },
+  "_DEPRECATED_STUBS": {
+    "_note": "Home, About, Dashboard, Login, Register, Settings são scaffolding legado não utilizado. Namespaces ativos: landing, auth, common, Map, pages, dashboard_hub, settings_page, metadata."
+  },
   "Home": {
     "title": "Bem-vindo",
     "description": "Sua descrição aqui"
@@ -415,7 +418,20 @@
       "error": "Erro ao carregar dados. Tente novamente.",
       "no_municipalities": "Nenhum município selecionado para comparação.",
       "unit_m3_year": "m³/ano",
-      "unit_km2": "km²"
+      "unit_km2": "km²",
+      "min_municipalities_error": "Selecione pelo menos 2 municípios para comparar",
+      "none_found": "Nenhum município encontrado",
+      "loading_comparison": "Carregando comparação...",
+      "ibge_code": "IBGE",
+      "biogas_section": "POTENCIAL DE BIOGÁS",
+      "energy_section": "POTENCIAL ENERGÉTICO E AMBIENTAL",
+      "row_population_density": "Densidade Populacional (hab/km²)",
+      "row_total_biogas": "Biogás Total (m³/ano)",
+      "row_agri_biogas": "Biogás Agrícola (m³/ano)",
+      "row_live_biogas": "Biogás Pecuário (m³/ano)",
+      "row_urban_biogas": "Biogás Urbano (m³/ano)",
+      "row_energy": "Potencial Energético (MWh/ano)",
+      "row_co2": "Redução de CO₂ (ton/ano)"
     },
     "technology_routes": {
       "title": "Rotas Tecnológicas",
@@ -435,6 +451,14 @@
       "sector_urban": "Urbano",
       "biogas_profile": "Perfil de Biogás",
       "copy_url": "URL copiada!"
+    },
+    "dashboard_about": {
+      "title": "Sobre o PILAR-2b",
+      "redirecting": "Redirecionando para o NIPE Unicamp...",
+      "click_here": "Clique aqui se não for redirecionado automaticamente"
+    },
+    "settings": {
+      "title": "Configurações"
     }
   },
   "dashboard_hub": {

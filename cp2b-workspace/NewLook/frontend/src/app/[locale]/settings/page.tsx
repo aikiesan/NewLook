@@ -8,10 +8,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Settings, User, Bell, Palette, Shield, HelpCircle, Save, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardLayout } from '@/components/layout'
 import { logger } from '@/lib/logger'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs'
 
 interface UserSettings {
   notifications: {
@@ -34,6 +37,8 @@ interface UserSettings {
 export default function SettingsPage() {
   const router = useRouter()
   const { user, loading, isAuthenticated } = useAuth()
+  const t = useTranslations('settings_page')
+  const breadcrumbs = useBreadcrumbs()
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -55,7 +60,6 @@ export default function SettingsPage() {
     },
   })
 
-  // Load settings from localStorage on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('cp2b-settings')
     if (savedSettings) {
@@ -76,12 +80,8 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Save to localStorage
       localStorage.setItem('cp2b-settings', JSON.stringify(settings))
-
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500))
-
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (error) {
@@ -95,7 +95,7 @@ export default function SettingsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" role="status" aria-label="Carregando"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" role="status" aria-label={t('loading')}></div>
         </div>
       </DashboardLayout>
     )
@@ -105,39 +105,44 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
+      {/* Breadcrumb */}
+      <div className="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
+        <Breadcrumb items={breadcrumbs} />
+      </div>
+
       <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gray-50 dark:bg-slate-900 transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                 <Settings className="h-8 w-8 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                Configurações
+                {t('title')}
               </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400 dark:text-gray-400">
-                Gerencie suas preferências e configurações de conta
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {t('subtitle')}
               </p>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
-              aria-label="Salvar configurações"
+              aria-label={t('save')}
             >
               {saved ? (
                 <>
                   <Check className="h-4 w-4" aria-hidden="true" />
-                  Salvo!
+                  {t('saved')}
                 </>
               ) : saving ? (
                 <>
                   <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-                  Salvando...
+                  {t('saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" aria-hidden="true" />
-                  Salvar
+                  {t('save')}
                 </>
               )}
             </button>
@@ -154,27 +159,27 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <h2 id="profile-heading" className="font-semibold text-gray-900 dark:text-gray-100">
-                      Perfil
+                      {t('profile_heading')}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      Suas informações pessoais
-                    </p>
+                    <p className="text-sm text-gray-500">{t('profile_subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6">
                 <dl className="space-y-4">
                   <div className="flex justify-between">
-                    <dt className="text-sm text-gray-500">Nome</dt>
-                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.full_name || 'Não definido'}</dd>
+                    <dt className="text-sm text-gray-500">{t('name')}</dt>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.full_name || t('not_set')}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-sm text-gray-500">Email</dt>
-                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email || 'Não definido'}</dd>
+                    <dt className="text-sm text-gray-500">{t('email')}</dt>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email || t('not_set')}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-sm text-gray-500">Função</dt>
-                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.role === 'admin' ? 'Administrador' : 'Usuário'}</dd>
+                    <dt className="text-sm text-gray-500">{t('role')}</dt>
+                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {user.role === 'admin' ? t('role_admin') : t('role_user')}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -189,106 +194,44 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <h2 id="notifications-heading" className="font-semibold text-gray-900 dark:text-gray-100">
-                      Notificações
+                      {t('notifications_heading')}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      Configure suas preferências de notificação
-                    </p>
+                    <p className="text-sm text-gray-500">{t('notifications_subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="notif-email" className="text-sm text-gray-700">
-                    Notificações por e-mail
-                  </label>
-                  <button
-                    id="notif-email"
-                    role="switch"
-                    aria-checked={settings.notifications.email}
-                    onClick={() => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, email: !settings.notifications.email }
-                    })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.notifications.email ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
-                    aria-label="Ativar notificações por e-mail"
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.notifications.email ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label htmlFor="notif-browser" className="text-sm text-gray-700">
-                    Notificações do navegador
-                  </label>
-                  <button
-                    id="notif-browser"
-                    role="switch"
-                    aria-checked={settings.notifications.browser}
-                    onClick={() => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, browser: !settings.notifications.browser }
-                    })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.notifications.browser ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
-                    aria-label="Ativar notificações do navegador"
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.notifications.browser ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label htmlFor="notif-data" className="text-sm text-gray-700">
-                    Atualizações de dados
-                  </label>
-                  <button
-                    id="notif-data"
-                    role="switch"
-                    aria-checked={settings.notifications.dataUpdates}
-                    onClick={() => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, dataUpdates: !settings.notifications.dataUpdates }
-                    })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.notifications.dataUpdates ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
-                    aria-label="Ativar atualizações de dados"
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.notifications.dataUpdates ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label htmlFor="notif-weekly" className="text-sm text-gray-700">
-                    Relatório semanal
-                  </label>
-                  <button
-                    id="notif-weekly"
-                    role="switch"
-                    aria-checked={settings.notifications.weeklyReport}
-                    onClick={() => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, weeklyReport: !settings.notifications.weeklyReport }
-                    })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.notifications.weeklyReport ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`}
-                    aria-label="Ativar relatório semanal"
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.notifications.weeklyReport ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
+                {([
+                  { key: 'email', label: t('notif_email'), field: 'email' },
+                  { key: 'browser', label: t('notif_browser'), field: 'browser' },
+                  { key: 'data', label: t('notif_data'), field: 'dataUpdates' },
+                  { key: 'weekly', label: t('notif_weekly'), field: 'weeklyReport' },
+                ] as const).map(({ key, label, field }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <label htmlFor={`notif-${key}`} className="text-sm text-gray-700">
+                      {label}
+                    </label>
+                    <button
+                      id={`notif-${key}`}
+                      role="switch"
+                      aria-checked={settings.notifications[field as keyof typeof settings.notifications] as boolean}
+                      onClick={() => setSettings({
+                        ...settings,
+                        notifications: {
+                          ...settings.notifications,
+                          [field]: !settings.notifications[field as keyof typeof settings.notifications],
+                        },
+                      })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        settings.notifications[field as keyof typeof settings.notifications] ? 'bg-emerald-600' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        settings.notifications[field as keyof typeof settings.notifications] ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -301,18 +244,16 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <h2 id="appearance-heading" className="font-semibold text-gray-900 dark:text-gray-100">
-                      Aparência
+                      {t('appearance_heading')}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      Personalize a interface do aplicativo
-                    </p>
+                    <p className="text-sm text-gray-500">{t('appearance_subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
                 <div>
                   <label htmlFor="theme-select" className="text-sm text-gray-700 block mb-2">
-                    Tema
+                    {t('theme')}
                   </label>
                   <select
                     id="theme-select"
@@ -322,17 +263,16 @@ export default function SettingsPage() {
                       appearance: { ...settings.appearance, theme: e.target.value as 'light' | 'dark' | 'auto' }
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    aria-label="Selecionar tema"
                   >
-                    <option value="light">Claro</option>
-                    <option value="dark">Escuro</option>
-                    <option value="auto">Automático</option>
+                    <option value="light">{t('theme_light')}</option>
+                    <option value="dark">{t('theme_dark')}</option>
+                    <option value="auto">{t('theme_auto')}</option>
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="language-select" className="text-sm text-gray-700 block mb-2">
-                    Idioma
+                    {t('language')}
                   </label>
                   <select
                     id="language-select"
@@ -342,7 +282,6 @@ export default function SettingsPage() {
                       appearance: { ...settings.appearance, language: e.target.value }
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    aria-label="Selecionar idioma"
                   >
                     <option value="pt-BR">Português (Brasil)</option>
                     <option value="en-US">English (US)</option>
@@ -352,7 +291,7 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <label htmlFor="compact-mode" className="text-sm text-gray-700">
-                    Modo compacto
+                    {t('compact_mode')}
                   </label>
                   <button
                     id="compact-mode"
@@ -365,7 +304,6 @@ export default function SettingsPage() {
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       settings.appearance.compactMode ? 'bg-emerald-600' : 'bg-gray-200'
                     }`}
-                    aria-label="Ativar modo compacto"
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                       settings.appearance.compactMode ? 'translate-x-6' : 'translate-x-1'
@@ -384,18 +322,16 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <h2 id="security-heading" className="font-semibold text-gray-900 dark:text-gray-100">
-                      Segurança
+                      {t('security_heading')}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      Gerencie sua senha e autenticação
-                    </p>
+                    <p className="text-sm text-gray-500">{t('security_subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <label htmlFor="two-factor" className="text-sm text-gray-700">
-                    Autenticação de dois fatores
+                    {t('two_factor')}
                   </label>
                   <button
                     id="two-factor"
@@ -408,7 +344,6 @@ export default function SettingsPage() {
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       settings.security.twoFactor ? 'bg-emerald-600' : 'bg-gray-200'
                     }`}
-                    aria-label="Ativar autenticação de dois fatores"
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                       settings.security.twoFactor ? 'translate-x-6' : 'translate-x-1'
@@ -418,7 +353,7 @@ export default function SettingsPage() {
 
                 <div>
                   <label htmlFor="session-timeout" className="text-sm text-gray-700 block mb-2">
-                    Tempo limite de sessão (minutos)
+                    {t('session_timeout')}
                   </label>
                   <input
                     id="session-timeout"
@@ -431,14 +366,12 @@ export default function SettingsPage() {
                       security: { ...settings.security, sessionTimeout: parseInt(e.target.value) || 30 }
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    aria-label="Definir tempo limite de sessão em minutos"
                   />
                 </div>
 
                 <div className="pt-2">
                   <button
                     className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                    aria-label="Alterar senha"
                   >
                     Alterar Senha
                   </button>

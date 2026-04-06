@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, usePathname } from 'next/navigation'
 
 const LOCALE_STORAGE_KEY = 'cp2b-locale'
@@ -9,6 +9,7 @@ export default function LanguageSwitcher() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
+  const t = useTranslations('common')
 
   const handleLanguageChange = (newLocale: string) => {
     if (newLocale === locale) return
@@ -33,7 +34,7 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => handleLanguageChange('en')}
         aria-pressed={locale === 'en'}
-        aria-label="Switch to English"
+        aria-label={t('lang.switch_to_en')}
         className={locale === 'en' ? activeClass : inactiveClass}
       >
         EN
@@ -42,7 +43,7 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => handleLanguageChange('pt-BR')}
         aria-pressed={locale === 'pt-BR'}
-        aria-label="Mudar para Português"
+        aria-label={t('lang.switch_to_pt')}
         className={locale === 'pt-BR' ? activeClass : inactiveClass}
       >
         PT
