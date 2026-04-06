@@ -15,11 +15,13 @@
 
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/navigation'
 import { SkeletonMunicipalityPage } from '@/components/ui/Skeleton'
 import { useGeospatialData } from '@/hooks/useGeospatialData'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs'
 import {
-  ArrowLeft,
   MapPin,
   Users,
   Maximize,
@@ -33,6 +35,7 @@ import {
   BarChart3,
   Zap,
   Cloud,
+  ArrowLeft,
 } from 'lucide-react'
 import {
   BarChart,
@@ -113,6 +116,8 @@ export default function MunicipalityPage() {
   const params = useParams()
   const ibgeCode = String(params?.ibge_code ?? '')
   const { data, loading, error } = useGeospatialData()
+  const t = useTranslations('pages')
+  const tMap = useTranslations('Map')
 
   const municipality = useMemo(() => {
     if (!data) return null
@@ -120,6 +125,9 @@ export default function MunicipalityPage() {
       (f) => String(f.properties.ibge_code) === ibgeCode
     ) ?? null
   }, [data, ibgeCode])
+
+  // Hook must be called unconditionally (before any conditional return)
+  const breadcrumbs = useBreadcrumbs({ municipalityName: municipality?.properties?.name })
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
@@ -136,17 +144,17 @@ export default function MunicipalityPage() {
           <div className="text-center max-w-md">
             <div className="text-5xl mb-4">🏙️</div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Município não encontrado
+              {t('municipality.not_found')}
             </h2>
             <p className="text-gray-500 mb-6">
-              Não encontramos dados para o código IBGE <strong>{ibgeCode}</strong>.
+              {t('municipality.not_found_desc', { code: ibgeCode })}
             </p>
             <Link
               href="/map"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E5128] text-white rounded-xl hover:bg-[#163d1f] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voltar ao Mapa
+              {t('municipality.back_to_map')}
             </Link>
           </div>
         </div>
@@ -197,7 +205,7 @@ export default function MunicipalityPage() {
       navigator.share({ title: `${p.name} — PILAR-2b BiogasAtlas`, url: window.location.href })
     } else {
       navigator.clipboard.writeText(window.location.href)
-      alert('URL copiada!')
+      alert(t('municipality.copy_url'))
     }
   }
 
@@ -210,41 +218,35 @@ export default function MunicipalityPage() {
         <p className="text-sm text-gray-500">IBGE: {p.ibge_code} · {p.intermediate_region}</p>
       </div>
 
+      {/* Breadcrumb — outside main for full-width border */}
+      <div className="bg-white border-b dark:bg-slate-800 dark:border-slate-700 print:hidden">
+        <Breadcrumb items={breadcrumbs} />
+      </div>
+
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:py-4">
-        {/* ── Breadcrumb & Actions ── */}
-        <div className="flex items-center justify-between mb-6 print:hidden">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/map"
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Mapa
-            </Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-white">{p.name}</span>
-          </div>
+        {/* ── Actions ── */}
+        <div className="flex items-center justify-end mb-6 print:hidden">
           <div className="flex items-center gap-2">
             <Link
               href={`/map?q=${encodeURIComponent(p.name)}`}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <MapPin className="w-3.5 h-3.5" />
-              Ver no Mapa
+              {t('municipality.back_to_map')}
             </Link>
             <button
               onClick={handleShare}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Share2 className="w-3.5 h-3.5" />
-              Compartilhar
+              {tMap('tools.share')}
             </button>
             <button
               onClick={() => window.print()}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#1E5128] rounded-lg hover:bg-[#163d1f] transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
-              Exportar PDF
+              PDF
             </button>
           </div>
         </div>
