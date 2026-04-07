@@ -1,6 +1,6 @@
 # FastAPI and ASGI
 # Updated for security patches (Sprint 4 Production Hardening)
-fastapi==0.115.7  # Updated from 0.104.1 - security headers improvements
+fastapi==0.135.3  # Updated from 0.115.7 — pulls starlette>=0.49.1 (fixes CVE-2025-54121, CVE-2025-62727)
 uvicorn[standard]==0.32.1  # Updated from 0.24.0 - stability improvements
 slowapi==0.1.9
 
@@ -13,11 +13,11 @@ alembic==1.13.0
 # python-jose removed: library is unmaintained and has unfixed CVEs (algorithm confusion).
 # JWT verification is handled by Supabase (supabase.auth.get_user) — no local JWT lib needed.
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.20  # Updated from 0.0.6 — fixes ReDoS (Content-Type), DoS (multipart boundary), arbitrary file write
+python-multipart==0.0.22  # Updated from 0.0.20 — fixes CVE-2026-24486
 
 # Environment and Configuration
 python-dotenv==1.0.0
-pydantic==2.5.0
+pydantic>=2.5.0
 pydantic-settings==2.0.3
 email-validator==2.1.0
 
@@ -39,7 +39,7 @@ openpyxl==3.1.2
 
 # HTTP client
 httpx==0.27.0
-requests==2.31.0
+requests==2.33.0  # Updated from 2.31.0 — fixes CVE-2024-35195, CVE-2024-47081, CVE-2026-25645
 
 # Supabase integration
 supabase==2.7.4
