@@ -6,7 +6,7 @@
  */
 
 import React, { useMemo } from 'react'
-import { Sankey, Tooltip, ResponsiveContainer, Layer, Rectangle } from 'recharts'
+import { Sankey, Tooltip, ResponsiveContainer, Layer, Rectangle, type SankeyNodeOptions } from 'recharts'
 import { GitBranch, Info } from 'lucide-react'
 import {
   CorrectionFactors,
@@ -259,8 +259,9 @@ export default function BiomassFlowSankey({
             nodeWidth={15}
             nodePadding={30}
             margin={{ top: 20, right: 200, bottom: 20, left: 20 }}
-            node={CustomNode as unknown as React.ReactElement<SVGElement>}
-            link={CustomLink as unknown as React.ReactElement<SVGElement>}
+            node={CustomNode as unknown as SankeyNodeOptions}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            link={CustomLink as any}
           >
             <Tooltip content={<CustomTooltip />} />
           </Sankey>

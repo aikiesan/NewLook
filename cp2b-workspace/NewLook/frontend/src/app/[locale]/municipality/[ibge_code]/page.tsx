@@ -325,14 +325,14 @@ export default function MunicipalityPage() {
                     outerRadius={80}
                     paddingAngle={3}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {sectorPieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => [`${formatBig(v)} m³/ano`, '']} />
+                  <Tooltip formatter={(v) => [`${formatBig(typeof v === 'number' ? v : 0)} m³/ano`, '']} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -352,7 +352,7 @@ export default function MunicipalityPage() {
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => formatBig(v)} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={55} />
-                  <Tooltip formatter={(v: number) => [`${formatBig(v)} m³/ano`, 'Potencial']} />
+                  <Tooltip formatter={(v) => [`${formatBig(typeof v === 'number' ? v : 0)} m³/ano`, 'Potencial']} />
                   <Bar dataKey="value" fill="#4CAF50" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>

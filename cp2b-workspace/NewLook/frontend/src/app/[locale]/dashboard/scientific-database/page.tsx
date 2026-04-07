@@ -789,7 +789,7 @@ export default function ScientificDatabasePage() {
                           label={{ value: 'Producao (L CH4/kg SV)', angle: -90, position: 'insideLeft' }}
                         />
                         <Tooltip
-                          formatter={(value: number) => [`${value.toFixed(1)} L CH4/kg SV`, '']}
+                          formatter={(value) => [typeof value === 'number' ? `${value.toFixed(1)} L CH4/kg SV` : value, '']}
                         />
                         <Legend />
                         {(selectedResidues.length > 0 ? selectedResidues : kineticsData.slice(0, 4).map(k => k.residue_name)).map((residue, idx) => (
