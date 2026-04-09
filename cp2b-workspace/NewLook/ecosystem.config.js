@@ -5,7 +5,7 @@
 //   Save:          pm2 save
 //   On boot:       pm2 startup (run the printed command as root)
 
-const REPO_ROOT = '/var/www/cp2b/repo/cp2b-workspace/NewLook';
+const REPO_ROOT = '/var/www/pilar2b/repo/cp2b-workspace/NewLook';
 
 module.exports = {
   apps: [
