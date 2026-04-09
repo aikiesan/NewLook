@@ -1,7 +1,7 @@
 # PILAR-2b - Intelligent Waste Location and Utilization Platform for Biogas and Bioproducts
 
 [![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/aikiesan/NewLook)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](./LICENSE)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](https://opensource.org/)
 
 **PILAR-2b** (_Plataforma Inteligente de Localização e Aproveitamento de Resíduos para Biogas e Bioprodutos_) is an open-source microservices framework for analyzing **biogas and bioproduct potential** from agricultural, livestock, and urban residues across **645 municipalities** in São Paulo State, Brazil.
@@ -376,9 +376,9 @@ For questions or collaboration, please open an issue or contact the maintainers.
 
 ## 📄 License
 
-**PILAR-2b** is open-source software released under the **MIT License**.
+**PILAR-2b** is open-source software released under the **GNU General Public License v3.0 (GPL-3.0)**.
 
-This project was developed as part of research funded by FAPESP (Grant 2025/08745-2) and is freely available for use, modification, and distribution.
+This project was developed as part of research funded by FAPESP (Grant 2025/08745-2) and is freely available for use, modification, and distribution under the terms of the GPL-3.0.
 
 See [LICENSE](./LICENSE) for full details.
 
