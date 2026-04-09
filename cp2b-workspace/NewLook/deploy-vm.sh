@@ -1,6 +1,6 @@
 #!/bin/bash
-# Deploy script for pilar.cp2b.unicamp.br
-# Run this after every git pull to update and restart both services.
+# Deploy script for pilar2b.cp2b.unicamp.br
+# Run this after every merge to main to update and restart both services.
 # Mirrors the existing cp2b deploy workflow.
 #
 # Usage: bash deploy-vm.sh
@@ -28,9 +28,9 @@ echo "=== [3/4] Frontend rebuild ==="
 cd "$FRONTEND_DIR"
 npm install --silent
 npm run build
-# Refresh static assets for nginx direct serving
-cp -r .next/static .next/standalone/.next/static
-cp -r public .next/standalone/public
+# Refresh static assets in standalone dir
+cp -r .next/static   .next/standalone/.next/static
+cp -r public         .next/standalone/public
 pm2 restart pilar-frontend
 pm2 save
 echo "  Frontend rebuilt and restarted."
@@ -46,11 +46,11 @@ echo "  Frontend (localhost:3002):        $FRONTEND_STATUS"
 
 if [ "$BACKEND_STATUS" = "200" ] && [ "$FRONTEND_STATUS" = "200" ]; then
     echo ""
-    echo "Deploy successful. https://pilar.cp2b.unicamp.br is live."
+    echo "Deploy successful. https://pilar2b.cp2b.unicamp.br is live."
 else
     echo ""
-    echo "WARNING: One or more services may not be healthy. Check:"
-    echo "  pm2 logs pilar-backend"
-    echo "  pm2 logs pilar-frontend"
+    echo "WARNING: One or more services may not be healthy. Check with:"
+    echo "  pm2 logs pilar-backend --lines 30"
+    echo "  pm2 logs pilar-frontend --lines 30"
     exit 1
 fi
