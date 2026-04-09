@@ -438,8 +438,8 @@ WIP
 - [Project README](./README.md)
 - [Architecture Documentation](./STRUCTURE.md)
 - [API Documentation](https://newlook-production.up.railway.app/docs)
-- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)
-- [Improvement Roadmap](./docs/IMPROVEMENT_ROADMAP.md)
+- [Deployment Guide](./docs/deployment/DEPLOYMENT_GUIDE.md)
+- [Improvement Roadmap](./docs/planning/IMPROVEMENT_ROADMAP.md)
 
 ---
 
