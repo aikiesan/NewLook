@@ -6,7 +6,7 @@
 # Usage: bash setup-vm.sh
 set -e
 
-REPO_ROOT="/var/www/cp2b/repo/cp2b-workspace/NewLook"
+REPO_ROOT="/var/www/pilar2b/repo/cp2b-workspace/NewLook"
 BACKEND_DIR="$REPO_ROOT/backend"
 FRONTEND_DIR="$REPO_ROOT/frontend"
 DOMAIN="pilar2b.cp2b.unicamp.br"

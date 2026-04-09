@@ -6,12 +6,12 @@
 # Usage: bash deploy-vm.sh
 set -e
 
-REPO_ROOT="/var/www/cp2b/repo/cp2b-workspace/NewLook"
+REPO_ROOT="/var/www/pilar2b/repo/cp2b-workspace/NewLook"
 BACKEND_DIR="$REPO_ROOT/backend"
 FRONTEND_DIR="$REPO_ROOT/frontend"
 
 echo "=== [1/4] Pulling latest code ==="
-cd /var/www/cp2b/repo
+cd /var/www/pilar2b/repo
 git pull origin main
 
 echo ""
