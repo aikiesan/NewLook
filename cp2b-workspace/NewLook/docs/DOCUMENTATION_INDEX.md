@@ -12,12 +12,11 @@
 - [docs/architecture/](#3-architecture)
 - [docs/data/](#4-data--scientific-methodology)
 - [docs/deployment/](#5-deployment)
-- [docs/inpi/](#6-inpi--regulatory)
-- [docs/planning/](#7-planning)
-- [docs/qa/](#8-qa--testing)
-- [docs/security/](#9-security)
-- [docs/sql/](#10-sql-scripts)
-- [Backend READMEs](#11-backend-readmes)
+- [docs/planning/](#6-planning)
+- [docs/qa/](#7-qa--testing)
+- [docs/security/](#8-security)
+- [docs/sql/](#9-sql-scripts)
+- [Backend READMEs](#10-backend-readmes)
 
 ---
 
@@ -68,7 +67,6 @@ Standard open-source project files at `cp2b-workspace/NewLook/`:
 | [`data/SAO_PAULO_BIOGAS_POTENTIAL_FDE.md`](data/SAO_PAULO_BIOGAS_POTENTIAL_FDE.md) | Realistic biogas potential analysis for SP using FDE (285 lines) |
 | [`data/IBGE_IO_DATA_PROCESSING_GUIDE.md`](data/IBGE_IO_DATA_PROCESSING_GUIDE.md) | Processing 15 IBGE Input-Output tables (2015, 67 sectors) into Supabase (925 lines) |
 | [`data/IBGE_67_SECTOR_INTEGRATION_COMPLETE.md`](data/IBGE_67_SECTOR_INTEGRATION_COMPLETE.md) | IBGE 67-sector Leontief model integration — economic impact analysis (608 lines) |
-| [`data/EMS_MANDATORY_SECTIONS.md`](data/EMS_MANDATORY_SECTIONS.md) | Mandatory sections for Environmental Modelling & Software manuscript (46 lines) |
 
 ---
 
@@ -84,27 +82,15 @@ Standard open-source project files at `cp2b-workspace/NewLook/`:
 
 ---
 
-## 6. INPI & Regulatory
-
-| File | Description |
-|---|---|
-| [`inpi/REGISTRO_INPI_INOVA_UNICAMP.md`](inpi/REGISTRO_INPI_INOVA_UNICAMP.md) | Complete INPI registration form — software details, FAPESP project, NIPE-UNICAMP (849 lines) |
-| [`inpi/REGISTRO_INPI_RESUMO_RAPIDO.md`](inpi/REGISTRO_INPI_RESUMO_RAPIDO.md) | Quick reference summary of INPI registration requirements (386 lines) |
-| [`inpi/LEIA-ME_REGISTRO_INPI.md`](inpi/LEIA-ME_REGISTRO_INPI.md) | How-to guide for INPI/INOVA UNICAMP software registration (524 lines) |
-| [`inpi/SUMARIO_EXECUTIVO_REGISTRO.md`](inpi/SUMARIO_EXECUTIVO_REGISTRO.md) | Executive summary of INPI software registration (422 lines) |
-
----
-
-## 7. Planning
+## 6. Planning
 
 | File | Description |
 |---|---|
 | [`planning/IMPROVEMENT_ROADMAP.md`](planning/IMPROVEMENT_ROADMAP.md) | Project roadmap V3.0.1 (Dec 7, 2025) — future features, priorities (638 lines) |
-| [`planning/BRANCH_CLEANUP_GUIDE.md`](planning/BRANCH_CLEANUP_GUIDE.md) | Git branch cleanup guide (193 lines) |
 
 ---
 
-## 8. QA & Testing
+## 7. QA & Testing
 
 | File | Description |
 |---|---|
@@ -116,21 +102,19 @@ Standard open-source project files at `cp2b-workspace/NewLook/`:
 
 ---
 
-## 9. Security
+## 8. Security
 
 | File | Description |
 |---|---|
 | [`security/SECURITY.md`](security/SECURITY.md) | Security policy — supported versions, vulnerability reporting (178 lines) |
 | [`security/SECURITY_AUDIT_REPORT.md`](security/SECURITY_AUDIT_REPORT.md) | Security audit report (Dec 24, 2025) — findings, testing infrastructure (686 lines) |
-| [`security/FINAL_PRODUCTION_REVIEW.md`](security/FINAL_PRODUCTION_REVIEW.md) | Final production review (Jan 25, 2026) — security hardening (626 lines) |
-| [`security/CRITICAL_FIXES_CHANGELOG.md`](security/CRITICAL_FIXES_CHANGELOG.md) | Sprint 4 critical production fixes — security hardening (497 lines) |
 | [`security/CSRF_PROTECTION.md`](security/CSRF_PROTECTION.md) | CSRF analysis — conclusion: **NOT NEEDED** for this API (151 lines) |
 | [`security/DATABASE_AUDIT_LOGGING.md`](security/DATABASE_AUDIT_LOGGING.md) | Audit logging setup — **CRITICAL**: must enable before production (422 lines) |
 | [`security/SUPABASE_AUDIT_LOGGING.md`](security/SUPABASE_AUDIT_LOGGING.md) | Application-level audit logging via Supabase (207 lines) |
 
 ---
 
-## 10. SQL Scripts
+## 9. SQL Scripts
 
 | File | Description |
 |---|---|
@@ -140,7 +124,7 @@ Standard open-source project files at `cp2b-workspace/NewLook/`:
 
 ---
 
-## 11. Backend READMEs
+## 10. Backend READMEs
 
 These remain in their respective directories for context:
 
@@ -149,7 +133,6 @@ These remain in their respective directories for context:
 | `backend/data/README.md` | Geospatial data directory — shapefiles, rasters (104 lines) |
 | `backend/data/shapefiles/brazil/README.md` | Brazil intermediary regions shapefile — 133 regions (224 lines) |
 | `backend/migrations/README.md` | Migrations directory overview (146 lines) |
-| `backend/migrations/README_MIGRATIONS.md` | How to apply migrations — SQL Editor, psql, Python (335 lines) |
 | `backend/app/migrations/README.md` | V2 to V3 migration guide — PostgreSQL + PostGIS to Supabase (355 lines) |
 | `backend/scripts/archive/README.md` | Archived scripts — kept for reference (85 lines) |
 
@@ -159,15 +142,14 @@ These remain in their respective directories for context:
 
 | Category | Files | Key Docs |
 |---|---|---|
-| **INPI / Regulatory** | 4 | `inpi/REGISTRO_INPI_INOVA_UNICAMP.md` |
 | **Project Root** | 4 | `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md` |
 | **API Reference** | 1 | `api/API_DOCUMENTATION.md` |
 | **Architecture** | 8 | `architecture/DEVELOPMENT_STRATEGY.md`, `architecture/BIOROUTE_COMPREHENSIVE_ANALYSIS.md` |
 | **QA & Testing** | 5 | `qa/TESTING.md`, `qa/QA_GUIDE_LUCAS.md` |
-| **Security** | 7 | `security/SECURITY_AUDIT_REPORT.md`, `security/FINAL_PRODUCTION_REVIEW.md` |
+| **Security** | 5 | `security/SECURITY_AUDIT_REPORT.md`, `security/SECURITY.md` |
 | **Deployment** | 5 | `deployment/DEPLOYMENT_GUIDE.md`, `deployment/DEPLOYMENT_CHECKLIST.md` |
-| **Data / Methodology** | 7 | `data/FDE_METHODOLOGY.md`, `data/FEEDSTOCK_FACTORS_LITERATURE_TABLE.md` |
-| **Planning** | 2 | `planning/IMPROVEMENT_ROADMAP.md` |
+| **Data / Methodology** | 6 | `data/FDE_METHODOLOGY.md`, `data/FEEDSTOCK_FACTORS_LITERATURE_TABLE.md` |
+| **Planning** | 1 | `planning/IMPROVEMENT_ROADMAP.md` |
 | **SQL Scripts** | 3 | `sql/REMOVE_ECONOMIC_TABLES.sql` |
-| **Backend READMEs** | 6 | `backend/migrations/README.md` |
-| **Total** | **~52** | |
+| **Backend READMEs** | 5 | `backend/migrations/README.md` |
+| **Total** | **~43** | |
