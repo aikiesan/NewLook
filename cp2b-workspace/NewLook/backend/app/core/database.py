@@ -258,7 +258,7 @@ def test_db_connection() -> bool:
             cursor.close()
 
             logger.info("✓ Database connected successfully")
-            logger.info(f"✓ PostGIS version: {version[0] if version else 'Unknown'}")
+            logger.info(f"✓ PostGIS version: {next(iter(version.values())) if version else 'Unknown'}")
 
             return result is not None
 
