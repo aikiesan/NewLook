@@ -61,7 +61,8 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://cp2b.unicamp.br/pilar2b/api',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://cp2b.unicamp.br/pilar2b',
+    NEXT_PUBLIC_DISABLE_AUTH: process.env.NEXT_PUBLIC_DISABLE_AUTH || 'false',
   },
 
   // Keep relaxed checks for faster builds
