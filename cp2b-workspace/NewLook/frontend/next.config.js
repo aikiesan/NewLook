@@ -14,9 +14,6 @@ const nextConfig = {
   // - Dynamic routes
   // If you need static export for Cloudflare Pages, set STATIC_EXPORT=true
 
-  // Next.js 16: Enable Turbopack (empty config silences warning)
-  turbopack: {},
-
   // Performance: Enable experimental optimizations
   experimental: {
     // Optimize package imports for faster builds
